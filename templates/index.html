@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+		Progetto_Sistemi
+	</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+  </head>
+  <body>
+	<h1>
+		<div class="text-center">
+			<p>
+				Benvenuto nella Home page del sito
+			</p>
+		</div>
+		<div class="text-center">
+			<p>
+				Qui potrai addestrare i tre modelli di NLP
+			</p>
+		</div>
+		<div class="text-center">
+			<p>
+				Seleziona una delle operazioni tra le seguenti:
+			</p>
+		</div>
+	</h1>
+	<form>
+		<div class = "text-center">
+			<button type="button" class="btn btn-primary" name="1button" onclick="window.location.href='{{ url_for( 'create_intent') }}';">
+				<h1>
+					Creare nuovi Intent
+				</h1>
+			</button>
+			<br>
+			<br>
+		</div>
+		<div class = "text-center">
+			<button type="button" class="btn btn-success" name="2button" onclick="window.location.href='{{ url_for( 'define_entity') }}';">
+				<h1>
+					Definire nuove Entita'
+				</h1>
+			</button>
+			<br>
+			<br>
+		</div>
+		<div class = "text-center">
+			<button type="button" class="btn btn-danger" name="3button" onclick="window.location.href='{{ url_for( 'modify_training_phrase') }}';">
+				<h1>
+					Aggiungere,modificare e/o eliminare le frasi di training
+				</h1>
+			</button>
+			<br>
+			<br>
+		</div>
+		<div class = "text-center">
+			<button type="button" class="btn btn-warning" name="4button" onclick="window.location.href='{{ url_for( 'write_down_training') }}';">
+				<h1>
+					Annotare le frasi di training
+				</h1>
+			</button>
+			<br>
+			<br>
+		<div class = "text-center">
+			<button type="button" class="btn btn-dark" name="5button" onclick="window.location.href='{{ url_for( 'start_training_model') }}';">
+				<h1>
+					Avviare addestramento modello/i
+				</h1>
+			</button>
+			<br>
+			<br>
+		</div>
+		<div class = "text-center">
+			<button type="button" class="btn btn-light" name="6button" onclick="window.location.href='{{ url_for( 'show_results_testing') }}';">
+				<h1>
+					Mostra risultati training/Effettua testing dei modelli
+				</h1>
+			</button>
+			<br>
+			<br>
+		</div>
+		<div class = "text-center">
+			<button type="button" class="btn btn-secondary" name="7button" onclick="window.location.href='{{ url_for( 'download_erasure_model') }}';">
+				<h1>
+					Download modelli addestrati/Cancellazione modelli
+				</h1>
+			</button>
+			<br>
+			<br>
+		</div>
+	</form>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+  </body>
+</html>
