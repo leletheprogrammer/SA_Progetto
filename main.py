@@ -32,9 +32,10 @@ def define_entity():
 		connection.row_factory = sqlite3.Row
 		cursor = connection.cursor()
 		for value in form_data.values():
-			insertion = 'INSERT INTO entities VALUES(123456,"' + value + '","ollel")'
-			cursor.execute(insertion)
-			connection.commit()
+			selection = cursor.execute('SELECT Category FROM NamedEntities WHERE Category = "' + value + '"').fetchall()
+			if (not len(selection)):
+				cursor.execute('INSERT INTO NamedEntities VALUES("' + value + '")')
+				connection.commit()
 		connection.close()
 		return render_template('define_entity.html', form_data = form_data)
 	elif request.method == 'GET':
