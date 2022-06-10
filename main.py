@@ -28,14 +28,14 @@ of the page where to define new entities'''
 def define_entity():
 	if request.method == 'POST':
 		form_data = request.form
-		'''connection = sqlite3.connect('NLPDatabase.db')
+		connection = sqlite3.connect('NLPDatabase.db')
 		connection.row_factory = sqlite3.Row
 		cursor = connection.cursor()
 		for value in form_data.values():
 			insertion = 'INSERT INTO entities VALUES(123456,"' + value + '","ollel")'
 			cursor.execute(insertion)
 			connection.commit()
-		connection.close()'''
+		connection.close()
 		return render_template('define_entity.html', form_data = form_data)
 	elif request.method == 'GET':
 		return render_template('define_entity.html')
