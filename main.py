@@ -45,7 +45,22 @@ def define_entity():
 where to add,modify and delete training phrase'''
 @app.route('/modify_training_phrase')
 def modify_training_phrase():
-	return render_template('modify_training_phrase.html')
+	connection = sqlite3.connect('NLPDatabase.db')
+	connection.row_factory = sqlite3.Row
+	cursor = connection.cursor()
+	if request.method == 'POST':
+		form_data = request.form
+		'''for value in form_data.values():
+			selection = cursor.execute('SELECT Category FROM NamedEntities WHERE Category = "' + value + '"').fetchall()
+			if (not len(selection)):
+				cursor.execute('INSERT INTO NamedEntities VALUES("' + value + '")')
+				connection.commit()
+		connection.close()
+		return render_template('define_entity.html', form_data = form_data)
+		'''
+	elif request.method == 'GET':
+		form_data = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+		return render_template('modify_training_phrase.html', form_data = form_data)
 
 '''decorator that defines the url path of the
 page where to write down training phrases'''

@@ -27,6 +27,11 @@
 			<select class = "form-control" id = "selectTrainingPhrase">
 			<option selected>
 				Clicca qui per selezionare la frase di training da modificare
+				{% for row in form_data %}
+					<option>
+						{{row[0]}}
+					</option>
+				{% endfor %}
 			</option>
 			</select>
 			<label for = "newTrainingPhrase">
