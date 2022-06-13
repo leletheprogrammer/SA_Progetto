@@ -16,7 +16,7 @@
 			</label>
 			<input type = "text" class = "form-control" name = "addTrainingPhrase" placeholder = "Scrivi qui per aggiungere una nuova frase di training">
 		</div>
-		<button type = "submit" class = "btn btn-primary" name = "addButton">
+		<button type = "submit" class = "btn btn-primary" name = "submitButton" value = "addButton">
 			Invia nuova frase di training
 		</button>
 		
@@ -27,7 +27,7 @@
 			<select class = "form-control" id = "selectTrainingPhrase">
 			<option selected>
 				Clicca qui per selezionare la frase di training da modificare
-				{% for row in form_data %}
+				{% for row in selection %}
 					<option>
 						{{row[0]}}
 					</option>
@@ -39,7 +39,7 @@
 			</label>
 			<input type = "text" class = "form-control" name = "newTrainingPhrase" placeholder = "Scrivi qui per inserire la nuova frase di training">
 		</div>
-		<button type = "submit" class = "btn btn-primary" name = "modifyButton">
+		<button type = "submit" class = "btn btn-primary" name = "submitButton" value = "modifyButton">
 			Sostituisci frase di training
 		</button>
 		<div class = "form-group">
@@ -52,7 +52,7 @@
 			</option>
 			</select>
 		</div>
-		<button type = "submit" class = "btn btn-primary" name = "deleteButton">
+		<button type = "submit" class = "btn btn-primary" name = "submitButton" value = "deleteButton">
 			Elimina frase di training
 		</button>
 	</form>

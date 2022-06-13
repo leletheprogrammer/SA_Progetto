@@ -27,10 +27,10 @@ of the page where to define new entities'''
 @app.route('/define_entity', methods = ['POST', 'GET'])
 def define_entity():
 	if request.method == 'POST':
-		form_data = request.form
 		connection = sqlite3.connect('NLPDatabase.db')
 		connection.row_factory = sqlite3.Row
 		cursor = connection.cursor()
+		form_data = request.form
 		for value in form_data.values():
 			selection = cursor.execute('SELECT Category FROM NamedEntities WHERE Category = "' + value + '"').fetchall()
 			if (not len(selection)):
@@ -43,24 +43,23 @@ def define_entity():
 
 '''decorator that defines the url path of the page
 where to add,modify and delete training phrase'''
-@app.route('/modify_training_phrase')
+@app.route('/modify_training_phrase', methods = ['POST', 'GET'])
 def modify_training_phrase():
 	connection = sqlite3.connect('NLPDatabase.db')
 	connection.row_factory = sqlite3.Row
 	cursor = connection.cursor()
 	if request.method == 'POST':
 		form_data = request.form
-		'''for value in form_data.values():
-			selection = cursor.execute('SELECT Category FROM NamedEntities WHERE Category = "' + value + '"').fetchall()
-			if (not len(selection)):
-				cursor.execute('INSERT INTO NamedEntities VALUES("' + value + '")')
-				connection.commit()
-		connection.close()
-		return render_template('define_entity.html', form_data = form_data)
-		'''
-	elif request.method == 'GET':
-		form_data = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+		if (form_data['submitButton'] == 'addButton'):
+			return 'lello'
+		elif (form_data['submitButton'] == 'modifyButton'):
+			return 'massimello'
+		elif (form_data['submitButton'] == 'deleteButton'):
+			return 'pischello'
 		return render_template('modify_training_phrase.html', form_data = form_data)
+	elif request.method == 'GET':
+		selection = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+		return render_template('modify_training_phrase.html', selection = selection)
 
 '''decorator that defines the url path of the
 page where to write down training phrases'''
