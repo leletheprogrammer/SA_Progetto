@@ -58,7 +58,7 @@ def define_entity():
 where to add,modify and delete training phrase'''
 @app.route('/modify_training_phrase')
 def modify_training_phrase():
-	return 'modify_training_phrase'
+	return render_template('modify_training_phrase.html')
 
 '''decorator that defines the url path of the
 page where to write down training phrases'''
