@@ -48,18 +48,26 @@ def modify_training_phrase():
 	connection = sqlite3.connect('NLPDatabase.db')
 	connection.row_factory = sqlite3.Row
 	cursor = connection.cursor()
+	phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
 	if request.method == 'POST':
 		form_data = request.form
 		if (form_data['submitButton'] == 'addButton'):
-			return 'lello'
+			value = form_data['addTrainingPhrase']
+			selection = cursor.execute('SELECT Phrase FROM TrainingPhrases WHERE Phrase = "' + value + '"').fetchall()
+			if (not len(selection)):
+				cursor.execute('INSERT INTO TrainingPhrases VALUES("' + value + '")')
+				connection.commit()
 		elif (form_data['submitButton'] == 'modifyButton'):
 			return 'massimello'
 		elif (form_data['submitButton'] == 'deleteButton'):
 			return 'pischello'
-		return render_template('modify_training_phrase.html', form_data = form_data)
+		else:
+			pass
+		phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+		connection.close()
+		return render_template('modify_training_phrase.html', phrases = phrases)
 	elif request.method == 'GET':
-		selection = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
-		return render_template('modify_training_phrase.html', selection = selection)
+		return render_template('modify_training_phrase.html', phrases = phrases)
 
 '''decorator that defines the url path of the
 page where to write down training phrases'''

@@ -27,7 +27,7 @@
 			<select class = "form-control" id = "selectTrainingPhrase">
 			<option selected>
 				Clicca qui per selezionare la frase di training da modificare
-				{% for row in selection %}
+				{% for row in phrases %}
 					<option>
 						{{row[0]}}
 					</option>
@@ -49,6 +49,11 @@
 			<select class = "form-control" id = "deleteTrainingPhrase">
 			<option selected>
 				Clicca qui per selezionare la frase di training da cancellare
+				{% for row in phrases %}
+					<option>
+						{{row[0]}}
+					</option>
+				{% endfor %}
 			</option>
 			</select>
 		</div>
