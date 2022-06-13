@@ -48,7 +48,6 @@ def modify_training_phrase():
 	connection = sqlite3.connect('NLPDatabase.db')
 	connection.row_factory = sqlite3.Row
 	cursor = connection.cursor()
-	phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
 	if request.method == 'POST':
 		form_data = request.form
 		if (form_data['submitButton'] == 'addButton'):
@@ -58,15 +57,23 @@ def modify_training_phrase():
 				cursor.execute('INSERT INTO TrainingPhrases VALUES("' + value + '")')
 				connection.commit()
 		elif (form_data['submitButton'] == 'modifyButton'):
-			return 'massimello'
+			old_value = form_data['selectTrainingPhrase']
+			new_value = form_data['newTrainingPhrase']
+			selection = cursor.execute('SELECT Phrase FROM TrainingPhrases WHERE Phrase = "' + new_value + '"').fetchall()
+			if (not len(selection)):
+				cursor.execute('UPDATE TrainingPhrases SET Phrase = "' + new_value + '" WHERE Phrase = "' + old_value + '"')
+				connection.commit()
 		elif (form_data['submitButton'] == 'deleteButton'):
-			return 'pischello'
+			value = form_data['deleteTrainingPhrase']
+			cursor.execute('DELETE FROM TrainingPhrases WHERE Phrase = "' + value + '"')
+			connection.commit()
 		else:
 			pass
 		phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
 		connection.close()
 		return render_template('modify_training_phrase.html', phrases = phrases)
 	elif request.method == 'GET':
+		phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
 		return render_template('modify_training_phrase.html', phrases = phrases)
 
 '''decorator that defines the url path of the

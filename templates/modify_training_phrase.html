@@ -24,7 +24,7 @@
 			<label for = "selectTrainingPhrase">
 				Seleziona la frase di training da modificare
 			</label>
-			<select class = "form-control" id = "selectTrainingPhrase">
+			<select class = "form-control" id = "selectTrainingPhrase" name = "selectTrainingPhrase">
 			<option selected>
 				Clicca qui per selezionare la frase di training da modificare
 				{% for row in phrases %}
@@ -46,7 +46,7 @@
 			<label for = "deleteTrainingPhrase">
 				Seleziona la frase di training da cancellare
 			</label>
-			<select class = "form-control" id = "deleteTrainingPhrase">
+			<select class = "form-control" id = "deleteTrainingPhrase" name = "deleteTrainingPhrase">
 			<option selected>
 				Clicca qui per selezionare la frase di training da cancellare
 				{% for row in phrases %}
