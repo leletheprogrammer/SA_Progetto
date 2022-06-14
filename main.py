@@ -21,38 +21,64 @@ of the page where to create intent'''
 @app.route('/create_intent', methods = ['POST', 'GET'])
 def create_intent():
     if request.method == 'POST':
-        form_data = request.form
         connection = sqlite3.connect('NLPDatabase.db')
+        '''creation of a 'dictionary cursor': after a fetchall or a fetchone
+        it starts returning dictionary rows'''
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
-        for value in form_data.values():
-            selection = cursor.execute('SELECT Category FROM Intents WHERE Category = "' + value + '"').fetchall()
+        
+        #form is a MultiDict with the parsed form data from 'PUT' or 'POST'
+        form_data = request.form
+        '''the value accessible through the key 'createIntent'
+        is stored in the variable "value"'''
+        value = form_data['createIntent']
+        if (value.isspace() == False) and (value != ''):
+            #removes duplicated spaces
+            value = ' '.join(value.split())
+            
+            selection = cursor.execute('SELECT Typology FROM Intents WHERE Typology = "' + value + '"').fetchall()
             if (not len(selection)):
                 cursor.execute('INSERT INTO Intents VALUES("' + value + '")')
+                
+                #saves the changes made to the database
                 connection.commit()
         connection.close()
+        
         return render_template('create_intent.html', form_data = form_data)
     elif request.method == 'GET':
-    	return render_template('create_intent.html')
+        return render_template('create_intent.html')
 
 '''decorator that defines the url path
 of the page where to define new entities'''
 @app.route('/define_entity', methods = ['POST', 'GET'])
 def define_entity():
-	if request.method == 'POST':
-		connection = sqlite3.connect('NLPDatabase.db')
-		connection.row_factory = sqlite3.Row
-		cursor = connection.cursor()
-		form_data = request.form
-		for value in form_data.values():
-			selection = cursor.execute('SELECT Category FROM NamedEntities WHERE Category = "' + value + '"').fetchall()
-			if (not len(selection)):
-				cursor.execute('INSERT INTO NamedEntities VALUES("' + value + '")')
-				connection.commit()
-		connection.close()
-		return render_template('define_entity.html', form_data = form_data)
-	elif request.method == 'GET':
-		return render_template('define_entity.html')
+    if request.method == 'POST':
+        connection = sqlite3.connect('NLPDatabase.db')
+        '''creation of a 'dictionary cursor': after a fetchall or a fetchone
+        it starts returning dictionary rows'''
+        connection.row_factory = sqlite3.Row
+        cursor = connection.cursor()
+        
+        #form is a MultiDict with the parsed form data from 'PUT' or 'POST'
+        form_data = request.form
+        '''the value accessible through the key 'insertEntity'
+        is stored in the variable "value"'''
+        value = form_data['insertEntity']
+        if (value.isspace() == False) and (value != ''):
+            #removes duplicated spaces
+            value = ' '.join(value.split())
+            
+            selection = cursor.execute('SELECT Category FROM NamedEntities WHERE Category = "' + value + '"').fetchall()
+            if (not len(selection)):
+                cursor.execute('INSERT INTO NamedEntities VALUES("' + value + '")')
+                
+                #saves the changes made to the database
+                connection.commit()
+        connection.close()
+        
+        return render_template('define_entity.html', form_data = form_data)
+    elif request.method == 'GET':
+        return render_template('define_entity.html')
 
 '''decorator that defines the url path of the page
 where to add,modify and delete training phrase'''
