@@ -1,5 +1,2 @@
 # Python-specific ignores
 __pycache__/
-
-# ignore database
-NLPDatabase.db
