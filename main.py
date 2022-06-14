@@ -91,9 +91,26 @@ def modify_training_phrase():
 
 '''decorator that defines the url path of the
 page where to write down training phrases'''
-@app.route('/write_down_training')
+@app.route('/write_down_training', methods = ['POST', 'GET'])
 def write_down_training():
-	return 'write_down_training'
+	connection = sqlite3.connect('NLPDatabase.db')
+	connection.row_factory = sqlite3.Row
+	cursor = connection.cursor()
+	phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+	selected = 0
+	if request.method == 'POST':
+		form_data = request.form
+		if (form_data['submitButton'] == 'selectButton'):
+			selected = 1
+			value = form_data['selectTrainingPhrase'].split()
+			values = list()
+			for string in value:
+				if (not (string == ' ')):
+					values.append(string)
+		connection.close()
+		return render_template('write_down_training.html', phrases = phrases, selected = selected, values = values)
+	elif request.method == 'GET':
+		return render_template('write_down_training.html', phrases = phrases, selected = selected)
 
 '''decorator that defines the url path
 of the page where to train the models'''
