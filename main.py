@@ -18,9 +18,22 @@ def index():
 
 '''decorator that defines the url path
 of the page where to create intent'''
-@app.route('/create_intent')
+@app.route('/create_intent', methods = ['POST', 'GET'])
 def create_intent():
-	return 'create_intent'
+    if request.method == 'POST':
+        form_data = request.form
+        connection = sqlite3.connect('NLPDatabase.db')
+        connection.row_factory = sqlite3.Row
+        cursor = connection.cursor()
+        for value in form_data.values():
+            selection = cursor.execute('SELECT Category FROM Intents WHERE Category = "' + value + '"').fetchall()
+            if (not len(selection)):
+                cursor.execute('INSERT INTO Intents VALUES("' + value + '")')
+                connection.commit()
+        connection.close()
+        return render_template('create_intent.html', form_data = form_data)
+    elif request.method == 'GET':
+    	return render_template('create_intent.html')
 
 '''decorator that defines the url path
 of the page where to define new entities'''
