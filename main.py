@@ -8,6 +8,20 @@ import sqlite3
 __name__ represents the name of the current file'''
 app = Flask(__name__)
 
+#colors
+color = {
+        'blue': '002aff',
+        'yellow': 'e1eb34',
+        'green': '28fc03',
+        'red': 'fc1703', 
+        'purple': 'b503fc', 
+        'orange': 'FF9733 ',
+        'black' : 'FFFFFF',
+        'light-blue': '0AE5E3', 
+        'pink': 'FF95AE',
+        'blue-green' : '95FFCA'
+}
+
 '''decorator that defines the url path
 where will be the home page of the site'''
 @app.route('/')
@@ -84,6 +98,11 @@ def define_entity():
 where to add,modify and delete training phrase'''
 @app.route('/modify_training_phrase', methods = ['POST', 'GET'])
 def modify_training_phrase():
+    color1 = 'black'
+    color2 = 'black'
+    '''if 'color' not in session:
+        session['color'] = None'''
+    
     connection = sqlite3.connect('NLPDatabase.db')
     '''creation of a 'dictionary cursor': after a fetchall or a fetchone
     it starts returning dictionary rows'''
@@ -111,6 +130,16 @@ def modify_training_phrase():
             '''the value accessible through the key 'selectTrainingPhrase'
             is stored in the variable "value"'''
             old_value = form_data['selectTrainingPhrase']
+            if old_value == '':
+                error1 = 'Errore nella modifica della frase di training'
+                color1 = 'red'
+                
+                phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+                
+                connection.close()
+                
+                return render_template('modify_training_phrase.html', phrases = phrases, error1 = error1, color1 = color1, color2 = color2)
+            
             '''the value accessible through the key 'newTrainingPhrase'
             is stored in the variable "value"'''
             new_value = form_data['newTrainingPhrase']
@@ -128,6 +157,15 @@ def modify_training_phrase():
             '''the value accessible through the key 'deleteTrainingPhrase'
             is stored in the variable "value"'''
             value = form_data['deleteTrainingPhrase']
+            if value == '':
+                error2 = 'Errore nella cancellazione della frase di training'
+                color2 = 'red'
+                
+                phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+                
+                connection.close()
+                
+                return render_template('modify_training_phrase.html', phrases = phrases, error2 = error2, color1 = color1, color2 = color2)
             
             cursor.execute('DELETE FROM TrainingPhrases WHERE Phrase = "' + value + '"')
             
@@ -140,11 +178,11 @@ def modify_training_phrase():
         
         connection.close()
         
-        return render_template('modify_training_phrase.html', phrases = phrases)
+        return render_template('modify_training_phrase.html', phrases = phrases, color1 = color1, color2 = color2)
     elif request.method == 'GET':
         phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
         
-        return render_template('modify_training_phrase.html', phrases = phrases)
+        return render_template('modify_training_phrase.html', phrases = phrases, color1 = color1, color2 = color2)
 
 '''decorator that defines the url path of the
 page where to write down training phrases'''
