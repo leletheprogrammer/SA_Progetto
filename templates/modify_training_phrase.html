@@ -55,9 +55,11 @@
 			</label>
 			<br>
 			<br>
-			<select class = "form-control" id = "selectTrainingPhrase" name = "selectTrainingPhrase">
-			<option selected>
-				Clicca qui per selezionare la frase di training da modificare
+			<select class = "form-control" name = "selectTrainingPhrase" style = "color: {{color1}}">
+			{% if not error1 %}
+				{% set error1 = "Clicca qui per selezionare la frase di training da modificare" %}
+			{% endif %}
+			<option selected label = "{{error1}}">
 				{% for row in phrases %}
 					<option>
 						{{row[0]}}
@@ -86,9 +88,11 @@
 			</label>
 			<br>
 			<br>
-			<select class = "form-control" id = "deleteTrainingPhrase" name = "deleteTrainingPhrase">
-			<option selected>
-				Clicca qui per selezionare la frase di training da cancellare
+			<select class = "form-control" name = "deleteTrainingPhrase" style = "color: {{color2}}">
+			{% if not error2 %}
+				{% set error2 = "Clicca qui per selezionare la frase di training da cancellare" %}
+			{% endif %}
+			<option selected label = "{{error2}}">
 				{% for row in phrases %}
 					<option>
 						{{row[0]}}
