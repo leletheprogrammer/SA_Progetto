@@ -112,7 +112,6 @@ def modify_training_phrase():
     if request.method == 'POST':
         #form is a MultiDict with the parsed form data from 'PUT' or 'POST'
         form_data = request.form
-        value = form_data['addTrainingPhrase']
         if (form_data['submitButton'] == 'addButton'):
             '''the value accessible through the key 'addTrainingPhrase'
             is stored in the variable "value"'''
