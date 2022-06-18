@@ -1,23 +1,52 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang = "en">
   <head>
-    <meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset = "utf-8">
+	<meta name = "viewport" content = "width=device-width, initial-scale=1">
+	<style>
+		input:invalid {
+			border: 5px solid red;
+		}
+
+		input:valid {
+			border: 5px double black;
+		}
+		
+		.form-control {
+			padding: 10px;
+		}
+		
+		.button {
+			border: none;
+			background-color: green;
+			color: white;
+			padding: 10px 16px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 16px;
+			margin: 4px 2px;
+			cursor: pointer;
+		}
+    </style>
     <title>
 		Create new Intent
 	</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
   </head>
   <body>
-    <form method="post">
-		<div class="form-group">
-			<label for="createIntent">
+    <form method = "POST">
+		<div>
+			<label for = "createIntent">
 				Crea un nuovo Intent
 			</label>
-			<input type="text" class="form-control" name="createIntent" placeholder="Inserisci Intent">
+			<br>
+			<br>
+			<input type = "text" class = "form-control" name = "createIntent" size = "215" placeholder = "Inserisci Intent" pattern = "[a-zA-Z0-9 ]+">
 		</div>
+		<br>
+		<button type = "submit" class = "button">
+			Invia
+		</button>
 	</form>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous">
-	</script>
   </body>
 </html>
