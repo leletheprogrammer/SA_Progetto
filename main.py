@@ -138,6 +138,12 @@ def modify_training_phrase():
             if (new_value.isspace() == False) and (new_value != ''):
                 #removes duplicated spaces
                 new_value = ' '.join(new_value.split())
+                if old_value == new_value:
+                    phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+                    
+                    connection.close()
+                    
+                    return render_template('modify_training_phrase.html', phrases = phrases, error1 = 'Errore: la frase da sostituire è uguale a quella inserita', color1 = 'red', color2 = 'black')
                 
                 selection = cursor.execute('SELECT Phrase FROM TrainingPhrases WHERE Phrase = "' + new_value + '"').fetchall()
                 if (not len(selection)):
