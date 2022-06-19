@@ -3,35 +3,10 @@
 	<head>
 		<meta charset = "UTF-8">
 		<meta name = "viewport" content = "width=device-width, initial-scale=1">
-		<style>
-			input:invalid {
-				border: 5px solid red;
-			}
-			
-			input:valid {
-				border: 5px double black;
-			}
-			
-			.form-control {
-				padding: 10px;
-			}
-			
-			.button {
-				border: none;
-				background-color: green;
-				color: white;
-				padding: 10px 16px;
-				text-align: center;
-				text-decoration: none;
-				display: inline-block;
-				font-size: 16px;
-				margin: 4px 2px;
-				cursor: pointer;
-			}
-		</style>
 		<title>
 			Create new Intent
 		</title>
+		<link rel = "stylesheet" href = "{{ url_for('static', filename='css/style.css') }}">
 	</head>
 	<body>
 		<form method = "POST">
