@@ -186,9 +186,44 @@ def modify_training_phrase():
 
 '''decorator that defines the url path of the
 page where to write down training phrases'''
-@app.route('/write_down_training')
+@app.route('/write_down_training', methods = ['POST', 'GET'])
 def write_down_training():
-	return 'write_down_training'
+	connection = sqlite3.connect('NLPDatabase.db')
+	connection.row_factory = sqlite3.Row
+	cursor = connection.cursor()
+	phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+	values = list()
+	if request.method == 'POST':
+		form_data = request.form
+		lello = ''
+		if ('phraseSelected' in form_data):
+				value = form_data['phraseSelected'].split()
+				for string in value:
+					if (not (string == ' ')):
+						values.append(string)
+		if ('submitButton' in form_data):
+			if (form_data['submitButton'] == 'selectButton'):
+				value = form_data['selectTrainingPhrase'].split()
+				for string in value:
+					if (not (string == ' ')):
+						values.append(string)
+			elif (form_data['submitButton'] == 'entityButton'):
+				value = form_data['phraseSelected'].split()
+				for string in value:
+					if (not (string == ' ')):
+						values.append(string)
+				for i in form_data.keys():
+					lello += i
+				return lello
+				for i in range(0, len(values)):
+					if (('entitySelected' + str(i + 1)) in form_data):
+						lello.append(form_data[('entitySelected' + str(i + 1))])
+				return str(lello)
+
+		connection.close()
+		return render_template('write_down_training.html', phrases = phrases, values = values, lello = lello)
+	elif request.method == 'GET':
+		return render_template('write_down_training.html', phrases = phrases)
 
 '''decorator that defines the url path
 of the page where to train the models'''
