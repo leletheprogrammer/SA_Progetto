@@ -82,7 +82,7 @@ def define_entity():
             #removes duplicated spaces
             value = ' '.join(value.split())
             
-            selection = cursor.execute('SELECT Category FROM NamedEntities WHERE Category = "' + value + '"').fetchall()
+            selection = cursor.execute('SELECT Entity FROM NamedEntities WHERE Entity = "' + value + '"').fetchall()
             if (not len(selection)):
                 cursor.execute('INSERT INTO NamedEntities VALUES("' + value + '")')
                 
@@ -98,11 +98,6 @@ def define_entity():
 where to add,modify and delete training phrase'''
 @app.route('/modify_training_phrase', methods = ['POST', 'GET'])
 def modify_training_phrase():
-    color1 = 'black'
-    color2 = 'black'
-    '''if 'color' not in session:
-        session['color'] = None'''
-    
     connection = sqlite3.connect('NLPDatabase.db')
     '''creation of a 'dictionary cursor': after a fetchall or a fetchone
     it starts returning dictionary rows'''
@@ -131,14 +126,11 @@ def modify_training_phrase():
             is stored in the variable "value"'''
             old_value = form_data['selectTrainingPhrase']
             if old_value == '':
-                error1 = 'Errore nella modifica della frase di training'
-                color1 = 'red'
-                
                 phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
                 
                 connection.close()
                 
-                return render_template('modify_training_phrase.html', phrases = phrases, error1 = error1, color1 = color1, color2 = color2)
+                return render_template('modify_training_phrase.html', phrases = phrases, error1 = 'Errore: non è stata selezionata nessuna frase di training', color1 = 'red', color2 = 'black')
             
             '''the value accessible through the key 'newTrainingPhrase'
             is stored in the variable "value"'''
@@ -153,19 +145,22 @@ def modify_training_phrase():
                     
                     #saves the changes made to the database
                     connection.commit()
+            else:
+                phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+                
+                connection.close()
+                
+                return render_template('modify_training_phrase.html', phrases = phrases, error1 = 'Errore: sono stati inseriti valori inadatti per la nuova frase di training', color1 = 'red', color2 = 'black')
         elif (form_data['submitButton'] == 'deleteButton'):
             '''the value accessible through the key 'deleteTrainingPhrase'
             is stored in the variable "value"'''
             value = form_data['deleteTrainingPhrase']
             if value == '':
-                error2 = 'Errore nella cancellazione della frase di training'
-                color2 = 'red'
-                
                 phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
                 
                 connection.close()
                 
-                return render_template('modify_training_phrase.html', phrases = phrases, error2 = error2, color1 = color1, color2 = color2)
+                return render_template('modify_training_phrase.html', phrases = phrases, error2 = 'Errore: non è stata selezionata nessuna frase di training', color1 = 'black', color2 = 'red')
             
             cursor.execute('DELETE FROM TrainingPhrases WHERE Phrase = "' + value + '"')
             
@@ -178,11 +173,11 @@ def modify_training_phrase():
         
         connection.close()
         
-        return render_template('modify_training_phrase.html', phrases = phrases, color1 = color1, color2 = color2)
+        return render_template('modify_training_phrase.html', phrases = phrases, color1 = 'black', color2 = 'black')
     elif request.method == 'GET':
         phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
         
-        return render_template('modify_training_phrase.html', phrases = phrases, color1 = color1, color2 = color2)
+        return render_template('modify_training_phrase.html', phrases = phrases, color1 = 'black', color2 = 'black')
 
 '''decorator that defines the url path of the
 page where to write down training phrases'''
