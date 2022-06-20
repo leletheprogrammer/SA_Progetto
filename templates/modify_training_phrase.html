@@ -1,110 +1,85 @@
 <!DOCTYPE html>
 <html lang = "en">
-  <head>
-    <meta charset = "utf-8">
-    <meta name = "viewport" content = "width=device-width, initial-scale=1">
-	<style>
-		input:invalid {
-			border: 5px solid red;
-		}
-
-		input:valid {
-			border: 5px double black;
-		}
-		
-		.form-control {
-			padding: 10px;
-		}
-		
-		.button {
-			border: none;
-			background-color: green;
-			color: white;
-			padding: 10px 16px;
-			text-align: center;
-			text-decoration: none;
-			display: inline-block;
-			font-size: 16px;
-			margin: 4px 2px;
-			cursor: pointer;
-		}
-    </style>
-    <title>
-		Add/Modify/Delete Training Phrase
-	</title>
-  </head>
-  <body>
-	<form method = "POST">
-		<div>
-			<label for = "addTrainingPhrase">
-				Aggiungi frase di training 
-			</label>
+	<head>
+		<meta charset = "UTF-8">
+		<meta name = "viewport" content = "width=device-width, initial-scale=1">
+		<title>
+			Add/Modify/Delete Training Phrase
+		</title>
+		<link rel = "stylesheet" href = "{{ url_for('static', filename='css/style.css') }}">
+	</head>
+	<body>
+		<form method = "POST">
+			<div>
+				<label for = "addTrainingPhrase">
+					Aggiungi frase di training
+				</label>
+				<br>
+				<br>
+				<input type = "text" class = "form-control" name = "addTrainingPhrase" size = "215" placeholder = "Scrivi qui per aggiungere una nuova frase di training" pattern = "[a-zA-Z0-9 ]+">
+			</div>
+			<br>
+			<button type = "submit" class = "button green-button" name = "submitButton" value = "addButton">
+				Invia nuova frase di training
+			</button>
 			<br>
 			<br>
-			<input type = "text" class = "form-control" name = "addTrainingPhrase" size = "215" placeholder = "Scrivi qui per aggiungere una nuova frase di training" pattern = "[a-zA-Z0-9 ]+">
-		</div>
-		<br>
-		<button type = "submit" class = "button" name = "submitButton" value = "addButton">
-			Invia nuova frase di training
-		</button>
-		<br>
-		<br>
-		<div>
-			<label for = "selectTrainingPhrase">
-				Seleziona la frase di training da modificare
-			</label>
-			<br>
-			<br>
-			<select class = "form-control" name = "selectTrainingPhrase" style = "color: {{color1}}">
-			{% if not error1 %}
-				{% set error1 = "Clicca qui per selezionare la frase di training da modificare" %}
-			{% endif %}
-			<option selected label = "{{error1}}">
-				{% for row in phrases %}
-					<option>
-						{{row[0]}}
+			<div>
+				<label for = "selectTrainingPhrase">
+					Seleziona la frase di training da modificare
+				</label>
+				<br>
+				<br>
+				<select class = "form-control" name = "selectTrainingPhrase" style = "color: {{ color1 }}">
+					{% if not error1 %}
+						{% set error1 = "Clicca qui per selezionare la frase di training da modificare" %}
+					{% endif %}
+					<option selected label = "{{ error1 }}">
+						{% for row in phrases %}
+						<option>
+							{{ row[0] }}
+						</option>
+						{% endfor %}
 					</option>
-				{% endfor %}
-			</option>
-			</select>
+				</select>
+				<br>
+				<br>
+				<label for = "newTrainingPhrase">
+					Inserisci la nuova frase di training
+				</label>
+				<br>
+				<br>
+				<input type = "text" class = "form-control" name = "newTrainingPhrase" size = "215" placeholder = "Scrivi qui per inserire la nuova frase di training" pattern = "[a-zA-Z0-9 ]+">
+			</div>
+			<br>
+			<button type = "submit" class = "button green-button" name = "submitButton" value = "modifyButton">
+				Sostituisci frase di training
+			</button>
 			<br>
 			<br>
-			<label for = "newTrainingPhrase">
-				Inserisci la nuova frase di training
-			</label>
-			<br>
-			<br>
-			<input type = "text" class = "form-control" name = "newTrainingPhrase" size = "215" placeholder = "Scrivi qui per inserire la nuova frase di training" pattern = "[a-zA-Z0-9 ]+">
-		</div>
-		<br>
-		<button type = "submit" class = "button" name = "submitButton" value = "modifyButton">
-			Sostituisci frase di training
-		</button>
-		<br>
-		<br>
-		<div>
-			<label for = "deleteTrainingPhrase">
-				Seleziona la frase di training da cancellare
-			</label>
-			<br>
-			<br>
-			<select class = "form-control" name = "deleteTrainingPhrase" style = "color: {{color2}}">
-			{% if not error2 %}
-				{% set error2 = "Clicca qui per selezionare la frase di training da cancellare" %}
-			{% endif %}
-			<option selected label = "{{error2}}">
-				{% for row in phrases %}
-					<option>
-						{{row[0]}}
+			<div>
+				<label for = "deleteTrainingPhrase">
+					Seleziona la frase di training da cancellare
+				</label>
+				<br>
+				<br>
+				<select class = "form-control" name = "deleteTrainingPhrase" style = "color: {{ color2 }}">
+					{% if not error2 %}
+						{% set error2 = "Clicca qui per selezionare la frase di training da cancellare" %}
+					{% endif %}
+					<option selected label = "{{ error2 }}">
+						{% for row in phrases %}
+						<option>
+							{{ row[0] }}
+						</option>
+						{% endfor %}
 					</option>
-				{% endfor %}
-			</option>
-			</select>
-		</div>
-		<br>
-		<button type = "submit" class = "button" name = "submitButton" value = "deleteButton">
-			Elimina frase di training
-		</button>
-	</form>
-  </body>
+				</select>
+			</div>
+			<br>
+			<button type = "submit" class = "button green-button" name = "submitButton" value = "deleteButton">
+				Elimina frase di training
+			</button>
+		</form>
+	</body>
 </html>

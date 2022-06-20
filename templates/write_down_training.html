@@ -1,78 +1,120 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang = "en">
 	<head>
-		<meta charset = "utf-8">
+		<meta charset = "UTF-8">
 		<meta name = "viewport" content = "width=device-width, initial-scale=1">
 		<title>
-			Write_Down_Training_Phrase
+			Write down Training Phrase
 		</title>
-		<link href = "https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel = "stylesheet" integrity = "sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin = "anonymous">
-		<style>
-			input[type = button] {
-				background-color : 'white';
-			}
-		</style>
+		<link rel = "stylesheet" href = "{{ url_for('static', filename='css/style.css') }}">
 	</head>
 	<body>
 		<form method = "POST">
-			<div class = "form-group">
+			<div>
 				<label for = "selectTrainingPhrase">
 					Seleziona la frase di training da annotare
 				</label>
-				<select class = "form-control" id = "selectTrainingPhrase" name = "selectTrainingPhrase">
-				<option selected label = "Clicca qui per selezionare la frase di training da modificare">
-					{% for row in phrases %}
+				<br>
+				<br>
+				<select class = "form-control" name = "selectTrainingPhrase">
+					<option selected label = "Clicca qui per selezionare la frase di training da sostituire">
+						{% for row in phrases %}
 						<option>
-							{{row[0]}}
+							{{ row[0] }}
 						</option>
-					{% endfor %}
-				</option>
+						{% endfor %}
+					</option>
 				</select>
 			</div>
-			<button type = "submit" class = "btn btn-primary" name = "submitButton" value = "selectButton">
-				Sostituisci frase di training
+			<br>
+			<button type = "submit" class = "button green-button" name = "submitButton" value = "selectButton">
+				Invia
 			</button>
+			<br>
+			<br>
 			{% if values %}
-				<div class = "form-group">
+				<div>
 					<label for = "phraseSelected">
-						Seleziona la Named Entity
+						Named Entity selezionata:
 					</label>
-					<input type = "text" class = "form-control" name = "phraseSelected" value = "{% for string in values %}{{string}} {% endfor %}" readonly = "true">
+					<input type = "text" class = "form-control" id = "phraseSelected" name = "phraseSelected" size = "150" value = "{% for string in values %}{% if not loop.last %}{{ string }} {% else %}{{ string }}{% endif %}{% endfor %}" readonly = "true">
+					<br>
+					<br>
 					<p>
 						Clicca l'entità presente nella training phrase
 					</p>
 					{% for string in values %}
-						<input type = "text" name = "entitySelected{{loop.index}}" value = "{{string}}" readonly = "true" onclick = "entitySelected(this)">
+						<input type = "button" class = "button" name = "entitySelected{{ loop.index }}" value = "{{ string }}" readonly = "true" onclick = "entitySelected(this, {{ loop.index }})">
 					{% endfor %}
-					<button type = "submit" class = "btn btn-primary" name = "submitButton" value = "entityButton">
-						Sostituisci frase di training
+					<select class = "form-control" name = "selectTrainingPhrase">
+						<option selected label = "Clicca qui per selezionare la frase di training da sostituire">
+							{% for row in entities %}
+							<option>
+								{{ row[0] }}
+							</option>
+							{% endfor %}
+						</option>
+					</select>
+					<br>
+					<br>
+					<input type = "text" class = "form-control" id = "trainingPhrase" name = "trainingPhrase" size = "150" value = "" readonly = "true">
+					<br>
+					<br>
+					<p id = "val"></p>
+					<button type = "submit" class = "button green-button" name = "submitButton" value = "entityButton">
+						Invia
 					</button>
-					{% if lello %}
-					<p>{{lello}}</p>
-					{% endif %}
 				</div>
 			{% endif %}
 		</form>
 		<script>
-			const element = document.getElementById("entitySelected1");
-			element.addEventListener("click", function() {
-				entitySelected(element);
-			});
-			document.addEventListener("click", function() {
-				document.body.style.backgroundColor = "red";
-			});
-			function entitySelected(element) {
-				if (!element.disabled) {
+			{% if values %}
+				let enabledArray = [];
+				{% for string in values %}
+					enabledArray.push(false);
+				{% endfor %}
+				const text = document.getElementById('trainingPhrase');
+				var substrings;
+				var i;
+				var j;
+				const phrase = document.getElementById('phraseSelected').value.split(' ');
+			{% endif %}
+			
+			function entitySelected(element, index) {
+				if (!enabledArray[index]) {
 					element.style.background = 'red';
 					
-					element.addEventListener("click", function() {
-						entitySelected(element);
-					});
+					substrings = text.value.split(' ');
+					document.getElementById('val').innerHTML = substrings;
+					i = 0;
+					j = 0;
+					while (i < phrase.length) {
+						if (phrase[i] == substrings[j]) {
+							j++;
+						}
+						i++;
+					}
+					
+					if (i != phrase.length) {
+						substrings.splice(j, element.value);
+					} else {
+						substrings.push(element.value);
+					}
+					
+					text.value = substrings.join(' ');
+				} else {
+					element.style.background = 'grey';
+					
+					substrings = text.value.split(' ');
+					var index = substrings.indexOf(element.value);
+					//document.getElementById('val').innerHTML = index;
+					if (index > -1) {
+						substrings.splice(index, 1);
+					}
+					
+					text.value = substrings.join(' ');
 				}
-				else {
-					element.style.background = 'white';
-					element.removeAttribute("disabled");
-				}
+				enabledArray[index] = !enabledArray[index];
 			}
 		</script>
 	</body>

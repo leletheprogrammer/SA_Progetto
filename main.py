@@ -82,7 +82,7 @@ def define_entity():
             #removes duplicated spaces
             value = ' '.join(value.split())
             
-            selection = cursor.execute('SELECT Category FROM NamedEntities WHERE Category = "' + value + '"').fetchall()
+            selection = cursor.execute('SELECT Entity FROM NamedEntities WHERE Entity = "' + value + '"').fetchall()
             if (not len(selection)):
                 cursor.execute('INSERT INTO NamedEntities VALUES("' + value + '")')
                 
@@ -98,11 +98,6 @@ def define_entity():
 where to add,modify and delete training phrase'''
 @app.route('/modify_training_phrase', methods = ['POST', 'GET'])
 def modify_training_phrase():
-    color1 = 'black'
-    color2 = 'black'
-    '''if 'color' not in session:
-        session['color'] = None'''
-    
     connection = sqlite3.connect('NLPDatabase.db')
     '''creation of a 'dictionary cursor': after a fetchall or a fetchone
     it starts returning dictionary rows'''
@@ -131,14 +126,11 @@ def modify_training_phrase():
             is stored in the variable "value"'''
             old_value = form_data['selectTrainingPhrase']
             if old_value == '':
-                error1 = 'Errore nella modifica della frase di training'
-                color1 = 'red'
-                
                 phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
                 
                 connection.close()
                 
-                return render_template('modify_training_phrase.html', phrases = phrases, error1 = error1, color1 = color1, color2 = color2)
+                return render_template('modify_training_phrase.html', phrases = phrases, error1 = 'Errore: non è stata selezionata nessuna frase di training', color1 = 'red', color2 = 'black')
             
             '''the value accessible through the key 'newTrainingPhrase'
             is stored in the variable "value"'''
@@ -146,6 +138,12 @@ def modify_training_phrase():
             if (new_value.isspace() == False) and (new_value != ''):
                 #removes duplicated spaces
                 new_value = ' '.join(new_value.split())
+                if old_value == new_value:
+                    phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+                    
+                    connection.close()
+                    
+                    return render_template('modify_training_phrase.html', phrases = phrases, error1 = 'Errore: la frase da sostituire è uguale a quella inserita', color1 = 'red', color2 = 'black')
                 
                 selection = cursor.execute('SELECT Phrase FROM TrainingPhrases WHERE Phrase = "' + new_value + '"').fetchall()
                 if (not len(selection)):
@@ -153,19 +151,22 @@ def modify_training_phrase():
                     
                     #saves the changes made to the database
                     connection.commit()
+            else:
+                phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+                
+                connection.close()
+                
+                return render_template('modify_training_phrase.html', phrases = phrases, error1 = 'Errore: sono stati inseriti valori inadatti per la nuova frase di training', color1 = 'red', color2 = 'black')
         elif (form_data['submitButton'] == 'deleteButton'):
             '''the value accessible through the key 'deleteTrainingPhrase'
             is stored in the variable "value"'''
             value = form_data['deleteTrainingPhrase']
             if value == '':
-                error2 = 'Errore nella cancellazione della frase di training'
-                color2 = 'red'
-                
                 phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
                 
                 connection.close()
                 
-                return render_template('modify_training_phrase.html', phrases = phrases, error2 = error2, color1 = color1, color2 = color2)
+                return render_template('modify_training_phrase.html', phrases = phrases, error2 = 'Errore: non è stata selezionata nessuna frase di training', color1 = 'black', color2 = 'red')
             
             cursor.execute('DELETE FROM TrainingPhrases WHERE Phrase = "' + value + '"')
             
@@ -178,11 +179,11 @@ def modify_training_phrase():
         
         connection.close()
         
-        return render_template('modify_training_phrase.html', phrases = phrases, color1 = color1, color2 = color2)
+        return render_template('modify_training_phrase.html', phrases = phrases, color1 = 'black', color2 = 'black')
     elif request.method == 'GET':
         phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
         
-        return render_template('modify_training_phrase.html', phrases = phrases, color1 = color1, color2 = color2)
+        return render_template('modify_training_phrase.html', phrases = phrases, color1 = 'black', color2 = 'black')
 
 '''decorator that defines the url path of the
 page where to write down training phrases'''
@@ -192,10 +193,10 @@ def write_down_training():
 	connection.row_factory = sqlite3.Row
 	cursor = connection.cursor()
 	phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+	entities = cursor.execute('SELECT Entity FROM NamedEntities').fetchall()
 	values = list()
 	if request.method == 'POST':
 		form_data = request.form
-		lello = ''
 		if ('phraseSelected' in form_data):
 				value = form_data['phraseSelected'].split()
 				for string in value:
@@ -203,6 +204,8 @@ def write_down_training():
 						values.append(string)
 		if ('submitButton' in form_data):
 			if (form_data['submitButton'] == 'selectButton'):
+				values.clear()
+				
 				value = form_data['selectTrainingPhrase'].split()
 				for string in value:
 					if (not (string == ' ')):
@@ -212,16 +215,10 @@ def write_down_training():
 				for string in value:
 					if (not (string == ' ')):
 						values.append(string)
-				for i in form_data.keys():
-					lello += i
-				return lello
-				for i in range(0, len(values)):
-					if (('entitySelected' + str(i + 1)) in form_data):
-						lello.append(form_data[('entitySelected' + str(i + 1))])
-				return str(lello)
+				
 
 		connection.close()
-		return render_template('write_down_training.html', phrases = phrases, values = values, lello = lello)
+		return render_template('write_down_training.html', phrases = phrases, values = values, entities = entities)
 	elif request.method == 'GET':
 		return render_template('write_down_training.html', phrases = phrases)
 
