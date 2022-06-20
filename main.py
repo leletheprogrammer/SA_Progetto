@@ -193,10 +193,10 @@ def write_down_training():
 	connection.row_factory = sqlite3.Row
 	cursor = connection.cursor()
 	phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
+	entities = cursor.execute('SELECT Entity FROM NamedEntities').fetchall()
 	values = list()
 	if request.method == 'POST':
 		form_data = request.form
-		lello = ''
 		if ('phraseSelected' in form_data):
 				value = form_data['phraseSelected'].split()
 				for string in value:
@@ -204,6 +204,8 @@ def write_down_training():
 						values.append(string)
 		if ('submitButton' in form_data):
 			if (form_data['submitButton'] == 'selectButton'):
+				values.clear()
+				
 				value = form_data['selectTrainingPhrase'].split()
 				for string in value:
 					if (not (string == ' ')):
@@ -213,16 +215,10 @@ def write_down_training():
 				for string in value:
 					if (not (string == ' ')):
 						values.append(string)
-				for i in form_data.keys():
-					lello += i
-				return lello
-				for i in range(0, len(values)):
-					if (('entitySelected' + str(i + 1)) in form_data):
-						lello.append(form_data[('entitySelected' + str(i + 1))])
-				return str(lello)
+				
 
 		connection.close()
-		return render_template('write_down_training.html', phrases = phrases, values = values, lello = lello)
+		return render_template('write_down_training.html', phrases = phrases, values = values, entities = entities)
 	elif request.method == 'GET':
 		return render_template('write_down_training.html', phrases = phrases)
 
