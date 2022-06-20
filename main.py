@@ -3,6 +3,9 @@ from module flask'''
 from flask import Flask, render_template, request
 #import module sqlite3
 import sqlite3
+import spacy
+from spacy.util import minibatch, compounding
+import random
 
 '''app represents the web application and
 __name__ represents the name of the current file'''
@@ -227,9 +230,118 @@ def write_down_training():
 
 '''decorator that defines the url path
 of the page where to train the models'''
-@app.route('/start_training_model')
+@app.route('/start_training_model', methods = ['POST', 'GET'])
 def start_training_model():
-	return 'start_training_model'
+	if request.method == 'POST':
+		form_data = request.form
+		if (form_data['submitButton'] == 'intentRecognition'):
+			pass
+		elif (form_data['submitButton'] == 'entitiesExtraction'):
+			trainingEntitiesExtraction()
+		elif (form_data['submitButton'] == 'sentimentAnalysis'):
+			pass
+		return render_template('start_training_model.html')
+	elif request.method == 'GET':
+		return render_template('start_training_model.html')
+
+def trainingEntitiesExtraction():
+
+    tup = {}
+    print(tup)
+
+    connection = sqlite3.connect('NLPDatabase.db')
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+
+    model = None
+
+    #create blank Language class
+    nlp = spacy.blank('it')
+    
+    print("Created blank 'it' model")
+
+    if 'ner' not in nlp.pipe_names:
+        ner = nlp.create_pipe('ner')
+        nlp.add_pipe('ner')
+    else:
+        ner = nlp.get_pipe('ner')
+
+    '''
+    entities = cursor.execute('SELECT Entity FROM NamedEntities').fetchall()
+
+    # Add new entity labels to entity recognizer
+    for i in entities:
+        for j in i:
+            ner.add_label(j)
+
+    training_data = []
+    training_phrases = cursor.execute('SELECT Phrase,Entities FROM TrainingPhrases').fetchall()
+
+    for phrases in training_phrases:
+        dict_entities = {}
+        entities_phrase = []
+        i = 0
+        j = 0
+        while phrases[1][i] != ']':
+            if (phrases[1][i] == '('):
+            	j = i
+            elif (phrases[1][i] == ')'):
+                entity_tuple = tupleEntity(phrases[1][j:i + 1])
+                entities_phrase.append(entity_tuple)
+            i += 1
+        dict_entities.setDefault("entities", entities_phrase)
+        phrase_tuple = (phrases[0], dict_entities)
+        training_data.append(phrase_tuple)
+
+
+    # Inititalizing optimizer
+    if model is None:
+        optimizer = nlp.begin_training()
+    else:
+        optimizer = nlp.entity.create_optimizer()
+
+    # Get names of other pipes to disable them during training to train # only NER and update the weights
+    other_pipes = [pipe for pipe in nlp.pipe_names if pipe != 'ner']
+    with nlp.disable_pipes(*other_pipes):  # only train NER
+        for itn in range(10): #numero di epoche(iperparametro)
+            random.shuffle(training_data)
+            losses = {}
+            batches = minibatch(training_data, size=compounding(4., 32., 1.001))
+            for batch in batches:
+                texts, annotations = zip(*batch)
+                #Updating the weights
+                nlp.update(texts, annotations, sgd = optimizer, drop = 0.35, losses = losses)
+                nlp.update(texts,annotations,sgd=optimizer,drop=0.35,losses=losses)
+                print('Losses', losses)
+                nlp.update(texts, annotations, sgd=optimizer, drop=0.35, losses=losses)
+                print('Losses', losses)
+
+    # Save model
+    if output_dir is not None:
+        output_dir = Path(#)
+        nlp.to_disk(output_dir)
+        print("Saved model to", output_dir)
+
+    '''
+
+def tupleEntity(entity):
+    firstIndex = ''
+    lastIndex = ''
+    i = 1
+    while(entity[i] != ','):
+        firstIndex += entity[i]
+        i += 1
+
+    i += 2
+
+    while(entity[i] != ','):
+        lastIndex += entity[i]
+        i += 1
+
+    i += 2
+
+    entityTuple = (int(firstIndex), int(lastIndex), entity[i:len(entity) - 1])
+    return entityTuple
 
 '''decorator that defines the url path of the
 page where to test and show results of the models'''
