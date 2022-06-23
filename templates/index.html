@@ -28,33 +28,25 @@
 		</h2>
 		<form>
 			<div class = "text-center">
-				<button type = "button" class = "button blue-button" name = "1button" onclick = "window.location.href='{{ url_for('create_intent') }}';">
+				<button type = "button" class = "button blue-button" name = "1button" onclick = "window.location.href='{{ url_for('intents') }}';">
 					<h3>
-						Creare nuovi Intent
+						Intents
 					</h3>
 				</button>
 			</div>
 			<br>
 			<div class = "text-center">
-				<button type = "button" class = "button green-button" name = "2button" onclick = "window.location.href='{{ url_for('define_entity') }}';">
+				<button type = "button" class = "button green-button" name = "2button" onclick = "window.location.href='{{ url_for('entities') }}';">
 					<h3>
-						Definire nuove Entita'
+						Entitities
 					</h3>
 				</button>
 			</div>
 			<br>
 			<div class = "text-center">
-				<button type = "button" class = "button red-button" name = "3button" onclick = "window.location.href='{{ url_for('modify_training_phrase') }}';">
+				<button type = "button" class = "button red-button" name = "3button" onclick = "window.location.href='{{ url_for('training_phrases') }}';">
 					<h3>
-						Aggiungere/Modificare/Eliminare frasi di training
-					</h3>
-				</button>
-			</div>
-			<br>
-			<div class = "text-center">
-				<button type = "button" class = "button yellow-button" name = "4button" onclick = "window.location.href='{{ url_for('write_down_training') }}';">
-					<h3>
-						Annotare le frasi di training
+						Dataset
 					</h3>
 				</button>
 			</div>

@@ -34,6 +34,14 @@ def index():
     return render_template('index.html')
 
 '''decorator that defines the url path
+where will be the intents'''
+@app.route('/intents')
+#standard name for functions that works on the home page
+def intents():
+    #offers a html template on the page
+    return render_template('intents.html')
+
+'''decorator that defines the url path
 of the page where to create intent'''
 @app.route('/create_intent', methods = ['POST', 'GET'])
 def create_intent():
@@ -66,6 +74,14 @@ def create_intent():
         return render_template('create_intent.html')
 
 '''decorator that defines the url path
+where will be the entities'''
+@app.route('/entities')
+#standard name for functions that works on the home page
+def entities():
+    #offers a html template on the page
+    return render_template('entities.html')
+
+'''decorator that defines the url path
 of the page where to define new entities'''
 @app.route('/define_entity', methods = ['POST', 'GET'])
 def define_entity():
@@ -96,6 +112,14 @@ def define_entity():
         return render_template('define_entity.html', form_data = form_data)
     elif request.method == 'GET':
         return render_template('define_entity.html')
+
+'''decorator that defines the url path
+where will be the intents'''
+@app.route('/training_phrases')
+#standard name for functions that works on the home page
+def training_phrases():
+    #offers a html template on the page
+    return render_template('training_phrases.html')
 
 '''decorator that defines the url path of the page
 where to add,modify and delete training phrase'''
