@@ -1,6 +1,6 @@
 '''import class Flask, methods render_template and request 
 from module flask'''
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 #import module sqlite3
 import sqlite3
 import spacy
@@ -46,19 +46,26 @@ def intents():
     if request.method == 'POST':
         typologies = cursor.execute('SELECT Typology FROM Intents').fetchall()
 
-        print("lello")
-
+        args = request.args
         form_data = request.form
-        for value in form_data.values():
-        	print(value)
 
+        if form_data['submitButton'] == 'Delete':
+            deleteIntent = args.get('deleteIntent')
+            cursor.execute("DELETE FROM Intents WHERE Typology = '" + deleteIntent + "'")
+            connection.commit()
+        updateIntent = args.get('updateIntent')
+        
         #offers a html template on the page
-        return render_template('intents.html', typologies = typologies)
+        return redirect(request.path)
     elif request.method == 'GET':
         typologies = cursor.execute('SELECT Typology FROM Intents').fetchall()
 
+        args = request.args
+        updateIntent = args.get('updateIntent')
+        deleteIntent = args.get('deleteIntent')
+
         #offers a html template on the page
-        return render_template('intents.html', typologies = typologies)
+        return render_template('intents.html', typologies = typologies, updateIntent = updateIntent, deleteIntent = deleteIntent)
 
 '''decorator that defines the url path
 of the page where to create intent'''
