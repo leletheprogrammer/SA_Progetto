@@ -53,8 +53,12 @@ def intents():
             deleteIntent = args.get('deleteIntent')
             cursor.execute("DELETE FROM Intents WHERE Typology = '" + deleteIntent + "'")
             connection.commit()
-        updateIntent = args.get('updateIntent')
-        
+        elif form_data['submitButton'] == 'Save':
+            updateIntent = args.get('updateIntent')
+            newIntent = form_data['newIntent']
+            cursor.execute("UPDATE Intents SET Typology = '" + newIntent + "' WHERE Typology = '" + updateIntent + "'")
+            connection.commit()
+
         #offers a html template on the page
         return redirect(request.path)
     elif request.method == 'GET':
