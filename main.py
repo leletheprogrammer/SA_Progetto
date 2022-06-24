@@ -35,11 +35,30 @@ def index():
 
 '''decorator that defines the url path
 where will be the intents'''
-@app.route('/intents')
+@app.route('/intents', methods = ['POST', 'GET'])
 #standard name for functions that works on the home page
 def intents():
-    #offers a html template on the page
-    return render_template('intents.html')
+    connection = sqlite3.connect('NLPDatabase.db')
+    '''creation of a 'dictionary cursor': after a fetchall or a fetchone
+    it starts returning dictionary rows'''
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+    if request.method == 'POST':
+        typologies = cursor.execute('SELECT Typology FROM Intents').fetchall()
+
+        print("lello")
+
+        form_data = request.form
+        for value in form_data.values():
+        	print(value)
+
+        #offers a html template on the page
+        return render_template('intents.html', typologies = typologies)
+    elif request.method == 'GET':
+        typologies = cursor.execute('SELECT Typology FROM Intents').fetchall()
+
+        #offers a html template on the page
+        return render_template('intents.html', typologies = typologies)
 
 '''decorator that defines the url path
 of the page where to create intent'''
