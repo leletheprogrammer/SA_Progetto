@@ -49,14 +49,18 @@ def intents():
         args = request.args
         form_data = request.form
 
-        if form_data['submitButton'] == 'Delete':
+        if form_data['submitButton'] == 'Elimina':
             deleteIntent = args.get('deleteIntent')
             cursor.execute("DELETE FROM Intents WHERE Typology = '" + deleteIntent + "'")
             connection.commit()
-        elif form_data['submitButton'] == 'Save':
+        elif form_data['submitButton'] == 'Modifica':
             updateIntent = args.get('updateIntent')
             newIntent = form_data['newIntent']
             cursor.execute("UPDATE Intents SET Typology = '" + newIntent + "' WHERE Typology = '" + updateIntent + "'")
+            connection.commit()
+        elif form_data['submitButton'] == 'Aggiungi':
+            newIntent = form_data['newIntent']
+            cursor.execute("INSERT INTO Intents VALUES('" + newIntent + "')")
             connection.commit()
 
         #offers a html template on the page
