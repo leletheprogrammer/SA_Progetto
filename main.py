@@ -122,8 +122,55 @@ where will be the entities'''
 @app.route('/entities')
 #standard name for functions that works on the home page
 def entities():
-    #offers a html template on the page
-    return render_template('entities.html')
+    page = int(request.args.get('page'))
+    if request.method == 'POST':
+        args = request.args
+        form_data = request.form
+
+        if form_data['submitButton'] == 'Elimina':
+            deleteEntity = args.get('deleteEntity')
+            mongo.db.entities.delete_one({'namedEntity': deleteEntity})
+        elif form_data['submitButton'] == 'Modifica':
+            updateEntity = args.get('updateEntity')
+            newEntity = form_data['newEntity']
+            
+            found = False
+            #iteration among the documents in the collection 'intents'
+            for entity in mongo.db.entities.find():
+                if entity['namedEntity'] == newEntity:
+                    found = not found
+                    break
+            
+            if not found:
+                mongo.db.entities.replace_one({'namedEntity': updateEntity}, {'namedEntity': newEntity})
+        elif form_data['submitButton'] == 'Aggiungi':
+            newEntity = form_data['newEntity']
+            
+            found = False
+            #iteration among the documents in the collection 'intents'
+            for entity in mongo.db.entities.find():
+                if entity['namedEntity'] == newEntity:
+                    found = not found
+                    break
+            
+            if not found:
+                mongo.db.entities.insert_one({'namedEntity': newEntity})
+
+        #offers a html template on the page
+        return redirect(url_for('entities', page = page))
+    elif request.method == 'GET':
+        namedEntities = []
+        #iteration among the documents in the collection 'intents'
+        for entity in mongo.db.entities.find():
+            #intent is a dict, so typologies is a list of dict
+            namedEntities.append(entity)
+
+        args = request.args
+        updateEntity = args.get('updateEntity')
+        deleteEntity = args.get('deleteEntity')
+
+        #offers a html template on the page
+        return render_template('entities.html', page = page, namedEntities = namedEntities, updateEntity = updateEntity, deleteEntity = deleteEntity)
 
 '''decorator that defines the url path
 of the page where to define new entities
