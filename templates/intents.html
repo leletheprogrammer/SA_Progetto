@@ -334,7 +334,11 @@ $(document).ready(function(){
 						{% if page == (((typologies| length) / 20) + 1)| int %}
 							<li class="page-item disabled"><a class="page-link">Successivo</a></li>
 						{% else %}
-							<li class="page-item"><a href="{{ url_for('intents', page = page + 1) }}" class="page-link">Successivo</a></li>
+							{% if (typologies| length) is divisibleby(20) %}
+								<li class="page-item disabled"><a class="page-link">Successivo</a></li>
+							{% else %}
+								<li class="page-item"><a href="{{ url_for('intents', page = page + 1) }}" class="page-link">Successivo</a></li>
+							{% endif %}
 						{% endif %}
 					</ul>
 				</div>

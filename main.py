@@ -50,16 +50,36 @@ def intents():
         elif form_data['submitButton'] == 'Modifica':
             updateIntent = args.get('updateIntent')
             newIntent = form_data['newIntent']
-            mongo.db.intents.replace_one({'typology': updateIntent}, {'typology': newIntent})
+            
+            found = False
+            #iteration among the documents in the collection 'intents'
+            for intent in mongo.db.intents.find():
+                if intent['typology'] == newIntent:
+                    found = not found
+                    break
+            
+            if not found:
+                mongo.db.intents.replace_one({'typology': updateIntent}, {'typology': newIntent})
         elif form_data['submitButton'] == 'Aggiungi':
             newIntent = form_data['newIntent']
-            mongo.db.intents.insert_one({'typology': newIntent})
+            
+            found = False
+            #iteration among the documents in the collection 'intents'
+            for intent in mongo.db.intents.find():
+                if intent['typology'] == newIntent:
+                    found = not found
+                    break
+            
+            if not found:
+                mongo.db.intents.insert_one({'typology': newIntent})
 
         #offers a html template on the page
         return redirect(url_for('intents', page = page))
     elif request.method == 'GET':
         typologies = []
+        #iteration among the documents in the collection 'intents'
         for intent in mongo.db.intents.find():
+            #intent is a dict, so typologies is a list of dict
             typologies.append(intent)
 
         args = request.args
