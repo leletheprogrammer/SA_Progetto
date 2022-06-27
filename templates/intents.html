@@ -296,34 +296,46 @@ $(document).ready(function(){
 					</thead>
 					<tbody>
 						{% for row in typologies %}
-							<tr>
-								<td>
-									<span class="custom-checkbox">
-										<input type="checkbox" id="checkbox{{ loop.index }}" name="options[]" value="1">
-										<label for="checkbox{{ loop.index }}"></label>
-									</span>
-								</td>
-								<td>
-									{{ row[0] }}
-								</td>
-								<td>
-									<a href="{{ url_for('intents', updateIntent = row[0] ) }}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
-									<a href="{{ url_for('intents', deleteIntent = row[0] ) }}" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
-								</td>
-							</tr>
+							{% if loop.index > ((page * 20) - 20) and loop.index <= (page * 20) %}
+								<tr>
+									<td>
+										<span class="custom-checkbox">
+											<input type="checkbox" id="checkbox{{ loop.index }}" name="options[]" value="1">
+											<label for="checkbox{{ loop.index }}"></label>
+										</span>
+									</td>
+									<td>
+										{{ row[0] }}
+									</td>
+									<td>
+										<a href="{{ url_for('intents', page = page, updateIntent = row[0] ) }}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
+										<a href="{{ url_for('intents', page = page, deleteIntent = row[0] ) }}" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
+									</td>
+								</tr>
+							{% endif %}
 						{% endfor %}
 					</tbody>
 				</table>
 				<div class="clearfix">
-					<div class="hint-text">Showing <b>5</b> out of <b>25</b> entries</div>
+					<div class="hint-text">Intents mostrati compresi tra <b>{{ page * 20 - 19 }}</b>-<b>{% if page == (((typologies| length) / 20) + 1)| int %}{{ (typologies| length) }}{% else %}{{ page * 20 }}{% endif %}</b></div>
 					<ul class="pagination">
-						<li class="page-item disabled"><a href="#">Previous</a></li>
-						<li class="page-item"><a href="#" class="page-link">1</a></li>
-						<li class="page-item"><a href="#" class="page-link">2</a></li>
-						<li class="page-item active"><a href="#" class="page-link">3</a></li>
-						<li class="page-item"><a href="#" class="page-link">4</a></li>
-						<li class="page-item"><a href="#" class="page-link">5</a></li>
-						<li class="page-item"><a href="#" class="page-link">Next</a></li>
+						{% if page == 1 %}
+							<li class="page-item disabled"><a>Precedente</a></li>
+						{% else %}
+							<li class="page-item"><a href="{{ url_for('intents', page = page - 1) }}">Precedente</a></li>
+						{% endif %}
+						{% for i in range (1, typologies| length + 1, 20) %}
+							{% if i >= ((page * 20) - 20) and i < (page * 20) %}
+								<li class="page-item active"><a class="page-link">{{ page }}</a></li>
+							{% else %}
+								<li class="page-item"><a href="{{ url_for('intents', page = ((i / 20)| int) + 1 ) }}" class="page-link">{{ ((i / 20)| int) + 1 }}</a></li>
+							{% endif %}
+						{% endfor %}
+						{% if page == (((typologies| length) / 20) + 1)| int %}
+							<li class="page-item disabled"><a class="page-link">Successivo</a></li>
+						{% else %}
+							<li class="page-item"><a href="{{ url_for('intents', page = page + 1) }}" class="page-link">Successivo</a></li>
+						{% endif %}
 					</ul>
 				</div>
 			</div>
@@ -336,16 +348,16 @@ $(document).ready(function(){
 				<form method = "POST">
 					<div class="modal-header">						
 						<h4 class="modal-title">Aggiungi Intent</h4>
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<button type="submit" name = "submitButton" class="close" aria-hidden="true">&times;</button>
 					</div>
 					<div class="modal-body">					
 						<div class="form-group">
 							<label>Intent</label>
-							<input name = "newIntent" type="text" class="form-control" required>
+							<input name = "newIntent" type="text" class="form-control">
 						</div>			
 					</div>
 					<div class="modal-footer">
-						<input type="button" class="btn btn-default" data-dismiss="modal" value="Indietro">
+						<input type="submit" name = "submitButton" class="btn btn-default" value="Indietro">
 						<input type="submit" name = "submitButton" class="btn btn-success" value="Aggiungi">
 					</div>
 				</form>
@@ -359,16 +371,16 @@ $(document).ready(function(){
 				<form method = "POST">
 					<div class="modal-header">						
 						<h4 class="modal-title">Modifica Intent</h4>
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<button type="submit" name = "submitButton" class="close" aria-hidden="true">&times;</button>
 					</div>
 					<div class="modal-body">					
 						<div class="form-group">
 							<label>Intent</label>
-							<input name = "newIntent" type="text" class="form-control" required>
+							<input name = "newIntent" type="text" class="form-control">
 						</div>				
 					</div>
 					<div class="modal-footer">
-						<input type="button" class="btn btn-default" data-dismiss="modal" value="Indietro">
+						<input type="submit" name = "submitButton" class="btn btn-default" value="Indietro">
 						<input type="submit" name = "submitButton" class="btn btn-info" value="Modifica">
 					</div>
 				</form>
@@ -382,14 +394,14 @@ $(document).ready(function(){
 				<form method = "POST">
 					<div class="modal-header">						
 						<h4 class="modal-title">Cancella Intent</h4>
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<button type="submit" name = "submitButton" class="close" aria-hidden="true">&times;</button>
 					</div>
 					<div class="modal-body">					
 						<p>Sei sicuro di voler cancellare questo intent?</p>
 						<p class="text-warning"><small>Questa azione non e' reversibile.</small></p>
 					</div>
 					<div class="modal-footer">
-						<input type="button" class="btn btn-default" data-dismiss="modal" value="Indietro">
+						<input type="submit" name = "submitButton" class="btn btn-default" value="Indietro">
 						<input type="submit" name = "submitButton" class="btn btn-danger" value="Elimina">
 					</div>
 				</form>
