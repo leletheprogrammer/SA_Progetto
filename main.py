@@ -119,7 +119,7 @@ def create_intent():
 
 '''decorator that defines the url path
 where will be the entities'''
-@app.route('/entities')
+@app.route('/entities', methods = ['POST', 'GET'])
 #standard name for functions that works on the home page
 def entities():
     page = int(request.args.get('page'))

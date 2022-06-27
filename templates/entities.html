@@ -310,11 +310,11 @@ $(document).ready(function(){
 										</span>
 									</td>
 									<td>
-										{{ row['namedEntities'] }}
+										{{ row['namedEntity'] }}
 									</td>
 									<td>
-										<a href="{{ url_for('Entities', page = page, updateEntity = row['typology'] ) }}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
-										<a href="{{ url_for('Entities', page = page, deleteEntity = row['typology'] ) }}" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
+										<a href="{{ url_for('entities', page = page, updateEntity = row['namedEntity'] ) }}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
+										<a href="{{ url_for('entities', page = page, deleteEntity = row['namedEntity'] ) }}" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
 									</td>
 								</tr>
 							{% endif %}
