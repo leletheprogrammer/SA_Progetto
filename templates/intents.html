@@ -236,6 +236,11 @@
 	}	
 </style>
 <script>
+function clean(id) {
+	document.getElementById(id).value = '';
+	$('#addIntent').modal('hide');
+}
+
 $(document).ready(function(){
 	// Activate tooltip
 	$('[data-toggle="tooltip"]').tooltip();
@@ -278,7 +283,7 @@ $(document).ready(function(){
 							<h2>Tabella degli Intents</h2>
 						</div>
 						<div class="col-xs-6">
-							<a href = "#addIntent" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i> <span>Crea nuovo intent</span></a>
+							<a href="#addIntent" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i> <span>Crea nuovo intent</span></a>
 						</div>
 					</div>
 				</div>
@@ -305,11 +310,11 @@ $(document).ready(function(){
 										</span>
 									</td>
 									<td>
-										{{ row[0] }}
+										{{ row['typology'] }}
 									</td>
 									<td>
-										<a href="{{ url_for('intents', page = page, updateIntent = row[0] ) }}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
-										<a href="{{ url_for('intents', page = page, deleteIntent = row[0] ) }}" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
+										<a href="{{ url_for('intents', page = page, updateIntent = row['typology'] ) }}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
+										<a href="{{ url_for('intents', page = page, deleteIntent = row['typology'] ) }}" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
 									</td>
 								</tr>
 							{% endif %}
@@ -334,7 +339,11 @@ $(document).ready(function(){
 						{% if page == (((typologies| length) / 20) + 1)| int %}
 							<li class="page-item disabled"><a class="page-link">Successivo</a></li>
 						{% else %}
-							<li class="page-item"><a href="{{ url_for('intents', page = page + 1) }}" class="page-link">Successivo</a></li>
+							{% if (typologies| length) is divisibleby(20) %}
+								<li class="page-item disabled"><a class="page-link">Successivo</a></li>
+							{% else %}
+								<li class="page-item"><a href="{{ url_for('intents', page = page + 1) }}" class="page-link">Successivo</a></li>
+							{% endif %}
 						{% endif %}
 					</ul>
 				</div>
@@ -348,17 +357,17 @@ $(document).ready(function(){
 				<form method = "POST">
 					<div class="modal-header">						
 						<h4 class="modal-title">Aggiungi Intent</h4>
-						<button type="submit" name = "submitButton" class="close" aria-hidden="true">&times;</button>
+						<button type="button" class="close" aria-hidden="true" onclick="clean('add')">&times;</button>
 					</div>
-					<div class="modal-body">					
+					<div class="modal-body">
 						<div class="form-group">
 							<label>Intent</label>
-							<input name = "newIntent" type="text" class="form-control">
+							<input name="newIntent" id="add" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+" required>
 						</div>			
 					</div>
 					<div class="modal-footer">
-						<input type="submit" name = "submitButton" class="btn btn-default" value="Indietro">
-						<input type="submit" name = "submitButton" class="btn btn-success" value="Aggiungi">
+						<input type="button" class="btn btn-default" value="Indietro" onclick="clean('add')">
+						<input type="submit" name="submitButton" class="btn btn-success" value="Aggiungi">
 					</div>
 				</form>
 			</div>
@@ -371,17 +380,17 @@ $(document).ready(function(){
 				<form method = "POST">
 					<div class="modal-header">						
 						<h4 class="modal-title">Modifica Intent</h4>
-						<button type="submit" name = "submitButton" class="close" aria-hidden="true">&times;</button>
+						<button type="submit" name="submitButton" class="close" aria-hidden="true">&times;</button>
 					</div>
-					<div class="modal-body">					
+					<div class="modal-body">
 						<div class="form-group">
 							<label>Intent</label>
-							<input name = "newIntent" type="text" class="form-control">
+							<input name="newIntent" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+">
 						</div>				
 					</div>
 					<div class="modal-footer">
-						<input type="submit" name = "submitButton" class="btn btn-default" value="Indietro">
-						<input type="submit" name = "submitButton" class="btn btn-info" value="Modifica">
+						<input type="submit" name="submitButton" class="btn btn-default" value="Indietro">
+						<input type="submit" name="submitButton" class="btn btn-info" value="Modifica">
 					</div>
 				</form>
 			</div>
@@ -394,15 +403,15 @@ $(document).ready(function(){
 				<form method = "POST">
 					<div class="modal-header">						
 						<h4 class="modal-title">Cancella Intent</h4>
-						<button type="submit" name = "submitButton" class="close" aria-hidden="true">&times;</button>
+						<button type="submit" name="submitButton" class="close" aria-hidden="true">&times;</button>
 					</div>
 					<div class="modal-body">					
 						<p>Sei sicuro di voler cancellare questo intent?</p>
 						<p class="text-warning"><small>Questa azione non e' reversibile.</small></p>
 					</div>
 					<div class="modal-footer">
-						<input type="submit" name = "submitButton" class="btn btn-default" value="Indietro">
-						<input type="submit" name = "submitButton" class="btn btn-danger" value="Elimina">
+						<input type="submit" name="submitButton" class="btn btn-default" value="Indietro">
+						<input type="submit" name="submitButton" class="btn btn-danger" value="Elimina">
 					</div>
 				</form>
 			</div>
