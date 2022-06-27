@@ -1,6 +1,6 @@
 '''import class Flask, methods render_template and request 
 from module flask'''
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 #import module sqlite3
 import sqlite3
 import spacy
@@ -35,11 +35,46 @@ def index():
 
 '''decorator that defines the url path
 where will be the intents'''
-@app.route('/intents')
+@app.route('/intents', methods = ['POST', 'GET'])
 #standard name for functions that works on the home page
 def intents():
-    #offers a html template on the page
-    return render_template('intents.html')
+    page = int(request.args.get('page'))
+    connection = sqlite3.connect('NLPDatabase.db')
+    '''creation of a 'dictionary cursor': after a fetchall or a fetchone
+    it starts returning dictionary rows'''
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+    if request.method == 'POST':
+        typologies = cursor.execute('SELECT Typology FROM Intents').fetchall()
+
+        args = request.args
+        form_data = request.form
+
+        if form_data['submitButton'] == 'Elimina':
+            deleteIntent = args.get('deleteIntent')
+            cursor.execute("DELETE FROM Intents WHERE Typology = '" + deleteIntent + "'")
+            connection.commit()
+        elif form_data['submitButton'] == 'Modifica':
+            updateIntent = args.get('updateIntent')
+            newIntent = form_data['newIntent']
+            cursor.execute("UPDATE Intents SET Typology = '" + newIntent + "' WHERE Typology = '" + updateIntent + "'")
+            connection.commit()
+        elif form_data['submitButton'] == 'Aggiungi':
+            newIntent = form_data['newIntent']
+            cursor.execute("INSERT INTO Intents VALUES('" + newIntent + "')")
+            connection.commit()
+
+        #offers a html template on the page
+        return redirect(url_for('intents', page = page))
+    elif request.method == 'GET':
+        typologies = cursor.execute('SELECT Typology FROM Intents').fetchall()
+
+        args = request.args
+        updateIntent = args.get('updateIntent')
+        deleteIntent = args.get('deleteIntent')
+
+        #offers a html template on the page
+        return render_template('intents.html', page = page, typologies = typologies, updateIntent = updateIntent, deleteIntent = deleteIntent)
 
 '''decorator that defines the url path
 of the page where to create intent'''
