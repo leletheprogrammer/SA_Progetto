@@ -305,11 +305,11 @@ $(document).ready(function(){
 										</span>
 									</td>
 									<td>
-										{{ row[0] }}
+										{{ row['typology'] }}
 									</td>
 									<td>
-										<a href="{{ url_for('intents', page = page, updateIntent = row[0] ) }}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
-										<a href="{{ url_for('intents', page = page, deleteIntent = row[0] ) }}" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
+										<a href="{{ url_for('intents', page = page, updateIntent = row['typology'] ) }}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
+										<a href="{{ url_for('intents', page = page, deleteIntent = row['typology'] ) }}" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
 									</td>
 								</tr>
 							{% endif %}

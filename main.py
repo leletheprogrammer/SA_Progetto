@@ -1,15 +1,16 @@
 '''import class Flask, methods render_template and request 
 from module flask'''
 from flask import Flask, render_template, request, redirect, url_for
-#import module sqlite3
-import sqlite3
-import spacy
-from spacy.util import minibatch, compounding
-import random
+from flask_pymongo import PyMongo
+#import spacy
+#from spacy.util import minibatch, compounding
+#import random
 
 '''app represents the web application and
 __name__ represents the name of the current file'''
 app = Flask(__name__)
+
+mongo = PyMongo(app, 'mongodb://localhost:27017/NLPDatabase', connect = True)
 
 #colors
 color = {
@@ -39,35 +40,27 @@ where will be the intents'''
 #standard name for functions that works on the home page
 def intents():
     page = int(request.args.get('page'))
-    connection = sqlite3.connect('NLPDatabase.db')
-    '''creation of a 'dictionary cursor': after a fetchall or a fetchone
-    it starts returning dictionary rows'''
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
     if request.method == 'POST':
-        typologies = cursor.execute('SELECT Typology FROM Intents').fetchall()
-
         args = request.args
         form_data = request.form
 
         if form_data['submitButton'] == 'Elimina':
             deleteIntent = args.get('deleteIntent')
-            cursor.execute("DELETE FROM Intents WHERE Typology = '" + deleteIntent + "'")
-            connection.commit()
+            mongo.db.intents.delete_one({'typology': deleteIntent})
         elif form_data['submitButton'] == 'Modifica':
             updateIntent = args.get('updateIntent')
             newIntent = form_data['newIntent']
-            cursor.execute("UPDATE Intents SET Typology = '" + newIntent + "' WHERE Typology = '" + updateIntent + "'")
-            connection.commit()
+            mongo.db.intents.replace_one({'typology': updateIntent}, {'typology': newIntent})
         elif form_data['submitButton'] == 'Aggiungi':
             newIntent = form_data['newIntent']
-            cursor.execute("INSERT INTO Intents VALUES('" + newIntent + "')")
-            connection.commit()
+            mongo.db.intents.insert_one({'typology': newIntent})
 
         #offers a html template on the page
         return redirect(url_for('intents', page = page))
     elif request.method == 'GET':
-        typologies = cursor.execute('SELECT Typology FROM Intents').fetchall()
+        typologies = []
+        for intent in mongo.db.intents.find():
+            typologies.append(intent)
 
         args = request.args
         updateIntent = args.get('updateIntent')
@@ -77,20 +70,16 @@ def intents():
         return render_template('intents.html', page = page, typologies = typologies, updateIntent = updateIntent, deleteIntent = deleteIntent)
 
 '''decorator that defines the url path
-of the page where to create intent'''
+of the page where to create intent
 @app.route('/create_intent', methods = ['POST', 'GET'])
 def create_intent():
     if request.method == 'POST':
         connection = sqlite3.connect('NLPDatabase.db')
-        '''creation of a 'dictionary cursor': after a fetchall or a fetchone
-        it starts returning dictionary rows'''
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         
         #form is a MultiDict with the parsed form data from 'PUT' or 'POST'
         form_data = request.form
-        '''the value accessible through the key 'createIntent'
-        is stored in the variable "value"'''
         value = form_data['createIntent']
         if (value.isspace() == False) and (value != ''):
             #removes duplicated spaces
@@ -106,7 +95,7 @@ def create_intent():
         
         return render_template('create_intent.html', form_data = form_data)
     elif request.method == 'GET':
-        return render_template('create_intent.html')
+        return render_template('create_intent.html')'''
 
 '''decorator that defines the url path
 where will be the entities'''
@@ -117,20 +106,16 @@ def entities():
     return render_template('entities.html')
 
 '''decorator that defines the url path
-of the page where to define new entities'''
+of the page where to define new entities
 @app.route('/define_entity', methods = ['POST', 'GET'])
 def define_entity():
     if request.method == 'POST':
         connection = sqlite3.connect('NLPDatabase.db')
-        '''creation of a 'dictionary cursor': after a fetchall or a fetchone
-        it starts returning dictionary rows'''
         connection.row_factory = sqlite3.Row
         cursor = connection.cursor()
         
         #form is a MultiDict with the parsed form data from 'PUT' or 'POST'
         form_data = request.form
-        '''the value accessible through the key 'insertEntity'
-        is stored in the variable "value"'''
         value = form_data['insertEntity']
         if (value.isspace() == False) and (value != ''):
             #removes duplicated spaces
@@ -146,7 +131,7 @@ def define_entity():
         
         return render_template('define_entity.html', form_data = form_data)
     elif request.method == 'GET':
-        return render_template('define_entity.html')
+        return render_template('define_entity.html')'''
 
 '''decorator that defines the url path
 where will be the intents'''
@@ -157,12 +142,10 @@ def training_phrases():
     return render_template('training_phrases.html')
 
 '''decorator that defines the url path of the page
-where to add,modify and delete training phrase'''
+where to add,modify and delete training phrase
 @app.route('/modify_training_phrase', methods = ['POST', 'GET'])
 def modify_training_phrase():
     connection = sqlite3.connect('NLPDatabase.db')
-    '''creation of a 'dictionary cursor': after a fetchall or a fetchone
-    it starts returning dictionary rows'''
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
     
@@ -170,8 +153,6 @@ def modify_training_phrase():
         #form is a MultiDict with the parsed form data from 'PUT' or 'POST'
         form_data = request.form
         if (form_data['submitButton'] == 'addButton'):
-            '''the value accessible through the key 'addTrainingPhrase'
-            is stored in the variable "value"'''
             value = form_data['addTrainingPhrase']
             if (value.isspace() == False) and (value != ''):
                 #removes duplicated spaces
@@ -184,8 +165,6 @@ def modify_training_phrase():
                     #saves the changes made to the database
                     connection.commit()
         elif (form_data['submitButton'] == 'modifyButton'):
-            '''the value accessible through the key 'selectTrainingPhrase'
-            is stored in the variable "value"'''
             old_value = form_data['selectTrainingPhrase']
             if old_value == '':
                 phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
@@ -194,8 +173,6 @@ def modify_training_phrase():
                 
                 return render_template('modify_training_phrase.html', phrases = phrases, error1 = 'Errore: non è stata selezionata nessuna frase di training', color1 = 'red', color2 = 'black')
             
-            '''the value accessible through the key 'newTrainingPhrase'
-            is stored in the variable "value"'''
             new_value = form_data['newTrainingPhrase']
             if (new_value.isspace() == False) and (new_value != ''):
                 #removes duplicated spaces
@@ -220,8 +197,6 @@ def modify_training_phrase():
                 
                 return render_template('modify_training_phrase.html', phrases = phrases, error1 = 'Errore: sono stati inseriti valori inadatti per la nuova frase di training', color1 = 'red', color2 = 'black')
         elif (form_data['submitButton'] == 'deleteButton'):
-            '''the value accessible through the key 'deleteTrainingPhrase'
-            is stored in the variable "value"'''
             value = form_data['deleteTrainingPhrase']
             if value == '':
                 phrases = cursor.execute('SELECT Phrase FROM TrainingPhrases').fetchall()
@@ -247,8 +222,8 @@ def modify_training_phrase():
         
         return render_template('modify_training_phrase.html', phrases = phrases, color1 = 'black', color2 = 'black')
 
-'''decorator that defines the url path of the
-page where to write down training phrases'''
+decorator that defines the url path of the
+page where to write down training phrases
 @app.route('/write_down_training', methods = ['POST', 'GET'])
 def write_down_training():
 	connection = sqlite3.connect('NLPDatabase.db')
@@ -282,7 +257,7 @@ def write_down_training():
 		connection.close()
 		return render_template('write_down_training.html', phrases = phrases, values = values, entities = entities)
 	elif request.method == 'GET':
-		return render_template('write_down_training.html', phrases = phrases)
+		return render_template('write_down_training.html', phrases = phrases)'''
 
 '''decorator that defines the url path
 of the page where to train the models'''
@@ -301,7 +276,7 @@ def start_training_model():
 		return render_template('start_training_model.html')
 
 def trainingEntitiesExtraction():
-
+    '''
     tup = {}
     print(tup)
 
@@ -321,8 +296,7 @@ def trainingEntitiesExtraction():
         nlp.add_pipe('ner')
     else:
         ner = nlp.get_pipe('ner')
-
-    '''
+    
     entities = cursor.execute('SELECT Entity FROM NamedEntities').fetchall()
 
     # Add new entity labels to entity recognizer
@@ -376,9 +350,7 @@ def trainingEntitiesExtraction():
     if output_dir is not None:
         output_dir = Path(#)
         nlp.to_disk(output_dir)
-        print("Saved model to", output_dir)
-
-    '''
+        print("Saved model to", output_dir)'''
 
 def tupleEntity(entity):
     firstIndex = ''
