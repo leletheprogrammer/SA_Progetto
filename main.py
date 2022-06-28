@@ -40,6 +40,9 @@ where will be the intents'''
 #standard name for functions that works on the home page
 def intents():
     page = int(request.args.get('page'))
+    numberIntents = mongo.db.intents.estimated_document_count()
+    if (page < 1 or (page > 1 and ((int(numberIntents / 20) + 1) < page) or (numberIntents % 20 == 0 and  numberIntents / 20 < page))):
+        return redirect(url_for('intents', page = 1))
     if request.method == 'POST':
         form_data = request.form
 
@@ -119,6 +122,9 @@ where will be the entities'''
 #standard name for functions that works on the home page
 def entities():
     page = int(request.args.get('page'))
+    numberEntities = mongo.db.entities.estimated_document_count()
+    if (page < 1 or (page > 1 and ((int(numberEntities / 20) + 1) < page) or (numberEntities % 20 == 0 and  numberEntities / 20 < page))):
+        return redirect(url_for('entities', page = 1))
     if request.method == 'POST':
         form_data = request.form
 

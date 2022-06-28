@@ -334,7 +334,11 @@ $(document).ready(function(){
 					</tbody>
 				</table>
 				<div class="clearfix">
-					<div class="hint-text">Intents mostrati compresi tra <b>{{ page * 20 - 19 }}</b>-<b>{% if page == (((typologies| length) / 20) + 1)| int %}{{ (typologies| length) }}{% else %}{{ page * 20 }}{% endif %}</b></div>
+					{% if (typologies| length) == 0 %}
+						<div class="hint-text">La tabella degli intents è vuota</div>
+					{% else %}
+						<div class="hint-text">Intents mostrati compresi tra <b>{{ page * 20 - 19 }}</b>-<b>{% if page == (((typologies| length) / 20) + 1)| int %}{{ (typologies| length) }}{% else %}{{ page * 20 }}{% endif %}</b></div>
+					{% endif %}
 					<ul class="pagination">
 						{% if page == 1 %}
 							<li class="page-item disabled"><a>Precedente</a></li>
