@@ -270,14 +270,16 @@ $(document).ready(function(){
 	});
 	
 	{% for row in typologies %}
-		var modifyIntent = document.getElementById('modify{{ loop.index }}');
-		modifyIntent.addEventListener('click', function(){
-			modifyDeleteClicked('{{ row['typology'] }}', 'oldModifyIntent', '#editIntent');
-		});
-		var deleteIntent = document.getElementById('delete{{ loop.index }}');
-		deleteIntent.addEventListener('click', function(){
-			modifyDeleteClicked('{{ row['typology'] }}', 'oldDeleteIntent', '#deleteIntent');
-		});
+		{% if loop.index > ((page * 20) - 20) and loop.index <= (page * 20) %}
+			var modifyIntent = document.getElementById('modify{{ loop.index }}');
+			modifyIntent.addEventListener('click', function(){
+				modifyDeleteClicked('{{ row['typology'] }}', 'oldModifyIntent', '#editIntent');
+			});
+			var deleteIntent = document.getElementById('delete{{ loop.index }}');
+			deleteIntent.addEventListener('click', function(){
+				modifyDeleteClicked('{{ row['typology'] }}', 'oldDeleteIntent', '#deleteIntent');
+			});
+		{% endif %}
 	{% endfor %}
 	
 });

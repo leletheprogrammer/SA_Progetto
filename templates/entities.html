@@ -270,17 +270,20 @@ $(document).ready(function(){
 	});
 	
 	{% for row in namedEntities %}
-		var modifyEntity = document.getElementById('modify{{ loop.index }}');
-		modifyEntity.addEventListener('click', function(){
-			modifyDeleteClicked('{{ row['namedEntity'] }}', 'oldModifyEntity', '#editEntity');
-		});
-		var deleteEntity = document.getElementById('delete{{ loop.index }}');
-		deleteEntity.addEventListener('click', function(){
-			modifyDeleteClicked('{{ row['namedEntity'] }}', 'oldDeleteEntity', '#deleteEntity');
-		});
+		{% if loop.index > ((page * 20) - 20) and loop.index <= (page * 20) %}
+			var modifyEntity = document.getElementById('modify{{ loop.index }}');
+			modifyEntity.addEventListener('click', function(){
+				modifyDeleteClicked('{{ row['namedEntity'] }}', 'oldModifyEntity', '#editEntity');
+			});
+			var deleteEntity = document.getElementById('delete{{ loop.index }}');
+			deleteEntity.addEventListener('click', function(){
+				modifyDeleteClicked('{{ row['namedEntity'] }}', 'oldDeleteEntity', '#deleteEntity');
+			});
+		{% endif %}
 	{% endfor %}
 	
 });
+
 </script>
 </head>
 <body>
