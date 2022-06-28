@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang = "en">
+	<head>
+		<meta charset = "UTF-8">
+		<meta name = "viewport" content = "width=device-width, initial-scale=1">
+		<title>
+			Addestramento Modelli NLP
+		</title>
+		<link rel = "stylesheet" href = "{{ url_for('static', filename='css/style.css') }}">
+	</head>
+	<body>
+		<h2>
+			<div class = "text-center">
+				<p>
+					Benvenuto nella Home page del sito!
+				</p>
+			</div>
+			<div class = "text-center">
+				<p>
+					Qui potrai addestrare i tre modelli di NLP.
+				</p>
+			</div>
+			<div class = "text-center">
+				<p>
+					Seleziona una delle operazioni tra le seguenti:
+				</p>
+			</div>
+		</h2>
+		<form>
+			<div class = "text-center">
+				<button type = "button" class = "button blue-button" name = "1button" onclick = "window.location.href='{{ url_for('intents', page = 1) }}';">
+					<h3>
+						Intents
+					</h3>
+				</button>
+			</div>
+			<br>
+			<div class = "text-center">
+				<button type = "button" class = "button green-button" name = "2button" onclick = "window.location.href='{{ url_for('entities') }}';">
+					<h3>
+						Entitities
+					</h3>
+				</button>
+			</div>
+			<br>
+			<div class = "text-center">
+				<button type = "button" class = "button red-button" name = "3button" onclick = "window.location.href='{{ url_for('training_phrases') }}';">
+					<h3>
+						Dataset
+					</h3>
+				</button>
+			</div>
+			<br>
+			<div class = "text-center">
+				<button type = "button" class = "button black-button" name = "5button" onclick = "window.location.href='{{ url_for('start_training_model') }}';">
+					<h3>
+						Avviare addestramento modello/i
+					</h3>
+				</button>
+			</div>
+			<br>
+			<div class = "text-center">
+				<button type = "button" class = "button white-button" name = "6button" onclick = "window.location.href='{{ url_for('show_results_testing') }}';">
+					<h3>
+						Mostra risultati training/Effettua testing dei modelli
+					</h3>
+				</button>
+			</div>
+			<br>
+			<div class = "text-center">
+				<button type = "button" class = "button grey-button" name = "7button" onclick = "window.location.href='{{ url_for('download_erasure_model') }}';">
+					<h3>
+						Download modelli addestrati/Cancellazione modelli
+					</h3>
+				</button>
+			</div>
+			<br>
+		</form>
+	</body>
+</html>

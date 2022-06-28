@@ -27,14 +27,14 @@ color = {
 }
 
 '''decorator that defines the url path
-where will be the home page of the site
+where will be the identification page of the site'''
 @app.route('/')
 #standard name for functions that works on the home page
 def index():
     #offers a html template on the page
-    return render_template('index.html')'''
+    return render_template('index.html')
 
-@app.route('/', methods = ['POST', 'GET'])
+@app.route('/login', methods = ['POST', 'GET'])
 def login():
     if request.method == 'POST':
         form_data = request.form
@@ -46,26 +46,28 @@ def login():
         for user in mongo.db.users.find():
             if user['email'] == email:
                 if user['password'] == password:
+                    #user has been identified
                     valid = not valid
                     break
         
         if valid:
-            return render_template('index.html')
+            return redirect(url_for('home'))
         else:
             return render_template('login.html', valid = valid)
     elif request.method == 'GET':
         return render_template('login.html', valid = True)
 
-'''@app.route('/login', methods = ['POST', 'GET'])
-def login():
-    if request.method == 'POST':
-        
-    elif request.method == 'GET':
-        return render_template('login.html')'''
+@app.route('/sign_up')
+def sign_up():
+    return render_template('sign_up.html')
+
+@app.route('/home')
+def home():
+    return render_template('home.html')
 
 '''decorator that defines the url path
 where will be the intents'''
-@app.route('/intents', methods = ['POST', 'GET'])
+@app.route('/home/intents', methods = ['POST', 'GET'])
 #standard name for functions that works on the home page
 def intents():
     page = int(request.args.get('page'))
