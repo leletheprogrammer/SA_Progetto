@@ -41,14 +41,13 @@ where will be the intents'''
 def intents():
     page = int(request.args.get('page'))
     if request.method == 'POST':
-        args = request.args
         form_data = request.form
 
         if form_data['submitButton'] == 'Elimina':
-            deleteIntent = args.get('deleteIntent')
-            mongo.db.intents.delete_one({'typology': deleteIntent})
+            oldIntent = form_data['oldIntent']
+            mongo.db.intents.delete_one({'typology': oldIntent})
         elif form_data['submitButton'] == 'Modifica':
-            updateIntent = args.get('updateIntent')
+            oldIntent = form_data['oldIntent']
             newIntent = form_data['newIntent']
             
             found = False
@@ -59,7 +58,7 @@ def intents():
                     break
             
             if not found:
-                mongo.db.intents.replace_one({'typology': updateIntent}, {'typology': newIntent})
+                mongo.db.intents.replace_one({'typology': oldIntent}, {'typology': newIntent})
         elif form_data['submitButton'] == 'Aggiungi':
             newIntent = form_data['newIntent']
             
@@ -82,12 +81,9 @@ def intents():
             #intent is a dict, so typologies is a list of dict
             typologies.append(intent)
 
-        args = request.args
-        updateIntent = args.get('updateIntent')
-        deleteIntent = args.get('deleteIntent')
 
         #offers a html template on the page
-        return render_template('intents.html', page = page, typologies = typologies, updateIntent = updateIntent, deleteIntent = deleteIntent)
+        return render_template('intents.html', page = page, typologies = typologies)
 
 '''decorator that defines the url path
 of the page where to create intent
