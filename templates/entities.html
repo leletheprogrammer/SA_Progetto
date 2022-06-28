@@ -236,9 +236,14 @@
 	}	
 </style>
 <script>
-function clean(id) {
+function clean(id, operation) {
 	document.getElementById(id).value = '';
-	$('#addEntity').modal('hide');
+	$(operation).modal('hide');
+}
+
+function modifyDeleteClicked(entity, id, operation) {
+	$(operation).modal('show');
+	document.getElementById(id).value = entity;
 }
 
 $(document).ready(function(){
@@ -264,12 +269,17 @@ $(document).ready(function(){
 		}
 	});
 	
-	{% if updateEntity %}
-		$('#editEntity').modal('show');
-	{% endif %}
-	{% if deleteEntity %}
-		$('#deleteEntity').modal('show');
-	{% endif %}
+	{% for row in namedEntities %}
+		var modifyEntity = document.getElementById('modify{{ loop.index }}');
+		modifyEntity.addEventListener('click', function(){
+			modifyDeleteClicked('{{ row['namedEntity'] }}', 'oldModifyEntity', '#editEntity');
+		});
+		var deleteEntity = document.getElementById('delete{{ loop.index }}');
+		deleteEntity.addEventListener('click', function(){
+			modifyDeleteClicked('{{ row['namedEntity'] }}', 'oldDeleteEntity', '#deleteEntity');
+		});
+	{% endfor %}
+	
 });
 </script>
 </head>
@@ -313,8 +323,8 @@ $(document).ready(function(){
 										{{ row['namedEntity'] }}
 									</td>
 									<td>
-										<a href="{{ url_for('entities', page = page, updateEntity = row['namedEntity'] ) }}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
-										<a href="{{ url_for('entities', page = page, deleteEntity = row['namedEntity'] ) }}" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
+										<a id="modify{{loop.index}}" href="#" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
+										<a id="delete{{loop.index}}" href="#" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
 									</td>
 								</tr>
 							{% endif %}
@@ -357,16 +367,16 @@ $(document).ready(function(){
 				<form method = "POST">
 					<div class="modal-header">						
 						<h4 class="modal-title">Aggiungi Entity</h4>
-						<button type="button" class="close" aria-hidden="true" onclick="clean('add')">&times;</button>
+						<button type="button" class="close" aria-hidden="true" onclick="clean('addNewEntity', '#addEntity')">&times;</button>
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
 							<label>Entity</label>
-							<input name="newEntity" id="add" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+" required>
+							<input name="newEntity" id="addNewEntity" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+" required>
 						</div>			
 					</div>
 					<div class="modal-footer">
-						<input type="button" class="btn btn-default" value="Indietro" onclick="clean('add')">
+						<input type="button" class="btn btn-default" value="Indietro" onclick="clean('addNewEntity', '#addEntity')">
 						<input type="submit" name="submitButton" class="btn btn-success" value="Aggiungi">
 					</div>
 				</form>
@@ -380,16 +390,18 @@ $(document).ready(function(){
 				<form method = "POST">
 					<div class="modal-header">						
 						<h4 class="modal-title">Modifica Entity</h4>
-						<button type="submit" name="submitButton" class="close" aria-hidden="true">&times;</button>
+						<button type="button" class="close" onclick = "clean('newModifyEntity', '#editEntity')" aria-hidden="true">&times;</button>
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
-							<label>Entity</label>
-							<input name="newEntity" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+">
+							<label>L'entity selezionata è la seguente</label>
+							<input name="oldEntity" id = "oldModifyEntity" type="text" readonly class="form-control">
+							<label>Inserire di seguito la nuova entity</label>
+							<input name="newEntity" id = "newModifyEntity" type="text" class="form-control" required pattern="[a-zA-Z0-9 ]+">
 						</div>				
 					</div>
 					<div class="modal-footer">
-						<input type="submit" name="submitButton" class="btn btn-default" value="Indietro">
+						<input type="button" class="btn btn-default" onclick = "clean('newModifyEntity', '#editEntity')" value="Indietro">
 						<input type="submit" name="submitButton" class="btn btn-info" value="Modifica">
 					</div>
 				</form>
@@ -403,14 +415,18 @@ $(document).ready(function(){
 				<form method = "POST">
 					<div class="modal-header">						
 						<h4 class="modal-title">Cancella Entity</h4>
-						<button type="submit" name="submitButton" class="close" aria-hidden="true">&times;</button>
+						<button type="button" data-dismiss="modal" class="close" aria-hidden="true">&times;</button>
 					</div>
-					<div class="modal-body">					
+					<div class="modal-body">	
+						<div class="form-group">
+							<label>L'entity selezionata è la seguente</label>
+							<input name="oldEntity" id = "oldDeleteEntity" type="text" readonly class="form-control">
+						</div>
 						<p>Sei sicuro di voler cancellare questa entity?</p>
 						<p class="text-warning"><small>Questa azione non e' reversibile.</small></p>
 					</div>
 					<div class="modal-footer">
-						<input type="submit" name="submitButton" class="btn btn-default" value="Indietro">
+						<input type="button" class="btn btn-default" data-dismiss = "modal" value="Indietro">
 						<input type="submit" name="submitButton" class="btn btn-danger" value="Elimina">
 					</div>
 				</form>

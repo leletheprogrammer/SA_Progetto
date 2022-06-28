@@ -120,14 +120,13 @@ where will be the entities'''
 def entities():
     page = int(request.args.get('page'))
     if request.method == 'POST':
-        args = request.args
         form_data = request.form
 
         if form_data['submitButton'] == 'Elimina':
-            deleteEntity = args.get('deleteEntity')
-            mongo.db.entities.delete_one({'namedEntity': deleteEntity})
+            oldEntity = form_data['oldEntity']
+            mongo.db.entities.delete_one({'namedEntity': oldEntity})
         elif form_data['submitButton'] == 'Modifica':
-            updateEntity = args.get('updateEntity')
+            oldEntity = form_data['oldEntity']
             newEntity = form_data['newEntity']
             
             found = False
@@ -138,7 +137,7 @@ def entities():
                     break
             
             if not found:
-                mongo.db.entities.replace_one({'namedEntity': updateEntity}, {'namedEntity': newEntity})
+                mongo.db.entities.replace_one({'namedEntity': oldEntity}, {'namedEntity': newEntity})
         elif form_data['submitButton'] == 'Aggiungi':
             newEntity = form_data['newEntity']
             
@@ -161,12 +160,8 @@ def entities():
             #intent is a dict, so typologies is a list of dict
             namedEntities.append(entity)
 
-        args = request.args
-        updateEntity = args.get('updateEntity')
-        deleteEntity = args.get('deleteEntity')
-
         #offers a html template on the page
-        return render_template('entities.html', page = page, namedEntities = namedEntities, updateEntity = updateEntity, deleteEntity = deleteEntity)
+        return render_template('entities.html', page = page, namedEntities = namedEntities)
 
 '''decorator that defines the url path
 of the page where to define new entities
