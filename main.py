@@ -27,12 +27,41 @@ color = {
 }
 
 '''decorator that defines the url path
-where will be the home page of the site'''
+where will be the home page of the site
 @app.route('/')
 #standard name for functions that works on the home page
 def index():
     #offers a html template on the page
-    return render_template('index.html')
+    return render_template('index.html')'''
+
+@app.route('/', methods = ['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        form_data = request.form
+        
+        email = form_data['email']
+        password = form_data['password']
+        
+        valid = False
+        for user in mongo.db.users.find():
+            if user['email'] == email:
+                if user['password'] == password:
+                    valid = not valid
+                    break
+        
+        if valid:
+            return render_template('index.html')
+        else:
+            return render_template('login.html', valid = valid)
+    elif request.method == 'GET':
+        return render_template('login.html', valid = True)
+
+'''@app.route('/login', methods = ['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        
+    elif request.method == 'GET':
+        return render_template('login.html')'''
 
 '''decorator that defines the url path
 where will be the intents'''
