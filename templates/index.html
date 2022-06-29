@@ -4,30 +4,23 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Area Servizi</title>
+<title>NLP Web Platform</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
 </head>
 <body>
 	<section>
 		<div class="hero-body">
-			<div class="container has-text-centered">
-				<div class="column is-8 is-offset-2">
-					<h3 class="title has-text-link">Accesso ai servizi</h3>
-					<div class="box">
-						<h3 class="is-size-4">Accedi per avere accesso ai servizi che questa piattaforma offre, 
-							cioè la possibilità di gestire intent, entity e dataset, oltre che 
-							alla possibilità di effettuare l'addestramento dei tre modelli NLP.</h3>
+			<div class="container has-text-left">
+					<h3 class="title has-text-link">NLP Web Platform</h3>
+						<h3 class="is-size-5">Questa è una piattaforma che offre la possibilità di gestire dataset, oltre che gestire intents e entities,
+							annotare training phrases e visualizzare i risultati ottenuti. Tutto ciò che devi fare è eseguire la registrazione e effettuare
+							il login alla piattaforma.</h3>
 						<br>
-						<div class="buttons is-centered">
+						<div class="buttons is-left">
 							<p class="control">
-								<button class="button is-info is-large is-fullwidth is-outlined" onclick="window.location.href='{{ url_for('login') }}';">Login</button>
-							</p>
-							<p class="control">
-								<button class="button is-info is-large is-fullwidth is-outlined" onclick="window.location.href='{{ url_for('sign_up') }}';">Sign up</button>
+								<button class="button is-info is-large is-fullwidth is-outlined" onclick="window.location.href='{{ url_for('services_area') }}';">Area servizi</button>
 							</p>
 						</div>
-					</div>
-				</div>
 			</div>
 		</div>
 	</section>

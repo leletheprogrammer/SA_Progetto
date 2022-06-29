@@ -2,9 +2,12 @@
 from module flask'''
 from flask import Flask, render_template, request, redirect, url_for
 from flask_pymongo import PyMongo
+import smtplib
+import ssl
+from werkzeug.security import generate_password_hash, check_password_hash
 #import spacy
 #from spacy.util import minibatch, compounding
-#import random
+from random import randint
 
 '''app represents the web application and
 __name__ represents the name of the current file'''
@@ -27,39 +30,106 @@ color = {
 }
 
 '''decorator that defines the url path
-where will be the identification page of the site'''
+where will be the index page of the site'''
 @app.route('/')
 #standard name for functions that works on the home page
 def index():
     #offers a html template on the page
     return render_template('index.html')
 
-@app.route('/login', methods = ['POST', 'GET'])
+@app.route('/services_area')
+def services_area():
+    return render_template('services_area.html')
+
+@app.route('/services_area/login', methods = ['POST', 'GET'])
 def login():
+    valid = True
     if request.method == 'POST':
         form_data = request.form
         
         email = form_data['email']
         password = form_data['password']
         
-        valid = False
-        for user in mongo.db.users.find():
-            if user['email'] == email:
-                if user['password'] == password:
-                    #user has been identified
-                    valid = not valid
-                    break
-        
-        if valid:
-            return redirect(url_for('home'))
-        else:
+        user = mongo.db.users.find_one({'email': email})
+        if user == None:
+            valid = not valid
             return render_template('login.html', valid = valid)
+        else:
+            if check_password_hash(user['password'], password):
+                return redirect(url_for('home'))
+            else:
+                valid = not valid
+                return render_template('login.html', valid = valid)
     elif request.method == 'GET':
-        return render_template('login.html', valid = True)
+        return render_template('login.html', valid = valid)
 
-@app.route('/sign_up')
+@app.route('/services_area/sign_up', methods = ['POST', 'GET'])
 def sign_up():
-    return render_template('sign_up.html')
+    validation = False
+    valid = True
+    found = False
+    email = None
+    if request.method == 'POST':
+        form_data = request.form
+        
+        email = form_data['email']
+        name = form_data['name']
+        password = form_data['password']
+        
+        user = mongo.db.users.find_one({'email': email})
+        if user != None:
+            valid = not valid
+            return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
+        else:
+            user_to_validate = mongo.db.users_to_validate.find_one({'email': email})
+            if user_to_validate != None:
+                found = not found
+                return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
+            else:
+                code = generate_password_hash(str(randint(0, 10000)), method = 'sha256')
+                
+                mongo.db.users_to_validate.insert_one({'email': email, 'name': name, 'password': generate_password_hash(password, method = 'sha256'), 'code': code})
+                
+                '''context = ssl.create_default_context()
+                server_password = 'jcnkadjivnhhebnh'
+                sender = 'nlpwebplatformserver@gmail.com'
+                receiver = 'maxxdjey@gmail.com'
+                message = From: NLPServer <nlpwebplatformserver@gmail.com>
+                To: you <maxxdjey@gmail.com>
+                Subject: SMTP e-mail test
+                
+                This is a test e-mail message.
+                
+                with smtplib.SMTP_SSL('smtp.gmail.com', port = 465, context = context) as server:
+                    server.login(sender, server_password)
+                    server.sendmail(sender, receiver, message)'''
+                
+                validation = not validation
+                return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
+    elif request.method == 'GET':
+        return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
+
+@app.route('/services_area/sign_up/validation', methods = ['GET'])
+def validation():
+    error = False
+    
+    args = request.args
+    if args.__len__() == 2:
+        email = args['email']
+        code = args['code']
+        
+        user = mongo.db.users_to_validate.find_one({'email': email, 'code': code})
+        if user == None:
+            error = not error
+            return render_template('validation.html', error = error)
+        
+        mongo.db.users.insert_one({'email': user['email'], 'name': user['name'], 'password': user['password']})
+        mongo.db.users_to_validate.delete_one(user)
+        
+        return render_template('validation.html', error = error)
+    else:
+        error = not error
+        return render_template('validation.html', error = error)
 
 @app.route('/home')
 def home():
