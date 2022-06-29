@@ -31,8 +31,24 @@ where will be the home page of the site'''
 @app.route('/')
 #standard name for functions that works on the home page
 def index():
+    initialization_database()
     #offers a html template on the page
     return render_template('index.html')
+
+def initialization_database():
+    numberSentiments = mongo.db.sentiments.estimated_document_count()
+    if (numberSentiments == 0):
+        mongo.db.sentiments.insert_one({'category': 'Positivo'})
+        mongo.db.sentiments.insert_one({'category': 'Neutrale'})
+        mongo.db.sentiments.insert_one({'category': 'Negativo'})
+    numberEmotions = mongo.db.emotions.estimated_document_count()
+    if (numberEmotions == 0):
+        mongo.db.emotions.insert_one({'type': 'Felicita'})
+        mongo.db.emotions.insert_one({'type': 'Tristezza'})
+        mongo.db.emotions.insert_one({'type': 'Rabbia'})
+        mongo.db.emotions.insert_one({'type': 'Disgusto'})
+        mongo.db.emotions.insert_one({'type': 'Sorpresa'})
+        mongo.db.emotions.insert_one({'type': 'Paura'})
 
 '''decorator that defines the url path
 where will be the intents'''
