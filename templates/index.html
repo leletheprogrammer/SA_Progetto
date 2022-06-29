@@ -44,7 +44,7 @@
 			</div>
 			<br>
 			<div class = "text-center">
-				<button type = "button" class = "button red-button" name = "3button" onclick = "window.location.href='{{ url_for('training_phrases') }}';">
+				<button type = "button" class = "button red-button" name = "3button" onclick = "window.location.href='{{ url_for('training_phrases', page = 1) }}';">
 					<h3>
 						Dataset
 					</h3>
@@ -52,7 +52,7 @@
 			</div>
 			<br>
 			<div class = "text-center">
-				<button type = "button" class = "button black-button" name = "5button" onclick = "window.location.href='{{ url_for('start_training_model') }}';">
+				<button type = "button" class = "button black-button" name = "4button" onclick = "window.location.href='{{ url_for('start_training_model') }}';">
 					<h3>
 						Avviare addestramento modello/i
 					</h3>
@@ -60,7 +60,7 @@
 			</div>
 			<br>
 			<div class = "text-center">
-				<button type = "button" class = "button white-button" name = "6button" onclick = "window.location.href='{{ url_for('show_results_testing') }}';">
+				<button type = "button" class = "button white-button" name = "5button" onclick = "window.location.href='{{ url_for('show_results_testing') }}';">
 					<h3>
 						Mostra risultati training/Effettua testing dei modelli
 					</h3>
@@ -68,7 +68,7 @@
 			</div>
 			<br>
 			<div class = "text-center">
-				<button type = "button" class = "button grey-button" name = "7button" onclick = "window.location.href='{{ url_for('download_erasure_model') }}';">
+				<button type = "button" class = "button grey-button" name = "6button" onclick = "window.location.href='{{ url_for('download_erasure_model') }}';">
 					<h3>
 						Download modelli addestrati/Cancellazione modelli
 					</h3>
