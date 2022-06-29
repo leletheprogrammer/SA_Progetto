@@ -243,7 +243,10 @@ def training_phrases():
                 mongo.db.trainingPhrases.replace_one({'phrase': oldPhrase}, {'phrase': newPhrase})
         elif form_data['submitButton'] == 'Aggiungi':
             newPhrase = form_data['newPhrase']
-            
+            intentAssociated = form_data['selectIntent']
+            entitiesAssociated = None
+            sentimentAssociated = form_data['selectSentiment']
+            emotionAssociated = form_data['selectEmotion']
             found = False
             #iteration among the documents in the collection 'intents'
             for phrase in mongo.db.trainingPhrases.find():
@@ -252,7 +255,7 @@ def training_phrases():
                     break
             
             if not found:
-                mongo.db.trainingPhrases.insert_one({'phrase': newPhrase})
+                mongo.db.trainingPhrases.insert_one({'phrase': newPhrase, 'intent': intentAssociated, 'entities': 'Vuoto', 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
 
         #offers a html template on the page
         return redirect(url_for('training_phrases', page = page))
@@ -262,9 +265,25 @@ def training_phrases():
         for phrase in mongo.db.trainingPhrases.find():
             #intent is a dict, so typologies is a list of dict
             phrases.append(phrase)
+        
+        intents = []
+        for intent in mongo.db.intents.find():
+            intents.append(intent)
+        
+        namedEntities = []
+        for entity in mongo.db.entities.find():
+            namedEntities.append(entity)
+        
+        sentiments = []
+        for sentiment in mongo.db.sentiments.find():
+            sentiments.append(sentiment)
+        
+        emotions = []
+        for emotion in mongo.db.emotions.find():
+            emotions.append(emotion)
 
         #offers a html template on the page
-        return render_template('training_phrases.html', page = page, phrases = phrases)
+        return render_template('training_phrases.html', page = page, phrases = phrases, intents = intents, namedEntities = namedEntities, sentiments = sentiments, emotions = emotions)
 
 '''decorator that defines the url path of the page
 where to add,modify and delete training phrase

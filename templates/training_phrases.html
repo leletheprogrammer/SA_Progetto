@@ -236,14 +236,34 @@
 	}	
 </style>
 <script>
-function clean(id, operation) {
-	document.getElementById(id).value = '';
+function cleanPhrase() {
+	document.getElementById('newModifyPhrase').value = '';
+	$('#editPhrase').modal('hide');
+}
+
+function cleanEntity() {
+	document.getElementById('namedEntitySelected').selectedIndex = 0;
+	$('#entitySelectedPhrase').modal('hide');
+}
+
+function cleanAll(phraseId, intentId, sentimentId, emotionId, operation) {
+	document.getElementById(phraseId).value = '';
+	document.getElementById(intentId).selectedIndex = 0;
+	document.getElementById(sentimentId).selectedIndex = 0;
+	document.getElementById(emotionId).selectedIndex = 0;
 	$(operation).modal('hide');
 }
 
 function modifyDeleteClicked(phrase, id, operation) {
 	$(operation).modal('show');
 	document.getElementById(id).value = phrase;
+}
+
+function entitySelected() {
+	let textarea = event.target;
+    let selection = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
+	$('#entitySelectedPhrase').modal('show');
+	document.getElementById('entitySubstring').value = selection;
 }
 
 $(document).ready(function(){
@@ -310,6 +330,10 @@ $(document).ready(function(){
 								</span>
 							</th>
 							<th>Training Phrases</th>
+							<th>Intent</th>
+							<th>Entities</th>
+							<th>Sentiment</th>
+							<th>Emotion</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -324,6 +348,18 @@ $(document).ready(function(){
 									</td>
 									<td>
 										{{ row['phrase'] }}
+									</td>
+									<td>
+										{{ row['intent'] }}
+									</td>
+									<td>
+										{{ row['entities'] }}
+									</td>
+									<td>
+										{{ row['sentiment'] }}
+									</td>
+									<td>
+										{{ row['emotion'] }}
 									</td>
 									<td>
 										<a id="modify{{loop.index}}" href="#" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
@@ -374,16 +410,46 @@ $(document).ready(function(){
 				<form method = "POST">
 					<div class="modal-header">						
 						<h4 class="modal-title">Aggiungi Training Phrase</h4>
-						<button type="button" class="close" aria-hidden="true" onclick="clean('addNewPhrase', '#addPhrase')">&times;</button>
+						<button type="button" class="close" aria-hidden="true" onclick="cleanAll('addNewPhrase', 'intentSelected', 'sentimentSelected', 'emotionSelected', '#addPhrase')">&times;</button>
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
 							<label>Training Phrase</label>
-							<input name="newPhrase" id="addNewPhrase" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+" required>
+							<input name="newPhrase" id="addNewPhrase" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+" onselect = "entitySelected()" required>
+							<label for = "selectIntent">Selezionare l'intent(opzionale)</label>
+							<select class = "form-control" id = "intentSelected" name = "selectIntent">
+								<option selected label = "Clicca qui per selezionare l'intent">
+									{% for row in intents %}
+										<option>
+											{{ row['typology'] }}
+										</option>
+									{% endfor %}
+								</option>
+							</select>
+							<label for = "selectSentiment">Selezionare il sentiment(opzionale)</label>
+							<select class = "form-control" id = "sentimentSelected" name = "selectSentiment">
+								<option selected label = "Clicca qui per selezionare il sentiment">
+									{% for row in sentiments %}
+										<option>
+											{{ row['category'] }}
+										</option>
+									{% endfor %}
+								</option>
+							</select>
+							<label for = "selectEmotion">Selezionare l'emotion(opzionale)</label>
+							<select class = "form-control" id = "emotionSelected" name = "selectEmotion">
+								<option selected label = "Clicca qui per selezionare l'emotion">
+									{% for row in emotions %}
+										<option>
+											{{ row['type'] }}
+										</option>
+									{% endfor %}
+								</option>
+							</select>
 						</div>			
 					</div>
 					<div class="modal-footer">
-						<input type="button" class="btn btn-default" value="Indietro" onclick="clean('addNewPhrase', '#addPhrase')">
+						<input type="button" class="btn btn-default" value="Indietro" onclick="cleanAll('addNewPhrase', 'intentSelected', 'sentimentSelected', 'emotionSelected', '#addPhrase')">
 						<input type="submit" name="submitButton" class="btn btn-success" value="Aggiungi">
 					</div>
 				</form>
@@ -397,7 +463,7 @@ $(document).ready(function(){
 				<form method = "POST">
 					<div class="modal-header">						
 						<h4 class="modal-title">Modifica Training Phrase</h4>
-						<button type="button" class="close" onclick = "clean('newModifyPhrase', '#editPhrase')" aria-hidden="true">&times;</button>
+						<button type="button" class="close" onclick = "cleanPhrase()" aria-hidden="true">&times;</button>
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
@@ -408,7 +474,7 @@ $(document).ready(function(){
 						</div>				
 					</div>
 					<div class="modal-footer">
-						<input type="button" class="btn btn-default" onclick = "clean('newModifyPhrase', '#editPhrase')" value="Indietro">
+						<input type="button" class="btn btn-default" onclick = "cleanPhrase()" value="Indietro">
 						<input type="submit" name="submitButton" class="btn btn-info" value="Modifica">
 					</div>
 				</form>
@@ -435,6 +501,39 @@ $(document).ready(function(){
 					<div class="modal-footer">
 						<input type="button" class="btn btn-default" data-dismiss = "modal" value="Indietro">
 						<input type="submit" name="submitButton" class="btn btn-danger" value="Elimina">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Entity Selected Modal HTML -->
+	<div id="entitySelectedPhrase" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form method = "POST">
+					<div class="modal-header">						
+						<h4 class="modal-title">Aggiungi e specifica categoria entità</h4>
+						<button type="button" class="close" onclick = "cleanEntity()" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label>La sottostringa selezionata è la seguente</label>
+							<input name="entity" id = "entitySubstring" type="text" readonly class="form-control">
+							<label for = "selectNamedEntity">Selezionare la named entity alla quale appartiene</label>
+							<select class = "form-control" id = "namedEntitySelected" name = "selectNamedEntity">
+								<option selected label = "Clicca qui per selezionare la named entity">
+									{% for row in namedEntities %}
+										<option>
+											{{ row['namedEntity'] }}
+										</option>
+									{% endfor %}
+								</option>
+							</select>
+						</div>				
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" onclick = "cleanEntity()" value="Indietro">
+						<input type="submit" name="submitButton" class="btn btn-info" value="Modifica">
 					</div>
 				</form>
 			</div>
