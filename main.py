@@ -2,8 +2,11 @@
 from module flask'''
 from flask import Flask, render_template, request, redirect, url_for
 from flask_pymongo import PyMongo
-import smtplib
-import ssl
+
+import smtplib, ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 from werkzeug.security import generate_password_hash, check_password_hash
 #import spacy
 #from spacy.util import minibatch, compounding
@@ -90,19 +93,32 @@ def sign_up():
                 
                 mongo.db.users_to_validate.insert_one({'email': email, 'name': name, 'password': generate_password_hash(password, method = 'sha256'), 'code': code})
                 
-                '''context = ssl.create_default_context()
-                server_password = 'jcnkadjivnhhebnh'
                 sender = 'nlpwebplatformserver@gmail.com'
-                receiver = 'maxxdjey@gmail.com'
-                message = From: NLPServer <nlpwebplatformserver@gmail.com>
-                To: you <maxxdjey@gmail.com>
-                Subject: SMTP e-mail test
+                receiver = email
                 
-                This is a test e-mail message.
+                message = MIMEMultipart('alternative')
+                message['Subject'] = 'Email di conferma validazione registrazione'
+                message['From'] = sender
+                message['To'] = receiver
                 
+                #create the plain-text and HTML version of the message
+                text = '''Ciao, le è stata inviata questa email per confermare la registrazione al sito.\nClicchi su questo link:\nhttp://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code
+                html = '''<html><body><p>Ciao, le è stata inviata questa email per confermare la registrazione al sito.<br>Clicchi su questo link:<br><a href="http://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code + '''">http://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code + '''</a></p></body></html>'''
+                
+                #turn these into plain/html MIMEText objects
+                part1 = MIMEText(text, 'plain')
+                part2 = MIMEText(html, 'html')
+                
+                #add HTML/plain-text parts to MIMEMultipart message
+                #the email client will try to render the last part first
+                message.attach(part1)
+                message.attach(part2)
+                
+                #create secure connection with server and send email
+                context = ssl.create_default_context()
                 with smtplib.SMTP_SSL('smtp.gmail.com', port = 465, context = context) as server:
-                    server.login(sender, server_password)
-                    server.sendmail(sender, receiver, message)'''
+                    server.login(sender, 'jcnkadjivnhhebnh')
+                    server.sendmail(sender, receiver, message.as_string())
                 
                 validation = not validation
                 return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
