@@ -244,7 +244,7 @@ def training_phrases():
         elif form_data['submitButton'] == 'Aggiungi':
             newPhrase = form_data['newPhrase']
             intentAssociated = form_data['selectIntent']
-            entitiesAssociated = None
+            entitiesAssociated = list()
             sentimentAssociated = form_data['selectSentiment']
             emotionAssociated = form_data['selectEmotion']
             found = False
@@ -253,9 +253,20 @@ def training_phrases():
                 if phrase['phrase'] == newPhrase:
                     found = not found
                     break
-            
+            try:
+                i = 1
+                while True:
+                    if 'entity'+str(i) in form_data.keys():
+                        first = newPhrase.index(form_data['entity' + str(i)])
+                        entitystr = '(' + str(first) + ',' + str(first + len(form_data['entity' + str(i)]) - 1) + ',' + form_data['namedEntity' + str(i)] + ')'
+                        entitiesAssociated.append(entitystr)
+                    else:
+                        break
+                        i = i + 1
+            except ValueError:
+                entitiesAssociated = list()
             if not found:
-                mongo.db.trainingPhrases.insert_one({'phrase': newPhrase, 'intent': intentAssociated, 'entities': 'Vuoto', 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
+                mongo.db.trainingPhrases.insert_one({'phrase': newPhrase, 'intent': intentAssociated, 'entities': entitiesAssociated, 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
 
         #offers a html template on the page
         return redirect(url_for('training_phrases', page = page))
@@ -265,6 +276,7 @@ def training_phrases():
         for phrase in mongo.db.trainingPhrases.find():
             #intent is a dict, so typologies is a list of dict
             phrases.append(phrase)
+        print(phrases)
         
         intents = []
         for intent in mongo.db.intents.find():

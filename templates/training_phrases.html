@@ -233,7 +233,12 @@
 	}	
 	.modal form label {
 		font-weight: normal;
-	}	
+	}
+
+	.input {
+		color: white;
+	}
+
 </style>
 <script>
 function cleanPhrase() {
@@ -264,6 +269,39 @@ function entitySelected() {
     let selection = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
 	$('#entitySelectedPhrase').modal('show');
 	document.getElementById('entitySubstring').value = selection;
+}
+
+function entityAdded(substringId) {
+	$('#entitySelectedPhrase').modal('hide');
+	var input = document.createElement("input");
+	var i = 1;
+	var istr = "";
+	while(true) {
+		istr = "entity" + i.toString();
+		if(document.getElementById("divAddId").querySelector("#"+istr) === null) {
+			break;
+		}
+		i++;
+	}
+	input.name = istr;
+	input.id = istr;
+	input.type = "text";
+	input.value = document.getElementById(substringId).value;
+	input.setAttribute("readonly", "true");
+	var namedEntity = document.getElementById('namedEntitySelected').value;
+	var controlEntity = "";
+	{% for row in namedEntities %}
+		controlEntity = "{{ row['namedEntity'] }}";
+		if (controlEntity == namedEntity) {
+			input.setAttribute("style", "background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})");
+		}	
+	{% endfor %}
+	document.getElementById("divAddId").appendChild(input);
+	var inputNamedEntity = document.createElement("input");
+	inputNamedEntity.name = "namedEntity" + i.toString();
+	inputNamedEntity.type = "hidden"
+	inputNamedEntity.value = namedEntity;
+	document.getElementById("divAddId").appendChild(inputNamedEntity);
 }
 
 $(document).ready(function(){
@@ -301,6 +339,11 @@ $(document).ready(function(){
 			});
 		{% endif %}
 	{% endfor %}
+	
+	var input = document.getElementById('contentDivEditable');
+	input.addEventListener('select', function(){
+		entitySelected();
+	});
 	
 });
 
@@ -413,8 +456,11 @@ $(document).ready(function(){
 						<button type="button" class="close" aria-hidden="true" onclick="cleanAll('addNewPhrase', 'intentSelected', 'sentimentSelected', 'emotionSelected', '#addPhrase')">&times;</button>
 					</div>
 					<div class="modal-body">
-						<div class="form-group">
-							<label>Training Phrase</label>
+						<div id = "namedEntitiesDiv">Legenda delle named Entities<br>
+						{% for row in namedEntities %}<span id = "spanEntities{{ loop.index }}" style = "background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})">{{ row['namedEntity'] }}</span>   {% endfor %}
+						</div>
+						<div id = "divAddId" class="form-group">
+							<label>Aggiungi Training Phrase e seleziona entity(opzionale)</label>
 							<input name="newPhrase" id="addNewPhrase" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+" onselect = "entitySelected()" required>
 							<label for = "selectIntent">Selezionare l'intent(opzionale)</label>
 							<select class = "form-control" id = "intentSelected" name = "selectIntent">
@@ -533,7 +579,7 @@ $(document).ready(function(){
 					</div>
 					<div class="modal-footer">
 						<input type="button" class="btn btn-default" onclick = "cleanEntity()" value="Indietro">
-						<input type="submit" name="submitButton" class="btn btn-info" value="Modifica">
+						<input type="button" class="btn btn-info" value="Aggiungi" onclick = "entityAdded('entitySubstring')">
 					</div>
 				</form>
 			</div>
