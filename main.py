@@ -154,6 +154,14 @@ def validation():
         error = not error
         return render_template('validation.html', error = error)
 
+@app.route('/logout')
+def logout():
+    global login_user
+    login_user = None
+    global needed
+    needed = None
+    return render_template('logout.html')
+
 @app.route('/home/')
 def home():
     global login_user
