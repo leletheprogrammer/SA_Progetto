@@ -13,6 +13,11 @@
 			<div class="container has-text-centered">
 				<div class="column is-4 is-offset-4">
 					<h3 class="title has-text-link">Effettua il login</h3>
+					{% if needed %}
+						<div class="box has-background-danger">
+							<p class="is-size-4">Effettua il login per avere accesso ai contenuti</p>
+						</div>
+					{% endif %}
 					{% if not valid %}
 						<div class="box has-background-danger">
 							<p class="is-size-4">Email o Password errate</p>

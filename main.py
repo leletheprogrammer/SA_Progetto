@@ -18,6 +18,9 @@ app = Flask(__name__)
 
 mongo = PyMongo(app, 'mongodb://localhost:27017/NLPDatabase', connect = True)
 
+login_user = None
+needed = None
+
 #colors
 color = {
         'blue': '002aff',
@@ -35,19 +38,21 @@ color = {
 '''decorator that defines the url path
 where will be the index page of the site'''
 @app.route('/')
-#standard name for functions that works on the home page
+#standard name for functions that works on the index page
 def index():
     #offers a html template on the page
     return render_template('index.html')
 
-@app.route('/services_area')
+@app.route('/services_area/')
 def services_area():
     return render_template('services_area.html')
 
 @app.route('/services_area/login', methods = ['POST', 'GET'])
 def login():
+    global needed
     valid = True
     if request.method == 'POST':
+        needed = None
         form_data = request.form
         
         email = form_data['email']
@@ -56,17 +61,19 @@ def login():
         user = mongo.db.users.find_one({'email': email})
         if user == None:
             valid = not valid
-            return render_template('login.html', valid = valid)
         else:
             if check_password_hash(user['password'], password):
+                global login_user
+                login_user = user
                 return redirect(url_for('home'))
             else:
                 valid = not valid
-                return render_template('login.html', valid = valid)
+        
+        return render_template('login.html', needed = needed, valid = valid)
     elif request.method == 'GET':
-        return render_template('login.html', valid = valid)
+        return render_template('login.html', needed = needed, valid = valid)
 
-@app.route('/services_area/sign_up', methods = ['POST', 'GET'])
+@app.route('/services_area/sign_up/', methods = ['POST', 'GET'])
 def sign_up():
     validation = False
     valid = True
@@ -147,64 +154,77 @@ def validation():
         error = not error
         return render_template('validation.html', error = error)
 
-@app.route('/home')
+@app.route('/home/')
 def home():
-    return render_template('home.html')
+    global login_user
+    if login_user:
+        name = login_user['name']
+        return render_template('home.html', name = name)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
 
 '''decorator that defines the url path
 where will be the intents'''
 @app.route('/home/intents', methods = ['POST', 'GET'])
 #standard name for functions that works on the home page
 def intents():
-    page = int(request.args.get('page'))
-    if request.method == 'POST':
-        args = request.args
-        form_data = request.form
+    global login_user
+    if login_user:
+        page = int(request.args.get('page'))
+        if request.method == 'POST':
+            args = request.args
+            form_data = request.form
 
-        if form_data['submitButton'] == 'Elimina':
-            deleteIntent = args.get('deleteIntent')
-            mongo.db.intents.delete_one({'typology': deleteIntent})
-        elif form_data['submitButton'] == 'Modifica':
+            if form_data['submitButton'] == 'Elimina':
+                deleteIntent = args.get('deleteIntent')
+                mongo.db.intents.delete_one({'typology': deleteIntent})
+            elif form_data['submitButton'] == 'Modifica':
+                updateIntent = args.get('updateIntent')
+                newIntent = form_data['newIntent']
+                
+                found = False
+                #iteration among the documents in the collection 'intents'
+                for intent in mongo.db.intents.find():
+                    if intent['typology'] == newIntent:
+                        found = not found
+                        break
+                
+                if not found:
+                    mongo.db.intents.replace_one({'typology': updateIntent}, {'typology': newIntent})
+            elif form_data['submitButton'] == 'Aggiungi':
+                newIntent = form_data['newIntent']
+                
+                found = False
+                #iteration among the documents in the collection 'intents'
+                for intent in mongo.db.intents.find():
+                    if intent['typology'] == newIntent:
+                        found = not found
+                        break
+                
+                if not found:
+                    mongo.db.intents.insert_one({'typology': newIntent})
+                
+                #offers a html template on the page
+                return redirect(url_for('intents', page = page))
+        elif request.method == 'GET':
+            typologies = []
+            #iteration among the documents in the collection 'intents'
+            for intent in mongo.db.intents.find():
+                #intent is a dict, so typologies is a list of dict
+                typologies.append(intent)
+            
+            args = request.args
             updateIntent = args.get('updateIntent')
-            newIntent = form_data['newIntent']
+            deleteIntent = args.get('deleteIntent')
             
-            found = False
-            #iteration among the documents in the collection 'intents'
-            for intent in mongo.db.intents.find():
-                if intent['typology'] == newIntent:
-                    found = not found
-                    break
-            
-            if not found:
-                mongo.db.intents.replace_one({'typology': updateIntent}, {'typology': newIntent})
-        elif form_data['submitButton'] == 'Aggiungi':
-            newIntent = form_data['newIntent']
-            
-            found = False
-            #iteration among the documents in the collection 'intents'
-            for intent in mongo.db.intents.find():
-                if intent['typology'] == newIntent:
-                    found = not found
-                    break
-            
-            if not found:
-                mongo.db.intents.insert_one({'typology': newIntent})
-
-        #offers a html template on the page
-        return redirect(url_for('intents', page = page))
-    elif request.method == 'GET':
-        typologies = []
-        #iteration among the documents in the collection 'intents'
-        for intent in mongo.db.intents.find():
-            #intent is a dict, so typologies is a list of dict
-            typologies.append(intent)
-
-        args = request.args
-        updateIntent = args.get('updateIntent')
-        deleteIntent = args.get('deleteIntent')
-
-        #offers a html template on the page
-        return render_template('intents.html', page = page, typologies = typologies, updateIntent = updateIntent, deleteIntent = deleteIntent)
+            #offers a html template on the page
+            return render_template('intents.html', page = page, typologies = typologies, updateIntent = updateIntent, deleteIntent = deleteIntent)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
 
 '''decorator that defines the url path
 of the page where to create intent
@@ -236,7 +256,7 @@ def create_intent():
 
 '''decorator that defines the url path
 where will be the entities'''
-@app.route('/entities')
+@app.route('/home/entities')
 #standard name for functions that works on the home page
 def entities():
     #offers a html template on the page
@@ -272,7 +292,7 @@ def define_entity():
 
 '''decorator that defines the url path
 where will be the intents'''
-@app.route('/training_phrases')
+@app.route('/home/training_phrases')
 #standard name for functions that works on the home page
 def training_phrases():
     #offers a html template on the page
@@ -398,7 +418,7 @@ def write_down_training():
 
 '''decorator that defines the url path
 of the page where to train the models'''
-@app.route('/start_training_model', methods = ['POST', 'GET'])
+@app.route('/home/start_training_model', methods = ['POST', 'GET'])
 def start_training_model():
 	if request.method == 'POST':
 		form_data = request.form
@@ -510,13 +530,13 @@ def tupleEntity(entity):
 
 '''decorator that defines the url path of the
 page where to test and show results of the models'''
-@app.route('/show_results_testing')
+@app.route('/home/show_results_testing')
 def show_results_testing():
 	return 'show_results_testing'
 
 '''decorator that defines the url path of
 the page where to download or erase the models'''
-@app.route('/download_erasure_model')
+@app.route('/home/download_erasure_model')
 def download_erasure_model():
 	return 'download_erasure_model'
 
