@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+</head>
+<body>
+	<div class="container">
+		<h1 class="title has-text-left has-text-info mt-5">Home</h1>
+		<div class="has-text-left is-size-5">
+			<p>
+				Benvenuto {{ name }}!
+				<br>
+				Sei nella home page del sito. Qui potrai addestrare i tre modelli di NLP.
+				<br>
+				Seleziona una delle operazioni tra le seguenti:
+			</p>
+		</div>
+		<form>
+			<br>
+			<div class="has-addons">
+				<button type="button" class="button has-text-black-bis is-info is-large is-outlined" onclick="window.location.href='{{ url_for('intents', page = 1) }}';">Intents</button>
+				<button type="button" class="button has-text-black-bis is-success is-large is-outlined" onclick="window.location.href='{{ url_for('entities', page = 1) }}';">Entities</button>
+				<button type="button" class="button has-text-black-bis is-danger is-large is-outlined" onclick="window.location.href='{{ url_for('training_phrases') }}';">Dataset</button>
+			</div>
+			<br>
+			<div class="has-addons">
+				<button type="button" class="button has-text-black-bis is-primary is-large is-outlined" onclick="window.location.href='{{ url_for('start_training_model') }}';">Avviare addestramento modello/i</button>
+				<button type="button" class="button has-text-black-bis is-warning is-large is-outlined" onclick="window.location.href='{{ url_for('show_results_testing') }}';">Mostra risultati training/Effettua testing dei modelli</button>
+			</div>
+			<br>
+			<div>
+				<button type="button" class="button has-text-black-bis is-link is-large is-outlined" onclick="window.location.href='{{ url_for('download_erasure_model') }}';">Download modelli addestrati/Cancellazione modelli</button>
+			</div>
+			<br>
+			<br>
+		</form>
+		<div class="has-text-left is-size-5">
+			<p>Per uscire dalla pagina, invece, clicca su questo pulsante:</p>
+			<br>
+			<button type="button" class="button has-text-white is-black is-medium" onclick="window.location.href='{{ url_for('logout') }}';">Logout</button>
+		</div>
+	</div>
+</body>
+</html>
