@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Area Servizi</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
+</head>
+<body>
+	<section>
+		<div class="hero-body">
+			<div class="container has-text-centered">
+				<div class="column is-6 is-offset-3">
+					<h3 class="title has-text-link">Logout</h3>
+					<div class="box">
+						<h3 class="is-size-4">Ha effettuato il logout. Si consiglia di chiudere questa finestra. Se,
+							invece, vuole rimanere sul sito, si consiglia di cliccare il seguente pulsante.</h3>
+					</div>
+					<div class="is-centered">
+						<p class="control">
+							<button class="button is-info is-large is-fullwidth is-outlined" onclick="window.location.href='{{ url_for('index') }}';">Indietro</button>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</body>
+</html>
