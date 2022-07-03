@@ -41,96 +41,111 @@ where will be the index page of the site'''
 #standard name for functions that works on the index page
 def index():
     #offers a html template on the page
-    return render_template('index.html')
+    global login_user
+    if login_user:
+        return redirect(url_for('home'))
+    else:
+        return render_template('index.html')
 
 @app.route('/services_area/')
 def services_area():
-    return render_template('services_area.html')
+    global login_user
+    if login_user:
+        return redirect(url_for('home'))
+    else:
+        return render_template('services_area.html')
 
 @app.route('/services_area/login', methods = ['POST', 'GET'])
 def login():
-    global needed
-    valid = True
-    if request.method == 'POST':
-        needed = None
-        form_data = request.form
-        
-        email = form_data['email']
-        password = form_data['password']
-        
-        user = mongo.db.users.find_one({'email': email})
-        if user == None:
-            valid = not valid
-        else:
-            if check_password_hash(user['password'], password):
-                global login_user
-                login_user = user
-                return redirect(url_for('home'))
-            else:
+    global login_user
+    if login_user:
+        return redirect(url_for('home'))
+    else:
+        global needed
+        valid = True
+        if request.method == 'POST':
+            needed = None
+            form_data = request.form
+            
+            email = form_data['email']
+            password = form_data['password']
+            
+            user = mongo.db.users.find_one({'email': email})
+            if user == None:
                 valid = not valid
-        
-        return render_template('login.html', needed = needed, valid = valid)
-    elif request.method == 'GET':
-        return render_template('login.html', needed = needed, valid = valid)
+            else:
+                if check_password_hash(user['password'], password):
+                    login_user = user
+                    return redirect(url_for('home'))
+                else:
+                    valid = not valid
+            
+            return render_template('login.html', needed = needed, valid = valid)
+        elif request.method == 'GET':
+            return render_template('login.html', needed = needed, valid = valid)
 
 @app.route('/services_area/sign_up/', methods = ['POST', 'GET'])
 def sign_up():
-    validation = False
-    valid = True
-    found = False
-    email = None
-    if request.method == 'POST':
-        form_data = request.form
-        
-        email = form_data['email']
-        name = form_data['name']
-        password = form_data['password']
-        
-        user = mongo.db.users.find_one({'email': email})
-        if user != None:
-            valid = not valid
-            return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
-        else:
-            user_to_validate = mongo.db.users_to_validate.find_one({'email': email})
-            if user_to_validate != None:
-                found = not found
+    global login_user
+    if login_user:
+        return redirect(url_for('home'))
+    else:
+        validation = False
+        valid = True
+        found = False
+        email = None
+        if request.method == 'POST':
+            form_data = request.form
+            
+            email = form_data['email']
+            name = form_data['name']
+            password = form_data['password']
+            
+            user = mongo.db.users.find_one({'email': email})
+            if user != None:
+                valid = not valid
                 return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
             else:
-                code = generate_password_hash(str(randint(0, 10000)), method = 'sha256')
-                
-                mongo.db.users_to_validate.insert_one({'email': email, 'name': name, 'password': generate_password_hash(password, method = 'sha256'), 'code': code})
-                
-                sender = 'nlpwebplatformserver@gmail.com'
-                receiver = email
-                
-                message = MIMEMultipart('alternative')
-                message['Subject'] = 'Email di conferma validazione registrazione'
-                message['From'] = sender
-                message['To'] = receiver
-                
-                #create the plain-text and HTML version of the message
-                text = '''Ciao, le è stata inviata questa email per confermare la registrazione al sito.\nClicchi su questo link:\nhttp://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code
-                html = '''<html><body><p>Ciao, le è stata inviata questa email per confermare la registrazione al sito.<br>Clicchi su questo link:<br><a href="http://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code + '''">http://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code + '''</a></p></body></html>'''
-                
-                #turn these into plain/html MIMEText objects
-                part1 = MIMEText(text, 'plain')
-                part2 = MIMEText(html, 'html')
-                
-                #add HTML/plain-text parts to MIMEMultipart message
-                #the email client will try to render the last part first
-                message.attach(part1)
-                message.attach(part2)
-                
-                #create secure connection with server and send email
-                context = ssl.create_default_context()
-                with smtplib.SMTP_SSL('smtp.gmail.com', port = 465, context = context) as server:
-                    server.login(sender, 'jcnkadjivnhhebnh')
-                    server.sendmail(sender, receiver, message.as_string())
-                
-                validation = not validation
-                return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
-    elif request.method == 'GET':
-        return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
+                user_to_validate = mongo.db.users_to_validate.find_one({'email': email})
+                if user_to_validate != None:
+                    found = not found
+                    return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
+                else:
+                    code = generate_password_hash(str(randint(0, 10000)), method = 'sha256')
+                    
+                    mongo.db.users_to_validate.insert_one({'email': email, 'name': name, 'password': generate_password_hash(password, method = 'sha256'), 'code': code})
+                    
+                    sender = 'nlpwebplatformserver@gmail.com'
+                    receiver = email
+                    
+                    message = MIMEMultipart('alternative')
+                    message['Subject'] = 'Email di conferma validazione registrazione'
+                    message['From'] = sender
+                    message['To'] = receiver
+                    
+                    #create the plain-text and HTML version of the message
+                    text = '''Ciao, le è stata inviata questa email per confermare la registrazione al sito.\nClicchi su questo link:\nhttp://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code
+                    html = '''<html><body><p>Ciao, le è stata inviata questa email per confermare la registrazione al sito.<br>Clicchi su questo link:<br><a href="http://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code + '''">http://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code + '''</a></p></body></html>'''
+                    
+                    #turn these into plain/html MIMEText objects
+                    part1 = MIMEText(text, 'plain')
+                    part2 = MIMEText(html, 'html')
+                    
+                    #add HTML/plain-text parts to MIMEMultipart message
+                    #the email client will try to render the last part first
+                    message.attach(part1)
+                    message.attach(part2)
+                    
+                    #create secure connection with server and send email
+                    context = ssl.create_default_context()
+                    with smtplib.SMTP_SSL('smtp.gmail.com', port = 465, context = context) as server:
+                        server.login(sender, 'jcnkadjivnhhebnh')
+                        server.sendmail(sender, receiver, message.as_string())
+                    
+                    validation = not validation
+                    return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
+        elif request.method == 'GET':
+            return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
 
 @app.route('/services_area/sign_up/validation', methods = ['GET'])
 def validation():
@@ -157,10 +172,13 @@ def validation():
 @app.route('/logout')
 def logout():
     global login_user
-    login_user = None
-    global needed
-    needed = None
-    return render_template('logout.html')
+    if login_user:
+        login_user = None
+        global needed
+        needed = None
+        return render_template('logout.html')
+    else:
+        return redirect(url_for('index'))
 
 @app.route('/home/')
 def home():
