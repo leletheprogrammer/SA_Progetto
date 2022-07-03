@@ -194,107 +194,104 @@ where will be the intents'''
 @app.route('/home/intents', methods = ['POST', 'GET'])
 #standard name for functions that works on the home page
 def intents():
-    page = int(request.args.get('page'))
-    numberIntents = mongo.db.intents.estimated_document_count()
-    if (page < 1 or (page > 1 and ((int(numberIntents / 20) + 1) < page) or (numberIntents % 20 == 0 and  numberIntents / 20 < page))):
-        return redirect(url_for('intents', page = 1))
-    if request.method == 'POST':
-        form_data = request.form
-
-        if form_data['submitButton'] == 'Elimina':
-            oldIntent = form_data['oldIntent']
-            mongo.db.intents.delete_one({'typology': oldIntent})
-        elif form_data['submitButton'] == 'Modifica':
-            oldIntent = form_data['oldIntent']
-            newIntent = form_data['newIntent']
+    global login_user
+    if login_user:
+        page = int(request.args.get('page'))
+        numberIntents = mongo.db.intents.estimated_document_count()
+        if (page < 1 or (page > 1 and ((int(numberIntents / 20) + 1) < page) or (numberIntents % 20 == 0 and  numberIntents / 20 < page))):
+            return redirect(url_for('intents', page = 1))
+        
+        if request.method == 'POST':
+            form_data = request.form
             
-            found = False
+            if form_data['submitButton'] == 'Elimina':
+                oldIntent = form_data['oldIntent']
+                mongo.db.intents.delete_one({'typology': oldIntent})
+            elif form_data['submitButton'] == 'Modifica':
+                oldIntent = form_data['oldIntent']
+                newIntent = form_data['newIntent']
+                if newIntent.isspace() == False:
+                    newIntent = ' '.join(newIntent.split())
+                    
+                    user = mongo.db.intents.find_one({'typology': newIntent})
+                    if user == None:
+                        mongo.db.intents.replace_one({'typology': oldIntent}, {'typology': newIntent})
+            elif form_data['submitButton'] == 'Aggiungi':
+                newIntent = form_data['newIntent']
+                if newIntent.isspace() == False:
+                    newIntent = ' '.join(newIntent.split())
+                    
+                    user = mongo.db.intents.find_one({'typology': newIntent})
+                    if user == None:
+                        mongo.db.intents.insert_one({'typology': newIntent})
+            
+            #offers a html template on the page
+            return redirect(url_for('intents', page = page))
+        elif request.method == 'GET':
+            typologies = []
             #iteration among the documents in the collection 'intents'
             for intent in mongo.db.intents.find():
-                if intent['typology'] == newIntent:
-                    found = not found
-                    break
+                #intent is a dict, so typologies is a list of dict
+                typologies.append(intent)
             
-            if not found:
-                mongo.db.intents.replace_one({'typology': oldIntent}, {'typology': newIntent})
-        elif form_data['submitButton'] == 'Aggiungi':
-            newIntent = form_data['newIntent']
-            
-            found = False
-            #iteration among the documents in the collection 'intents'
-            for intent in mongo.db.intents.find():
-                if intent['typology'] == newIntent:
-                    found = not found
-                    break
-            
-            if not found:
-                mongo.db.intents.insert_one({'typology': newIntent})
-
-        #offers a html template on the page
-        return redirect(url_for('intents', page = page))
-    elif request.method == 'GET':
-        typologies = []
-        #iteration among the documents in the collection 'intents'
-        for intent in mongo.db.intents.find():
-            #intent is a dict, so typologies is a list of dict
-            typologies.append(intent)
-
-
-        #offers a html template on the page
-        return render_template('intents.html', page = page, typologies = typologies)
+            #offers a html template on the page
+            return render_template('intents.html', page = page, typologies = typologies)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
 
 '''decorator that defines the url path
 where will be the entities'''
 @app.route('/home/entities', methods = ['POST', 'GET'])
 #standard name for functions that works on the home page
 def entities():
-    page = int(request.args.get('page'))
-    numberEntities = mongo.db.entities.estimated_document_count()
-    if (page < 1 or (page > 1 and ((int(numberEntities / 20) + 1) < page) or (numberEntities % 20 == 0 and  numberEntities / 20 < page))):
-        return redirect(url_for('entities', page = 1))
-    if request.method == 'POST':
-        form_data = request.form
-
-        if form_data['submitButton'] == 'Elimina':
-            oldEntity = form_data['oldEntity']
-            mongo.db.entities.delete_one({'namedEntity': oldEntity})
-        elif form_data['submitButton'] == 'Modifica':
-            oldEntity = form_data['oldEntity']
-            newEntity = form_data['newEntity']
+    global login_user
+    if login_user:
+        page = int(request.args.get('page'))
+        numberEntities = mongo.db.entities.estimated_document_count()
+        if (page < 1 or (page > 1 and ((int(numberEntities / 20) + 1) < page) or (numberEntities % 20 == 0 and  numberEntities / 20 < page))):
+            return redirect(url_for('entities', page = 1))
+        
+        if request.method == 'POST':
+            form_data = request.form
             
-            found = False
+            if form_data['submitButton'] == 'Elimina':
+                oldEntity = form_data['oldEntity']
+                mongo.db.entities.delete_one({'namedEntity': oldEntity})
+            elif form_data['submitButton'] == 'Modifica':
+                oldEntity = form_data['oldEntity']
+                newEntity = form_data['newEntity']
+                if newEntity.isspace == False:
+                    newEntity = ' '.join(newEntity.split())
+                    
+                    user = mongo.db.entities.find_one({'namedEntity': newEntity})
+                    if user == None:
+                        mongo.db.entities.replace_one({'namedEntity': oldEntity}, {'namedEntity': newEntity})
+            elif form_data['submitButton'] == 'Aggiungi':
+                newEntity = form_data['newEntity']
+                if newEntity.isspace == False:
+                    newEntity = ' '.join(newEntity.split())
+                    
+                    user = mongo.db.entities.find_one({'namedEntity': newEntity})
+                    if user == None:
+                        mongo.db.entities.insert_one({'namedEntity': newEntity})
+            
+            #offers a html template on the page
+            return redirect(url_for('entities', page = page))
+        elif request.method == 'GET':
+            namedEntities = []
             #iteration among the documents in the collection 'intents'
             for entity in mongo.db.entities.find():
-                if entity['namedEntity'] == newEntity:
-                    found = not found
-                    break
+                #intent is a dict, so typologies is a list of dict
+                namedEntities.append(entity)
             
-            if not found:
-                mongo.db.entities.replace_one({'namedEntity': oldEntity}, {'namedEntity': newEntity})
-        elif form_data['submitButton'] == 'Aggiungi':
-            newEntity = form_data['newEntity']
-            
-            found = False
-            #iteration among the documents in the collection 'intents'
-            for entity in mongo.db.entities.find():
-                if entity['namedEntity'] == newEntity:
-                    found = not found
-                    break
-            
-            if not found:
-                mongo.db.entities.insert_one({'namedEntity': newEntity})
-
-        #offers a html template on the page
-        return redirect(url_for('entities', page = page))
-    elif request.method == 'GET':
-        namedEntities = []
-        #iteration among the documents in the collection 'intents'
-        for entity in mongo.db.entities.find():
-            #intent is a dict, so typologies is a list of dict
-            namedEntities.append(entity)
-
-        #offers a html template on the page
-        return render_template('entities.html', page = page, namedEntities = namedEntities)
+            #offers a html template on the page
+            return render_template('entities.html', page = page, namedEntities = namedEntities)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
 
 '''decorator that defines the url path
 where will be the training phrases'''
