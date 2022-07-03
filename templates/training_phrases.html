@@ -264,21 +264,31 @@ function modifyDeleteClicked(phrase, id, operation) {
 	document.getElementById(id).value = phrase;
 }
 
-function entitySelected() {
+function noteClicked(phrase, intent, sentiment, emotion) {
+	$('#notePhrase').modal('show');
+	document.getElementById('noteSelectedPhrase').value = phrase;
+	document.getElementById('intentNoteSelected').value = intent;
+	document.getElementById('sentimentNoteSelected').value = sentiment;
+	document.getElementById('emotionNoteSelected').value = emotion;
+	document.getElementById('writeDownPhrase').innerHTML = phrase;
+}
+
+function entitySelected(divId) {
+	document.getElementById('hiddenDivision').value = divId;
 	let textarea = event.target;
     let selection = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
 	$('#entitySelectedPhrase').modal('show');
 	document.getElementById('entitySubstring').value = selection;
 }
 
-function entityAdded(substringId) {
+function entityAdded(substringId, divId) {
 	$('#entitySelectedPhrase').modal('hide');
 	var input = document.createElement("input");
 	var i = 1;
 	var istr = "";
 	while(true) {
 		istr = "entity" + i.toString();
-		if(document.getElementById("divAddId").querySelector("#"+istr) === null) {
+		if(document.getElementById(divId).querySelector("#"+istr) === null) {
 			break;
 		}
 		i++;
@@ -296,12 +306,12 @@ function entityAdded(substringId) {
 			input.setAttribute("style", "background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})");
 		}	
 	{% endfor %}
-	document.getElementById("divAddId").appendChild(input);
+	document.getElementById(divId).appendChild(input);
 	var inputNamedEntity = document.createElement("input");
 	inputNamedEntity.name = "namedEntity" + i.toString();
 	inputNamedEntity.type = "hidden"
 	inputNamedEntity.value = namedEntity;
-	document.getElementById("divAddId").appendChild(inputNamedEntity);
+	document.getElementById(divId).appendChild(inputNamedEntity);
 }
 
 $(document).ready(function(){
@@ -337,13 +347,12 @@ $(document).ready(function(){
 			deletePhrase.addEventListener('click', function(){
 				modifyDeleteClicked('{{ row['phrase'] }}', 'oldDeletePhrase', '#deletePhrase');
 			});
+			var notePhrase = document.getElementById('note{{ loop.index }}');
+			notePhrase.addEventListener('click', function(){
+				noteClicked('{{ row['phrase'] }}', '{{ row['intent'] }}', '{{ row['sentiment'] }}', '{{ row['emotion'] }}');
+			});
 		{% endif %}
 	{% endfor %}
-	
-	var input = document.getElementById('contentDivEditable');
-	input.addEventListener('select', function(){
-		entitySelected();
-	});
 	
 });
 
@@ -395,6 +404,7 @@ $(document).ready(function(){
 									<td>
 										<a id="modify{{loop.index}}" href="#" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
 										<a id="delete{{loop.index}}" href="#" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
+										<a id="note{{loop.index}}" href="#" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Annota">&#xE254;</i></a>
 									</td>
 								</tr>
 							{% endif %}
@@ -449,7 +459,7 @@ $(document).ready(function(){
 						</div>
 						<div id = "divAddId" class="form-group">
 							<label>Aggiungi Training Phrase e seleziona entity(opzionale)</label>
-							<input name="newPhrase" id="addNewPhrase" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+" onselect = "entitySelected()" required>
+							<input name="newPhrase" id="addNewPhrase" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+" onselect = "entitySelected('divAddId')" required>
 							<label for = "selectIntent">Selezionare l'intent(opzionale)</label>
 							<select class = "form-control" id = "intentSelected" name = "selectIntent">
 								<option selected label = "Clicca qui per selezionare l'intent">
@@ -540,6 +550,62 @@ $(document).ready(function(){
 			</div>
 		</div>
 	</div>
+	<!-- Note Modal HTML -->
+	<div id="notePhrase" class="modal fade">
+		<div class="modal-dialog" style = "overflow-y: scroll; max-height:85%;  margin-top: 50px; margin-bottom:50px;">
+			<div class="modal-content">
+				<form method = "POST">
+					<div class="modal-header">						
+						<h4 class="modal-title">Annota Training Phrase</h4>
+						<button type="button" class="close" aria-hidden="true" data-dismiss = "modal">&times;</button>
+					</div>
+					<div class="modal-body">
+						<div id = "EntitiesDiv">Legenda delle named Entities<br>
+						{% for row in namedEntities %}<span id = "spanEntities{{ loop.index }}" style = "background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})">{{ row['namedEntity'] }}</span>   {% endfor %}
+						</div>
+						<div id = "divNoteId" class="form-group">
+							<label>Seleziona entity(opzionale)</label>
+							<input name="notePhraseSelected" id = "noteSelectedPhrase" type="text" readonly class="form-control" onselect = "entitySelected('divNoteId')">
+							<label for = "selectNoteIntent">Selezionare l'intent(opzionale)</label>
+							<select class = "form-control" id = "intentNoteSelected" name = "selectNoteIntent">
+								<option selected label = "Clicca qui per selezionare l'intent">
+									{% for row in intents %}
+										<option>
+											{{ row['typology'] }}
+										</option>
+									{% endfor %}
+								</option>
+							</select>
+							<label for = "selectNoteSentiment">Selezionare il sentiment(opzionale)</label>
+							<select class = "form-control" id = "sentimentNoteSelected" name = "selectNoteSentiment">
+								<option selected label = "Clicca qui per selezionare il sentiment">
+									{% for row in sentiments %}
+										<option>
+											{{ row['category'] }}
+										</option>
+									{% endfor %}
+								</option>
+							</select>
+							<label for = "selectNoteEmotion">Selezionare l'emotion(opzionale)</label>
+							<select class = "form-control" id = "emotionNoteSelected" name = "selectNoteEmotion">
+								<option selected label = "Clicca qui per selezionare l'emotion">
+									{% for row in emotions %}
+										<option>
+											{{ row['type'] }}
+										</option>
+									{% endfor %}
+								</option>
+							</select>
+						</div>			
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" value="Indietro" data-dismiss = "modal">
+						<input type="submit" name="submitButton" class="btn btn-success" value="Annota">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
 	<!-- Entity Selected Modal HTML -->
 	<div id="entitySelectedPhrase" class="modal fade">
 		<div class="modal-dialog">
@@ -551,6 +617,7 @@ $(document).ready(function(){
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
+							<input id = "hiddenDivision" type = "hidden">
 							<label>La sottostringa selezionata è la seguente</label>
 							<input name="entity" id = "entitySubstring" type="text" readonly class="form-control">
 							<label for = "selectNamedEntity">Selezionare la named entity alla quale appartiene</label>
@@ -567,7 +634,7 @@ $(document).ready(function(){
 					</div>
 					<div class="modal-footer">
 						<input type="button" class="btn btn-default" onclick = "cleanEntity()" value="Indietro">
-						<input type="button" class="btn btn-info" value="Aggiungi" onclick = "entityAdded('entitySubstring')">
+						<input type="button" class="btn btn-info" value="Aggiungi" onclick = "entityAdded('entitySubstring', document.getElementById('hiddenDivision').value)">
 					</div>
 				</form>
 			</div>

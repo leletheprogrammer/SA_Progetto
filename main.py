@@ -262,12 +262,42 @@ def training_phrases():
                         pass
                     entitiesAssociated += '(' + str(first) + ',' + str(first + len(form_data['entity' + str(i)]) - 1) + ',' + form_data['namedEntity' + str(i)] + '),'
                 else:
-                    entitiesAssociated = entitiesAssociated[:len(entitiesAssociated) - 1] + ']'
+                    if (entitiesAssociated[len(entitiesAssociated) - 1] != '['):
+                        entitiesAssociated = entitiesAssociated[:len(entitiesAssociated) - 1] + ']'
+                    else:
+                        entitiesAssociated += ']'
                     break
                 i = i + 1
             
             if not found:
                 mongo.db.trainingPhrases.insert_one({'phrase': newPhrase, 'intent': intentAssociated, 'entities': entitiesAssociated, 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
+
+        elif form_data['submitButton'] == 'Annota':
+            phraseSelected = form_data['notePhraseSelected']
+            intentAssociated = form_data['selectNoteIntent']
+            entitiesAssociated = '['
+            sentimentAssociated = form_data['selectNoteSentiment']
+            emotionAssociated = form_data['selectNoteEmotion']
+            
+            phrase = mongo.db.trainingPhrases.find_one({'phrase': phraseSelected})
+            
+            i = 1
+            while True:
+                if 'entity'+str(i) in form_data.keys():
+                    try:
+                        first = phraseSelected.index(form_data['entity' + str(i)])
+                    except ValueError:
+                        pass
+                    entitiesAssociated += '(' + str(first) + ',' + str(first + len(form_data['entity' + str(i)]) - 1) + ',' + form_data['namedEntity' + str(i)] + '),'
+                else:
+                    if (entitiesAssociated[len(entitiesAssociated) - 1] != '['):
+                        entitiesAssociated = entitiesAssociated[:len(entitiesAssociated) - 1] + ']'
+                    else:
+                        entitiesAssociated += ']'
+                    break
+                i = i + 1
+            
+            mongo.db.trainingPhrases.replace_one(phrase, {'phrase': phraseSelected, 'intent': intentAssociated, 'entities': entitiesAssociated, 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
 
         #offers a html template on the page
         return redirect(url_for('training_phrases', page = page))
@@ -277,7 +307,6 @@ def training_phrases():
         for phrase in mongo.db.trainingPhrases.find():
             #intent is a dict, so typologies is a list of dict
             phrases.append(phrase)
-        print(phrases)
         
         intents = []
         for intent in mongo.db.intents.find():
