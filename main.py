@@ -244,7 +244,7 @@ def training_phrases():
         elif form_data['submitButton'] == 'Aggiungi':
             newPhrase = form_data['newPhrase']
             intentAssociated = form_data['selectIntent']
-            entitiesAssociated = list()
+            entitiesAssociated = '['
             sentimentAssociated = form_data['selectSentiment']
             emotionAssociated = form_data['selectEmotion']
             found = False
@@ -253,18 +253,19 @@ def training_phrases():
                 if phrase['phrase'] == newPhrase:
                     found = not found
                     break
-            try:
-                i = 1
-                while True:
-                    if 'entity'+str(i) in form_data.keys():
+            i = 1
+            while True:
+                if 'entity'+str(i) in form_data.keys():
+                    try:
                         first = newPhrase.index(form_data['entity' + str(i)])
-                        entitystr = '(' + str(first) + ',' + str(first + len(form_data['entity' + str(i)]) - 1) + ',' + form_data['namedEntity' + str(i)] + ')'
-                        entitiesAssociated.append(entitystr)
-                    else:
-                        break
-                        i = i + 1
-            except ValueError:
-                entitiesAssociated = list()
+                    except ValueError:
+                        pass
+                    entitiesAssociated += '(' + str(first) + ',' + str(first + len(form_data['entity' + str(i)]) - 1) + ',' + form_data['namedEntity' + str(i)] + '),'
+                else:
+                    entitiesAssociated = entitiesAssociated[:len(entitiesAssociated) - 1] + ']'
+                    break
+                i = i + 1
+            
             if not found:
                 mongo.db.trainingPhrases.insert_one({'phrase': newPhrase, 'intent': intentAssociated, 'entities': entitiesAssociated, 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
 
