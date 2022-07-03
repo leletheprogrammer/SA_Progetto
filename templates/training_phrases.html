@@ -12,31 +12,31 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <style>
-    body {
-        color: #566787;
+	body {
+		color: #566787;
 		background: #f5f5f5;
 		font-family: 'Varela Round', sans-serif;
 		font-size: 13px;
 	}
 	.table-responsive {
-        margin: 30px 0;
-    }
+		margin: 30px 0;
+	}
 	.table-wrapper {
 		min-width: 1000px;
-        background: #fff;
-        padding: 20px 25px;
+		background: #fff;
+		padding: 20px 25px;
 		border-radius: 3px;
-        box-shadow: 0 1px 1px rgba(0,0,0,.05);
-    }
-	.table-title {        
+		box-shadow: 0 1px 1px rgba(0,0,0,.05);
+	}
+	.table-title {
 		padding-bottom: 15px;
 		background: #435d7d;
 		color: #fff;
 		padding: 16px 30px;
 		margin: -20px -25px 10px;
 		border-radius: 3px 3px 0 0;
-    }
-    .table-title h2 {
+	}
+	.table-title h2 {
 		margin: 5px 0 0;
 		font-size: 24px;
 	}
@@ -63,33 +63,33 @@
 		float: left;
 		margin-top: 2px;
 	}
-    table.table tr th, table.table tr td {
-        border-color: #e9e9e9;
+	table.table tr th, table.table tr td {
+		border-color: #e9e9e9;
 		padding: 12px 15px;
 		vertical-align: middle;
-    }
+	}
 	table.table tr th:first-child {
 		width: 60px;
 	}
 	table.table tr th:last-child {
 		width: 100px;
 	}
-    table.table-striped tbody tr:nth-of-type(odd) {
-    	background-color: #fcfcfc;
+	table.table-striped tbody tr:nth-of-type(odd) {
+		background-color: #fcfcfc;
 	}
 	table.table-striped.table-hover tbody tr:hover {
 		background: #f5f5f5;
 	}
-    table.table th i {
-        font-size: 13px;
-        margin: 0 5px;
-        cursor: pointer;
-    }	
-    table.table td:last-child i {
+	table.table th i {
+		font-size: 13px;
+		margin: 0 5px;
+		cursor: pointer;
+	}
+	table.table td:last-child i {
 		opacity: 0.9;
 		font-size: 22px;
-        margin: 0 5px;
-    }
+		margin: 0 5px;
+	}
 	table.table td a {
 		font-weight: bold;
 		color: #566787;
@@ -101,56 +101,56 @@
 		color: #2196F3;
 	}
 	table.table td a.edit {
-        color: #FFC107;
-    }
-    table.table td a.delete {
-        color: #F44336;
-    }
-    table.table td i {
-        font-size: 19px;
-    }
+		color: #FFC107;
+	}
+	table.table td a.delete {
+		color: #F44336;
+	}
+	table.table td i {
+		font-size: 19px;
+	}
 	table.table .avatar {
 		border-radius: 50%;
 		vertical-align: middle;
 		margin-right: 10px;
 	}
-    .pagination {
-        float: right;
-        margin: 0 0 5px;
-    }
-    .pagination li a {
-        border: none;
-        font-size: 13px;
-        min-width: 30px;
-        min-height: 30px;
-        color: #999;
-        margin: 0 2px;
-        line-height: 30px;
-        border-radius: 2px !important;
-        text-align: center;
-        padding: 0 6px;
-    }
-    .pagination li a:hover {
-        color: #666;
-    }	
-    .pagination li.active a, .pagination li.active a.page-link {
-        background: #03A9F4;
-    }
-    .pagination li.active a:hover {        
-        background: #0397d6;
-    }
+	.pagination {
+		float: right;
+		margin: 0 0 5px;
+	}
+	.pagination li a {
+		border: none;
+		font-size: 13px;
+		min-width: 30px;
+		min-height: 30px;
+		color: #999;
+		margin: 0 2px;
+		line-height: 30px;
+		border-radius: 2px !important;
+		text-align: center;
+		padding: 0 6px;
+	}
+	.pagination li a:hover {
+		color: #666;
+	}
+	.pagination li.active a, .pagination li.active a.page-link {
+		background: #03A9F4;
+	}
+	.pagination li.active a:hover {
+		background: #0397d6;
+	}
 	.pagination li.disabled i {
-        color: #ccc;
-    }
-    .pagination li i {
-        font-size: 16px;
-        padding-top: 6px
-    }
-    .hint-text {
-        float: left;
-        margin-top: 10px;
-        font-size: 13px;
-    }    
+		color: #ccc;
+	}
+	.pagination li i {
+		font-size: 16px;
+		padding-top: 6px
+	}
+	.hint-text {
+		float: left;
+		margin-top: 10px;
+		font-size: 13px;
+	}
 	/* Modal styles */
 	.modal .modal-dialog {
 		max-width: 400px;
@@ -165,9 +165,9 @@
 		background: #ecf0f1;
 		border-radius: 0 0 3px 3px;
 	}
-    .modal .modal-title {
-        display: inline-block;
-    }
+	.modal .modal-title {
+		display: inline-block;
+	}
 	.modal .form-control {
 		border-radius: 2px;
 		box-shadow: none;
@@ -179,15 +179,10 @@
 	.modal .btn {
 		border-radius: 2px;
 		min-width: 100px;
-	}	
+	}
 	.modal form label {
 		font-weight: normal;
 	}
-
-	.input {
-		color: white;
-	}
-
 </style>
 <script>
 function cleanPhrase() {
@@ -200,11 +195,45 @@ function cleanEntity() {
 	$('#entitySelectedPhrase').modal('hide');
 }
 
-function cleanAll(phraseId, intentId, sentimentId, emotionId, operation) {
+function cleanEntities() {
+	var i = 1;
+	var istr = "";
+	while (true) {
+		istr = "entity" + i.toString();
+		if (document.getElementById('divNoteId').querySelector("#"+istr) === null) {
+			break;
+		} else {
+			var entity = document.getElementById(istr);
+			var instr = "namedEntity" + i.toString();
+			var namedEntity = document.getElementById(instr);
+			document.getElementById('divNoteId').removeChild(entity);
+			document.getElementById('divNoteId').removeChild(namedEntity);
+		}
+		i++;
+	}
+	$('#notePhrase').modal('hide');
+}
+
+function cleanAll(phraseId, intentId, sentimentId, emotionId, divId, operation) {
 	document.getElementById(phraseId).value = '';
 	document.getElementById(intentId).selectedIndex = 0;
 	document.getElementById(sentimentId).selectedIndex = 0;
 	document.getElementById(emotionId).selectedIndex = 0;
+	var i = 1;
+	var istr = "";
+	while (true) {
+		istr = "entity" + i.toString();
+		if (document.getElementById(divId).querySelector("#"+istr) === null) {
+			break;
+		} else {
+			var entity = document.getElementById(istr);
+			var instr = "namedEntity" + i.toString();
+			var namedEntity = document.getElementById(instr);
+			document.getElementById(divId).removeChild(entity);
+			document.getElementById(divId).removeChild(namedEntity);
+		}
+		i++;
+	}
 	$(operation).modal('hide');
 }
 
@@ -225,7 +254,7 @@ function noteClicked(phrase, intent, sentiment, emotion) {
 function entitySelected(divId) {
 	document.getElementById('hiddenDivision').value = divId;
 	let textarea = event.target;
-    let selection = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
+	let selection = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
 	$('#entitySelectedPhrase').modal('show');
 	document.getElementById('entitySubstring').value = selection;
 }
@@ -235,9 +264,9 @@ function entityAdded(substringId, divId) {
 	var input = document.createElement("input");
 	var i = 1;
 	var istr = "";
-	while(true) {
+	while (true) {
 		istr = "entity" + i.toString();
-		if(document.getElementById(divId).querySelector("#"+istr) === null) {
+		if (document.getElementById(divId).querySelector("#"+istr) === null) {
 			break;
 		}
 		i++;
@@ -253,43 +282,61 @@ function entityAdded(substringId, divId) {
 		controlEntity = "{{ row['namedEntity'] }}";
 		if (controlEntity == namedEntity) {
 			input.setAttribute("style", "background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})");
-		}	
+		}
 	{% endfor %}
 	document.getElementById(divId).appendChild(input);
 	var inputNamedEntity = document.createElement("input");
+	inputNamedEntity.id = "namedEntity" + i.toString();
 	inputNamedEntity.name = "namedEntity" + i.toString();
 	inputNamedEntity.type = "hidden"
 	inputNamedEntity.value = namedEntity;
 	document.getElementById(divId).appendChild(inputNamedEntity);
 }
 
-$(document).ready(function(){
+$(document).ready(function() {
 	// Activate tooltip
 	$('[data-toggle="tooltip"]').tooltip();
 	
 	{% for row in phrases %}
 		{% if loop.index > ((page * 20) - 20) and loop.index <= (page * 20) %}
 			var modifyPhrase = document.getElementById('modify{{ loop.index }}');
-			modifyPhrase.addEventListener('click', function(){
+			modifyPhrase.addEventListener('click', function() {
 				modifyDeleteClicked('{{ row['phrase'] }}', 'oldModifyPhrase', '#editPhrase');
 			});
 			var deletePhrase = document.getElementById('delete{{ loop.index }}');
-			deletePhrase.addEventListener('click', function(){
+			deletePhrase.addEventListener('click', function() {
 				modifyDeleteClicked('{{ row['phrase'] }}', 'oldDeletePhrase', '#deletePhrase');
 			});
 			var notePhrase = document.getElementById('note{{ loop.index }}');
-			notePhrase.addEventListener('click', function(){
+			notePhrase.addEventListener('click', function() {
 				noteClicked('{{ row['phrase'] }}', '{{ row['intent'] }}', '{{ row['sentiment'] }}', '{{ row['emotion'] }}');
 			});
 		{% endif %}
 	{% endfor %}
-	
 });
-
 </script>
 </head>
 <body>
-    <div class="container">
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="{{ url_for('logout') }}">Logout</a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="{{ url_for('home') }}">Home</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container">
 		<div class="table-responsive">
 			<div class="table-wrapper">
 				<div class="table-title">
@@ -298,7 +345,7 @@ $(document).ready(function(){
 							<h2>Tabella delle Training Phrases</h2>
 						</div>
 						<div class="col-xs-6">
-							<a href="#addPhrase" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i> <span>Crea nuova training phrase</span></a>
+							<a href="#addPhrase" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i><span>Crea nuova training phrase</span></a>
 						</div>
 					</div>
 				</div>
@@ -332,9 +379,9 @@ $(document).ready(function(){
 										{{ row['emotion'] }}
 									</td>
 									<td>
-										<a id="modify{{loop.index}}" href="#" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
-										<a id="delete{{loop.index}}" href="#" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
-										<a id="note{{loop.index}}" href="#" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Annota">&#xE254;</i></a>
+										<a id="modify{{ loop.index }}" href="#" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
+										<a id="delete{{ loop.index }}" href="#" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
+										<a id="note{{ loop.index }}" href="#" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Annota">&#xE254;</i></a>
 									</td>
 								</tr>
 							{% endif %}
@@ -372,27 +419,27 @@ $(document).ready(function(){
 					</ul>
 				</div>
 			</div>
-		</div>        
-    </div>
+		</div>
+	</div>
 	<!-- Add Modal HTML -->
 	<div id="addPhrase" class="modal fade">
-		<div class="modal-dialog" style = "overflow-y: scroll; max-height:85%;  margin-top: 50px; margin-bottom:50px;">
+		<div class="modal-dialog" style="overflow-y: scroll; max-height:85%; margin-top: 50px; margin-bottom:50px;">
 			<div class="modal-content">
-				<form method = "POST">
-					<div class="modal-header">						
+				<form method="POST">
+					<div class="modal-header">
 						<h4 class="modal-title">Aggiungi Training Phrase</h4>
-						<button type="button" class="close" aria-hidden="true" onclick="cleanAll('addNewPhrase', 'intentSelected', 'sentimentSelected', 'emotionSelected', '#addPhrase')">&times;</button>
+						<button type="button" class="close" aria-hidden="true" onclick="cleanAll('addNewPhrase', 'intentSelected', 'sentimentSelected', 'emotionSelected', 'divAddId', '#addPhrase')">&times;</button>
 					</div>
 					<div class="modal-body">
-						<div id = "namedEntitiesDiv">Legenda delle named Entities<br>
-						{% for row in namedEntities %}<span id = "spanEntities{{ loop.index }}" style = "background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})">{{ row['namedEntity'] }}</span>   {% endfor %}
+						<div id="namedEntitiesDiv">Legenda delle named Entities<br>
+						{% for row in namedEntities %}<span id="spanEntities{{ loop.index }}" style="background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})">{{ row['namedEntity'] }}</span>{% endfor %}
 						</div>
-						<div id = "divAddId" class="form-group">
+						<div id="divAddId" class="form-group">
 							<label>Aggiungi Training Phrase e seleziona entity(opzionale)</label>
-							<input name="newPhrase" id="addNewPhrase" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+" onselect = "entitySelected('divAddId')" required>
-							<label for = "selectIntent">Selezionare l'intent(opzionale)</label>
-							<select class = "form-control" id = "intentSelected" name = "selectIntent">
-								<option selected label = "Clicca qui per selezionare l'intent">
+							<input name="newPhrase" id="addNewPhrase" type="text" class="form-control" pattern="[a-zA-Z0-9 ]+" onselect="entitySelected('divAddId')" required>
+							<label for="selectIntent">Selezionare l'intent(opzionale)</label>
+							<select class="form-control" id="intentSelected" name="selectIntent">
+								<option selected label="Clicca qui per selezionare l'intent">
 									{% for row in intents %}
 										<option>
 											{{ row['typology'] }}
@@ -400,9 +447,9 @@ $(document).ready(function(){
 									{% endfor %}
 								</option>
 							</select>
-							<label for = "selectSentiment">Selezionare il sentiment(opzionale)</label>
-							<select class = "form-control" id = "sentimentSelected" name = "selectSentiment">
-								<option selected label = "Clicca qui per selezionare il sentiment">
+							<label for="selectSentiment">Selezionare il sentiment(opzionale)</label>
+							<select class="form-control" id="sentimentSelected" name="selectSentiment">
+								<option selected label="Clicca qui per selezionare il sentiment">
 									{% for row in sentiments %}
 										<option>
 											{{ row['category'] }}
@@ -410,9 +457,9 @@ $(document).ready(function(){
 									{% endfor %}
 								</option>
 							</select>
-							<label for = "selectEmotion">Selezionare l'emotion(opzionale)</label>
-							<select class = "form-control" id = "emotionSelected" name = "selectEmotion">
-								<option selected label = "Clicca qui per selezionare l'emotion">
+							<label for="selectEmotion">Selezionare l'emotion(opzionale)</label>
+							<select class="form-control" id="emotionSelected" name="selectEmotion">
+								<option selected label="Clicca qui per selezionare l'emotion">
 									{% for row in emotions %}
 										<option>
 											{{ row['type'] }}
@@ -420,10 +467,10 @@ $(document).ready(function(){
 									{% endfor %}
 								</option>
 							</select>
-						</div>			
+						</div>
 					</div>
 					<div class="modal-footer">
-						<input type="button" class="btn btn-default" value="Indietro" onclick="cleanAll('addNewPhrase', 'intentSelected', 'sentimentSelected', 'emotionSelected', '#addPhrase')">
+						<input type="button" class="btn btn-default" value="Indietro" onclick="cleanAll('addNewPhrase', 'intentSelected', 'sentimentSelected', 'emotionSelected', 'divAddId', '#addPhrase')">
 						<input type="submit" name="submitButton" class="btn btn-success" value="Aggiungi">
 					</div>
 				</form>
@@ -434,21 +481,21 @@ $(document).ready(function(){
 	<div id="editPhrase" class="modal fade">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<form method = "POST">
-					<div class="modal-header">						
+				<form method="POST">
+					<div class="modal-header">
 						<h4 class="modal-title">Modifica Training Phrase</h4>
-						<button type="button" class="close" onclick = "cleanPhrase()" aria-hidden="true">&times;</button>
+						<button type="button" class="close" onclick="cleanPhrase()" aria-hidden="true">&times;</button>
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
 							<label>La training phrase selezionata è la seguente</label>
-							<input name="oldPhrase" id = "oldModifyPhrase" type="text" readonly class="form-control">
+							<input name="oldPhrase" id="oldModifyPhrase" type="text" readonly class="form-control">
 							<label>Inserire di seguito la nuova training phrase</label>
-							<input name="newPhrase" id = "newModifyPhrase" type="text" class="form-control" required pattern="[a-zA-Z0-9 ]+">
-						</div>				
+							<input name="newPhrase" id="newModifyPhrase" type="text" class="form-control" required pattern="[a-zA-Z0-9 ]+">
+						</div>
 					</div>
 					<div class="modal-footer">
-						<input type="button" class="btn btn-default" onclick = "cleanPhrase()" value="Indietro">
+						<input type="button" class="btn btn-default" onclick="cleanPhrase()" value="Indietro">
 						<input type="submit" name="submitButton" class="btn btn-info" value="Modifica">
 					</div>
 				</form>
@@ -459,21 +506,21 @@ $(document).ready(function(){
 	<div id="deletePhrase" class="modal fade">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<form method = "POST">
-					<div class="modal-header">						
+				<form method="POST">
+					<div class="modal-header">
 						<h4 class="modal-title">Cancella Training Phrase</h4>
 						<button type="button" data-dismiss="modal" class="close" aria-hidden="true">&times;</button>
 					</div>
-					<div class="modal-body">	
+					<div class="modal-body">
 						<div class="form-group">
 							<label>La training phrase selezionata è la seguente</label>
-							<input name="oldPhrase" id = "oldDeletePhrase" type="text" readonly class="form-control">
+							<input name="oldPhrase" id="oldDeletePhrase" type="text" readonly class="form-control">
 						</div>
 						<p>Sei sicuro di voler cancellare questa training phrase?</p>
 						<p class="text-warning"><small>Questa azione non e' reversibile.</small></p>
 					</div>
 					<div class="modal-footer">
-						<input type="button" class="btn btn-default" data-dismiss = "modal" value="Indietro">
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Indietro">
 						<input type="submit" name="submitButton" class="btn btn-danger" value="Elimina">
 					</div>
 				</form>
@@ -482,23 +529,23 @@ $(document).ready(function(){
 	</div>
 	<!-- Note Modal HTML -->
 	<div id="notePhrase" class="modal fade">
-		<div class="modal-dialog" style = "overflow-y: scroll; max-height:85%;  margin-top: 50px; margin-bottom:50px;">
+		<div class="modal-dialog" style="overflow-y: scroll; max-height:85%; margin-top: 50px; margin-bottom:50px;">
 			<div class="modal-content">
-				<form method = "POST">
-					<div class="modal-header">						
+				<form method="POST">
+					<div class="modal-header">
 						<h4 class="modal-title">Annota Training Phrase</h4>
-						<button type="button" class="close" aria-hidden="true" data-dismiss = "modal">&times;</button>
+						<button type="button" class="close" aria-hidden="true" onclick="cleanEntities()">&times;</button>
 					</div>
 					<div class="modal-body">
-						<div id = "EntitiesDiv">Legenda delle named Entities<br>
-						{% for row in namedEntities %}<span id = "spanEntities{{ loop.index }}" style = "background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})">{{ row['namedEntity'] }}</span>   {% endfor %}
+						<div id="EntitiesDiv">Legenda delle named Entities<br>
+						{% for row in namedEntities %}<span id="spanEntities{{ loop.index }}" style="background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})">{{ row['namedEntity'] }}</span>{% endfor %}
 						</div>
-						<div id = "divNoteId" class="form-group">
+						<div id="divNoteId" class="form-group">
 							<label>Seleziona entity(opzionale)</label>
-							<input name="notePhraseSelected" id = "noteSelectedPhrase" type="text" readonly class="form-control" onselect = "entitySelected('divNoteId')">
-							<label for = "selectNoteIntent">Selezionare l'intent(opzionale)</label>
-							<select class = "form-control" id = "intentNoteSelected" name = "selectNoteIntent">
-								<option selected label = "Clicca qui per selezionare l'intent">
+							<input name="notePhraseSelected" id="noteSelectedPhrase" type="text" readonly class="form-control" onselect="entitySelected('divNoteId')">
+							<label for="selectNoteIntent">Selezionare l'intent(opzionale)</label>
+							<select class="form-control" id="intentNoteSelected" name="selectNoteIntent">
+								<option selected label="Clicca qui per selezionare l'intent">
 									{% for row in intents %}
 										<option>
 											{{ row['typology'] }}
@@ -506,9 +553,9 @@ $(document).ready(function(){
 									{% endfor %}
 								</option>
 							</select>
-							<label for = "selectNoteSentiment">Selezionare il sentiment(opzionale)</label>
-							<select class = "form-control" id = "sentimentNoteSelected" name = "selectNoteSentiment">
-								<option selected label = "Clicca qui per selezionare il sentiment">
+							<label for="selectNoteSentiment">Selezionare il sentiment(opzionale)</label>
+							<select class="form-control" id="sentimentNoteSelected" name="selectNoteSentiment">
+								<option selected label="Clicca qui per selezionare il sentiment">
 									{% for row in sentiments %}
 										<option>
 											{{ row['category'] }}
@@ -516,9 +563,9 @@ $(document).ready(function(){
 									{% endfor %}
 								</option>
 							</select>
-							<label for = "selectNoteEmotion">Selezionare l'emotion(opzionale)</label>
-							<select class = "form-control" id = "emotionNoteSelected" name = "selectNoteEmotion">
-								<option selected label = "Clicca qui per selezionare l'emotion">
+							<label for="selectNoteEmotion">Selezionare l'emotion(opzionale)</label>
+							<select class="form-control" id="emotionNoteSelected" name="selectNoteEmotion">
+								<option selected label="Clicca qui per selezionare l'emotion">
 									{% for row in emotions %}
 										<option>
 											{{ row['type'] }}
@@ -526,10 +573,10 @@ $(document).ready(function(){
 									{% endfor %}
 								</option>
 							</select>
-						</div>			
+						</div>
 					</div>
 					<div class="modal-footer">
-						<input type="button" class="btn btn-default" value="Indietro" data-dismiss = "modal">
+						<input type="button" class="btn btn-default" value="Indietro" onclick="cleanEntities()">
 						<input type="submit" name="submitButton" class="btn btn-success" value="Annota">
 					</div>
 				</form>
@@ -540,19 +587,19 @@ $(document).ready(function(){
 	<div id="entitySelectedPhrase" class="modal fade">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<form method = "POST">
-					<div class="modal-header">						
+				<form method="POST">
+					<div class="modal-header">
 						<h4 class="modal-title">Aggiungi e specifica categoria entità</h4>
-						<button type="button" class="close" onclick = "cleanEntity()" aria-hidden="true">&times;</button>
+						<button type="button" class="close" onclick="cleanEntity()" aria-hidden="true">&times;</button>
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
-							<input id = "hiddenDivision" type = "hidden">
+							<input id="hiddenDivision" type="hidden">
 							<label>La sottostringa selezionata è la seguente</label>
-							<input name="entity" id = "entitySubstring" type="text" readonly class="form-control">
-							<label for = "selectNamedEntity">Selezionare la named entity alla quale appartiene</label>
-							<select class = "form-control" id = "namedEntitySelected" name = "selectNamedEntity">
-								<option selected label = "Clicca qui per selezionare la named entity">
+							<input name="entity" id="entitySubstring" type="text" readonly class="form-control">
+							<label for="selectNamedEntity">Selezionare la named entity alla quale appartiene</label>
+							<select class="form-control" id="namedEntitySelected" name="selectNamedEntity">
+								<option selected label="Clicca qui per selezionare la named entity">
 									{% for row in namedEntities %}
 										<option>
 											{{ row['namedEntity'] }}
@@ -560,11 +607,11 @@ $(document).ready(function(){
 									{% endfor %}
 								</option>
 							</select>
-						</div>				
+						</div>
 					</div>
 					<div class="modal-footer">
-						<input type="button" class="btn btn-default" onclick = "cleanEntity()" value="Indietro">
-						<input type="button" class="btn btn-info" value="Aggiungi" onclick = "entityAdded('entitySubstring', document.getElementById('hiddenDivision').value)">
+						<input type="button" class="btn btn-default" onclick="cleanEntity()" value="Indietro">
+						<input type="button" class="btn btn-info" value="Aggiungi" onclick="entityAdded('entitySubstring', document.getElementById('hiddenDivision').value)">
 					</div>
 				</form>
 			</div>

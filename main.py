@@ -26,28 +26,11 @@ where will be the index page of the site'''
 @app.route('/')
 #standard name for functions that works on the index page
 def index():
-    initialization_database()
-    #offers a html template on the page
     global login_user
     if login_user:
         return redirect(url_for('home'))
     else:
         return render_template('index.html')
-
-def initialization_database():
-    numberSentiments = mongo.db.sentiments.estimated_document_count()
-    if (numberSentiments == 0):
-        mongo.db.sentiments.insert_one({'category': 'Positivo'})
-        mongo.db.sentiments.insert_one({'category': 'Neutrale'})
-        mongo.db.sentiments.insert_one({'category': 'Negativo'})
-    numberEmotions = mongo.db.emotions.estimated_document_count()
-    if (numberEmotions == 0):
-        mongo.db.emotions.insert_one({'type': 'Felicita'})
-        mongo.db.emotions.insert_one({'type': 'Tristezza'})
-        mongo.db.emotions.insert_one({'type': 'Rabbia'})
-        mongo.db.emotions.insert_one({'type': 'Disgusto'})
-        mongo.db.emotions.insert_one({'type': 'Sorpresa'})
-        mongo.db.emotions.insert_one({'type': 'Paura'})
 
 '''decorator that defines the url path
 where will be the services area of the site'''
@@ -198,12 +181,28 @@ where will be the home page of the site'''
 def home():
     global login_user
     if login_user:
+        initialization_database()
         name = login_user['name']
         return render_template('home.html', name = name)
     else:
         global needed
         needed = True
         return redirect(url_for('login'))
+
+def initialization_database():
+    numberSentiments = mongo.db.sentiments.estimated_document_count()
+    if (numberSentiments == 0):
+        mongo.db.sentiments.insert_one({'category': 'Positivo'})
+        mongo.db.sentiments.insert_one({'category': 'Neutrale'})
+        mongo.db.sentiments.insert_one({'category': 'Negativo'})
+    numberEmotions = mongo.db.emotions.estimated_document_count()
+    if (numberEmotions == 0):
+        mongo.db.emotions.insert_one({'type': 'Felicita'})
+        mongo.db.emotions.insert_one({'type': 'Tristezza'})
+        mongo.db.emotions.insert_one({'type': 'Rabbia'})
+        mongo.db.emotions.insert_one({'type': 'Disgusto'})
+        mongo.db.emotions.insert_one({'type': 'Sorpresa'})
+        mongo.db.emotions.insert_one({'type': 'Paura'})
 
 '''decorator that defines the url path
 where will be the intents'''
@@ -229,16 +228,16 @@ def intents():
                 if newIntent.isspace() == False:
                     newIntent = ' '.join(newIntent.split())
                     
-                    user = mongo.db.intents.find_one({'typology': newIntent})
-                    if user == None:
+                    intent = mongo.db.intents.find_one({'typology': newIntent})
+                    if intent == None:
                         mongo.db.intents.replace_one({'typology': oldIntent}, {'typology': newIntent})
             elif form_data['submitButton'] == 'Aggiungi':
                 newIntent = form_data['newIntent']
                 if newIntent.isspace() == False:
                     newIntent = ' '.join(newIntent.split())
                     
-                    user = mongo.db.intents.find_one({'typology': newIntent})
-                    if user == None:
+                    intent = mongo.db.intents.find_one({'typology': newIntent})
+                    if intent == None:
                         mongo.db.intents.insert_one({'typology': newIntent})
             
             #offers a html template on the page
@@ -278,28 +277,29 @@ def entities():
             elif form_data['submitButton'] == 'Modifica':
                 oldEntity = form_data['oldEntity']
                 newEntity = form_data['newEntity']
-                if newEntity.isspace == False:
+                if newEntity.isspace() == False:
                     newEntity = ' '.join(newEntity.split())
                     
-                    user = mongo.db.entities.find_one({'namedEntity': newEntity})
-                    if user == None:
+                    entity = mongo.db.entities.find_one({'namedEntity': newEntity})
+                    if entity == None:
                         mongo.db.entities.replace_one({'namedEntity': oldEntity}, {'namedEntity': newEntity})
             elif form_data['submitButton'] == 'Aggiungi':
                 newEntity = form_data['newEntity']
-                if newEntity.isspace == False:
+                
+                if newEntity.isspace() == False:
                     newEntity = ' '.join(newEntity.split())
                     
-                    user = mongo.db.entities.find_one({'namedEntity': newEntity})
-                    if user == None:
+                    entity = mongo.db.entities.find_one({'namedEntity': newEntity})
+                    if entity == None:
                         mongo.db.entities.insert_one({'namedEntity': newEntity})
             
             #offers a html template on the page
             return redirect(url_for('entities', page = page))
         elif request.method == 'GET':
             namedEntities = []
-            #iteration among the documents in the collection 'intents'
+            #iteration among the documents in the collection 'entities'
             for entity in mongo.db.entities.find():
-                #intent is a dict, so typologies is a list of dict
+                #entity is a dict, so typologies is a list of dict
                 namedEntities.append(entity)
             
             #offers a html template on the page
@@ -311,117 +311,118 @@ def entities():
 
 '''decorator that defines the url path
 where will be the training phrases'''
-@app.route('/home/training_phrases')
+@app.route('/home/training_phrases', methods = ['POST', 'GET'])
 #standard name for functions that works on the home page
 def training_phrases():
-    page = int(request.args.get('page'))
-    numberPhrases = mongo.db.trainingPhrases.estimated_document_count()
-    if (numberPhrases > 0 and (page < 1 or (page > 1 and ((int(numberPhrases / 20) + 1) < page) or (numberPhrases % 20 == 0 and  numberPhrases / 20 < page)))):
-        return redirect(url_for('training_phrases', page = 1))
-    if request.method == 'POST':
-        form_data = request.form
-
-        if form_data['submitButton'] == 'Elimina':
-            oldPhrase = form_data['oldPhrase']
-            mongo.db.trainingPhrases.delete_one({'phrase': oldPhrase})
-        elif form_data['submitButton'] == 'Modifica':
-            oldPhrase = form_data['oldPhrase']
-            newPhrase = form_data['newPhrase']
+    global login_user
+    if login_user:
+        page = int(request.args.get('page'))
+        numberPhrases = mongo.db.training_phrases.estimated_document_count()
+        if (numberPhrases > 0 and (page < 1 or (page > 1 and ((int(numberPhrases / 20) + 1) < page) or (numberPhrases % 20 == 0 and  numberPhrases / 20 < page)))):
+            return redirect(url_for('training_phrases', page = 1))
+        if request.method == 'POST':
+            form_data = request.form
             
-            found = False
-            #iteration among the documents in the collection 'intents'
-            for phrase in mongo.db.trainingPhrases.find():
-                if phrase['phrase'] == newPhrase:
-                    found = not found
-                    break
+            if form_data['submitButton'] == 'Elimina':
+                oldPhrase = form_data['oldPhrase']
+                mongo.db.training_phrases.delete_one({'phrase': oldPhrase})
+            elif form_data['submitButton'] == 'Modifica':
+                oldPhrase = form_data['oldPhrase']
+                newPhrase = form_data['newPhrase']
+                if newPhrase.isspace() == False:
+                    newPhrase = ' '.join(newPhrase.split())
+                    
+                    phrase = mongo.db.training_phrases.find_one({'phrase': newPhrase})
+                    if phrase == None:
+                        mongo.db.training_phrases.replace_one({'phrase': oldPhrase}, {'phrase': newPhrase})
+            elif form_data['submitButton'] == 'Aggiungi':
+                newPhrase = form_data['newPhrase']
+                intentAssociated = form_data['selectIntent']
+                entitiesAssociated = '['
+                sentimentAssociated = form_data['selectSentiment']
+                emotionAssociated = form_data['selectEmotion']
+                if newPhrase.isspace() == False:
+                    newPhrase = ' '.join(newPhrase.split())
+                    
+                    phrase = mongo.db.training_phrases.find_one({'phrase': newPhrase})
+                    
+                    i = 1
+                    while True:
+                        if 'entity' + str(i) in form_data.keys():
+                            try:
+                                first = newPhrase.index(form_data['entity' + str(i)])
+                            except ValueError:
+                                pass
+                            entitiesAssociated += '(' + str(first) + ',' + str(first + len(form_data['entity' + str(i)]) - 1) + ',' + form_data['namedEntity' + str(i)] + '),'
+                        else:
+                            if (entitiesAssociated[len(entitiesAssociated) - 1] != '['):
+                                entitiesAssociated = entitiesAssociated[:len(entitiesAssociated) - 1] + ']'
+                            else:
+                                entitiesAssociated += ']'
+                            break
+                        i = i + 1
             
-            if not found:
-                mongo.db.trainingPhrases.replace_one({'phrase': oldPhrase}, {'phrase': newPhrase})
-        elif form_data['submitButton'] == 'Aggiungi':
-            newPhrase = form_data['newPhrase']
-            intentAssociated = form_data['selectIntent']
-            entitiesAssociated = '['
-            sentimentAssociated = form_data['selectSentiment']
-            emotionAssociated = form_data['selectEmotion']
-            found = False
-            #iteration among the documents in the collection 'intents'
-            for phrase in mongo.db.trainingPhrases.find():
-                if phrase['phrase'] == newPhrase:
-                    found = not found
-                    break
-            i = 1
-            while True:
-                if 'entity'+str(i) in form_data.keys():
-                    try:
-                        first = newPhrase.index(form_data['entity' + str(i)])
-                    except ValueError:
-                        pass
-                    entitiesAssociated += '(' + str(first) + ',' + str(first + len(form_data['entity' + str(i)]) - 1) + ',' + form_data['namedEntity' + str(i)] + '),'
-                else:
-                    if (entitiesAssociated[len(entitiesAssociated) - 1] != '['):
-                        entitiesAssociated = entitiesAssociated[:len(entitiesAssociated) - 1] + ']'
+                    if phrase == None:
+                        mongo.db.training_phrases.insert_one({'phrase': newPhrase, 'intent': intentAssociated, 'entities': entitiesAssociated, 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
+                
+            elif form_data['submitButton'] == 'Annota':
+                phraseSelected = form_data['notePhraseSelected']
+                intentAssociated = form_data['selectNoteIntent']
+                entitiesAssociated = '['
+                sentimentAssociated = form_data['selectNoteSentiment']
+                emotionAssociated = form_data['selectNoteEmotion']
+                
+                phrase = mongo.db.training_phrases.find_one({'phrase': phraseSelected})
+                
+                i = 1
+                while True:
+                    if 'entity' + str(i) in form_data.keys():
+                        try:
+                            first = phraseSelected.index(form_data['entity' + str(i)])
+                        except ValueError:
+                            pass
+                        entitiesAssociated += '(' + str(first) + ',' + str(first + len(form_data['entity' + str(i)]) - 1) + ',' + form_data['namedEntity' + str(i)] + '),'
                     else:
-                        entitiesAssociated += ']'
-                    break
-                i = i + 1
+                        if (entitiesAssociated[len(entitiesAssociated) - 1] != '['):
+                            entitiesAssociated = entitiesAssociated[:len(entitiesAssociated) - 1] + ']'
+                        else:
+                            entitiesAssociated += ']'
+                        break
+                    i = i + 1
+                
+                mongo.db.training_phrases.replace_one(phrase, {'phrase': phraseSelected, 'intent': intentAssociated, 'entities': entitiesAssociated, 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
             
-            if not found:
-                mongo.db.trainingPhrases.insert_one({'phrase': newPhrase, 'intent': intentAssociated, 'entities': entitiesAssociated, 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
-
-        elif form_data['submitButton'] == 'Annota':
-            phraseSelected = form_data['notePhraseSelected']
-            intentAssociated = form_data['selectNoteIntent']
-            entitiesAssociated = '['
-            sentimentAssociated = form_data['selectNoteSentiment']
-            emotionAssociated = form_data['selectNoteEmotion']
+            #offers a html template on the page
+            return redirect(url_for('training_phrases', page = page))
+        elif request.method == 'GET':
+            phrases = []
+            #iteration among the documents in the collection 'training_phrases'
+            for phrase in mongo.db.training_phrases.find():
+                #phrase is a dict, so typologies is a list of dict
+                phrases.append(phrase)
             
-            phrase = mongo.db.trainingPhrases.find_one({'phrase': phraseSelected})
+            intents = []
+            for intent in mongo.db.intents.find():
+                intents.append(intent)
             
-            i = 1
-            while True:
-                if 'entity'+str(i) in form_data.keys():
-                    try:
-                        first = phraseSelected.index(form_data['entity' + str(i)])
-                    except ValueError:
-                        pass
-                    entitiesAssociated += '(' + str(first) + ',' + str(first + len(form_data['entity' + str(i)]) - 1) + ',' + form_data['namedEntity' + str(i)] + '),'
-                else:
-                    if (entitiesAssociated[len(entitiesAssociated) - 1] != '['):
-                        entitiesAssociated = entitiesAssociated[:len(entitiesAssociated) - 1] + ']'
-                    else:
-                        entitiesAssociated += ']'
-                    break
-                i = i + 1
+            namedEntities = []
+            for entity in mongo.db.entities.find():
+                namedEntities.append(entity)
             
-            mongo.db.trainingPhrases.replace_one(phrase, {'phrase': phraseSelected, 'intent': intentAssociated, 'entities': entitiesAssociated, 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
-
-        #offers a html template on the page
-        return redirect(url_for('training_phrases', page = page))
-    elif request.method == 'GET':
-        phrases = []
-        #iteration among the documents in the collection 'intents'
-        for phrase in mongo.db.trainingPhrases.find():
-            #intent is a dict, so typologies is a list of dict
-            phrases.append(phrase)
-        
-        intents = []
-        for intent in mongo.db.intents.find():
-            intents.append(intent)
-        
-        namedEntities = []
-        for entity in mongo.db.entities.find():
-            namedEntities.append(entity)
-        
-        sentiments = []
-        for sentiment in mongo.db.sentiments.find():
-            sentiments.append(sentiment)
-        
-        emotions = []
-        for emotion in mongo.db.emotions.find():
-            emotions.append(emotion)
-
-        #offers a html template on the page
-        return render_template('training_phrases.html', page = page, phrases = phrases, intents = intents, namedEntities = namedEntities, sentiments = sentiments, emotions = emotions)
+            sentiments = []
+            for sentiment in mongo.db.sentiments.find():
+                sentiments.append(sentiment)
+            
+            emotions = []
+            for emotion in mongo.db.emotions.find():
+                emotions.append(emotion)
+            
+            #offers a html template on the page
+            return render_template('training_phrases.html', page = page, phrases = phrases, intents = intents, namedEntities = namedEntities, sentiments = sentiments, emotions = emotions)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
 
 '''decorator that defines the url path
 of the page where to train the models'''
