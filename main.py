@@ -222,6 +222,9 @@ def intents():
             if form_data['submitButton'] == 'Elimina':
                 oldIntent = form_data['oldIntent']
                 mongo.db.intents.delete_one({'typology': oldIntent})
+            elif form_data['submitButton'] == 'Svuotamento':
+                if len(list(mongo.db.intents.find())) != 0:
+                    mongo.db.intents.delete_many({})
             elif form_data['submitButton'] == 'Modifica':
                 oldIntent = form_data['oldIntent']
                 newIntent = form_data['newIntent']
@@ -274,6 +277,9 @@ def entities():
             if form_data['submitButton'] == 'Elimina':
                 oldEntity = form_data['oldEntity']
                 mongo.db.entities.delete_one({'namedEntity': oldEntity})
+            elif form_data['submitButton'] == 'Svuotamento':
+                if len(list(mongo.db.entities.find())) != 0:
+                    mongo.db.entities.delete_many({})
             elif form_data['submitButton'] == 'Modifica':
                 oldEntity = form_data['oldEntity']
                 newEntity = form_data['newEntity']
@@ -398,6 +404,26 @@ def training_phrases():
             phrases = []
             #iteration among the documents in the collection 'training_phrases'
             for phrase in mongo.db.training_phrases.find():
+                if phrase.get('entities') != None:
+                    if phrase['entities'] == '[]':
+                        phrase['entities'] = ''
+                    else:
+                        split_list = phrase['entities'].replace('[', '').replace(']', '').replace('(', '').replace(')', '').split(',')
+                        
+                        entities_list = []
+                        i = 0
+                        while i < len(split_list):
+                            substring = phrase['phrase'][int(split_list[i]):int(split_list[i + 1]) + 1]
+                            
+                            if entities_list:
+                                entities_list.append(', ')
+                            
+                            entities_list.append(substring)
+                            entities_list.append(':')
+                            entities_list.append(split_list[i + 2])
+                            
+                            i += 3
+                        phrase['entities'] = ''.join(entities_list)
                 #phrase is a dict, so typologies is a list of dict
                 phrases.append(phrase)
             
