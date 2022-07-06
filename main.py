@@ -332,6 +332,9 @@ def training_phrases():
             if form_data['submitButton'] == 'Elimina':
                 oldPhrase = form_data['oldPhrase']
                 mongo.db.training_phrases.delete_one({'phrase': oldPhrase})
+            elif form_data['submitButton'] == 'Svuotamento':
+                if len(list(mongo.db.training_phrases.find())) != 0:
+                    mongo.db.training_phrases.delete_many({})
             elif form_data['submitButton'] == 'Modifica':
                 oldPhrase = form_data['oldPhrase']
                 newPhrase = form_data['newPhrase']
