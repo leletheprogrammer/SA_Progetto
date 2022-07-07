@@ -243,7 +243,8 @@ $(document).ready(function() {
 							<h2>Tabella delle Entities</h2>
 						</div>
 						<div class="col-xs-6">
-							<a href="#addEntity" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i><span>Crea nuovo entity</span></a>
+							<a href="#addEntity" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i><span>Crea nuova Entity</span></a>
+							<a href="#clearEntities" class="btn btn-danger" data-toggle="modal"><i class="material-icons">&#xE15C;</i><span>Cancella tutte le Entities</span></a>
 						</div>
 					</div>
 				</div>
@@ -271,7 +272,7 @@ $(document).ready(function() {
 				</table>
 				<div class="clearfix">
 					{% if (namedEntities| length) == 0 %}
-						<div class="hint-text">La tabella delle entities è vuota</div>
+						<div class="hint-text">La tabella delle Entities è vuota</div>
 					{% else %}
 						<div class="hint-text">Entities mostrate comprese tra <b>{{ page * 20 - 19 }}</b>-<b>{% if page == (((namedEntities| length) / 20) + 1)| int %}{{ (namedEntities| length) }}{% else %}{{ page * 20 }}{% endif %}</b></div>
 					{% endif %}
@@ -336,9 +337,9 @@ $(document).ready(function() {
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
-							<label>L'entity selezionata è la seguente</label>
+							<label>L'Entity selezionata è la seguente</label>
 							<input name="oldEntity" id="oldModifyEntity" type="text" readonly class="form-control">
-							<label>Inserire di seguito la nuova entity</label>
+							<label>Inserire di seguito la nuova Entity</label>
 							<input name="newEntity" id="newModifyEntity" type="text" class="form-control" required pattern="[a-zA-Z0-9 ]+">
 						</div>
 					</div>
@@ -361,15 +362,36 @@ $(document).ready(function() {
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
-							<label>L'entity selezionata è la seguente</label>
+							<label>L'Entity selezionata è la seguente</label>
 							<input name="oldEntity" id="oldDeleteEntity" type="text" readonly class="form-control">
 						</div>
-						<p>Sei sicuro di voler cancellare questa entity?</p>
+						<p>Sei sicuro di voler cancellare questa Entity?</p>
 						<p class="text-warning"><small>Questa azione non e' reversibile.</small></p>
 					</div>
 					<div class="modal-footer">
 						<input type="button" class="btn btn-default" data-dismiss="modal" value="Indietro">
 						<input type="submit" name="submitButton" class="btn btn-danger" value="Elimina">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Delete-All Modal HTML -->
+	<div id="clearEntities" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form method="POST">
+					<div class="modal-header">
+						<h4 class="modal-title">Cancella tutte le Entities</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">
+						<p>Sei sicuro di voler cancellare tutte le Entities?</p>
+						<p class="text-warning"><small>Questa azione non e' reversibile.</small></p>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Indietro">
+						<input type="submit" name="submitButton" class="btn btn-danger" value="Svuotamento">
 					</div>
 				</form>
 			</div>

@@ -197,14 +197,14 @@ function cleanEntity() {
 
 function cleanEntities() {
 	var i = 1;
-	var istr = "";
+	var istr = '';
 	while (true) {
-		istr = "entity" + i.toString();
-		if (document.getElementById('divNoteId').querySelector("#"+istr) === null) {
+		istr = 'entity' + i.toString();
+		if (document.getElementById('divNoteId').querySelector('#'+istr) === null) {
 			break;
 		} else {
 			var entity = document.getElementById(istr);
-			var instr = "namedEntity" + i.toString();
+			var instr = 'namedEntity' + i.toString();
 			var namedEntity = document.getElementById(instr);
 			document.getElementById('divNoteId').removeChild(entity);
 			document.getElementById('divNoteId').removeChild(namedEntity);
@@ -220,14 +220,14 @@ function cleanAll(phraseId, intentId, sentimentId, emotionId, divId, operation) 
 	document.getElementById(sentimentId).selectedIndex = 0;
 	document.getElementById(emotionId).selectedIndex = 0;
 	var i = 1;
-	var istr = "";
+	var istr = '';
 	while (true) {
-		istr = "entity" + i.toString();
-		if (document.getElementById(divId).querySelector("#"+istr) === null) {
+		istr = 'entity' + i.toString();
+		if (document.getElementById(divId).querySelector('#'+istr) === null) {
 			break;
 		} else {
 			var entity = document.getElementById(istr);
-			var instr = "namedEntity" + i.toString();
+			var instr = 'namedEntity' + i.toString();
 			var namedEntity = document.getElementById(instr);
 			document.getElementById(divId).removeChild(entity);
 			document.getElementById(divId).removeChild(namedEntity);
@@ -252,45 +252,61 @@ function noteClicked(phrase, intent, sentiment, emotion) {
 }
 
 function entitySelected(divId) {
-	document.getElementById('hiddenDivision').value = divId;
-	let textarea = event.target;
-	let selection = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
-	$('#entitySelectedPhrase').modal('show');
-	document.getElementById('entitySubstring').value = selection;
+	var textarea = event.target;
+	var selection = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
+	if (!selection.trim().length == 0) {
+		document.getElementById('hiddenDivision').value = divId;
+		$('#entitySelectedPhrase').modal('show');
+		document.getElementById('entitySubstring').value = selection;
+	}
 }
 
 function entityAdded(substringId, divId) {
-	$('#entitySelectedPhrase').modal('hide');
-	var input = document.createElement("input");
+	var input = document.createElement('input');
 	var i = 1;
-	var istr = "";
+	var istr = '';
 	while (true) {
-		istr = "entity" + i.toString();
-		if (document.getElementById(divId).querySelector("#"+istr) === null) {
+		istr = 'entity' + i.toString();
+		if (document.getElementById(divId).querySelector('#'+istr) === null) {
 			break;
 		}
 		i++;
 	}
 	input.name = istr;
 	input.id = istr;
-	input.type = "text";
-	input.value = document.getElementById(substringId).value;
-	input.setAttribute("readonly", "true");
+	input.type = 'text';
+	
+	var split_list = (document.getElementById(substringId).value).split(' ');
+	for (j = 0; j < split_list.length; j++) {
+		if(split_list[j] == '') {
+			split_list.splice(j, 1);
+			j--;
+		}
+	}
+	split_list = split_list.join(' ');
+	
+	input.value = split_list;
+	input.setAttribute('readonly', 'true');
 	var namedEntity = document.getElementById('namedEntitySelected').value;
-	var controlEntity = "";
+	var controlEntity = '';
+	var found = false;
 	{% for row in namedEntities %}
-		controlEntity = "{{ row['namedEntity'] }}";
+		controlEntity = '{{ row["namedEntity"] }}';
 		if (controlEntity == namedEntity) {
-			input.setAttribute("style", "background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})");
+			input.setAttribute('style', 'background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})');
+			found = true;
 		}
 	{% endfor %}
-	document.getElementById(divId).appendChild(input);
-	var inputNamedEntity = document.createElement("input");
-	inputNamedEntity.id = "namedEntity" + i.toString();
-	inputNamedEntity.name = "namedEntity" + i.toString();
-	inputNamedEntity.type = "hidden"
-	inputNamedEntity.value = namedEntity;
-	document.getElementById(divId).appendChild(inputNamedEntity);
+	if (found) {
+		$('#entitySelectedPhrase').modal('hide');
+		document.getElementById(divId).appendChild(input);
+		var inputNamedEntity = document.createElement('input');
+		inputNamedEntity.id = 'namedEntity' + i.toString();
+		inputNamedEntity.name = 'namedEntity' + i.toString();
+		inputNamedEntity.type = 'hidden';
+		inputNamedEntity.value = namedEntity;
+		document.getElementById(divId).appendChild(inputNamedEntity);
+	}
 }
 
 $(document).ready(function() {
@@ -345,7 +361,8 @@ $(document).ready(function() {
 							<h2>Tabella delle Training Phrases</h2>
 						</div>
 						<div class="col-xs-6">
-							<a href="#addPhrase" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i><span>Crea nuova training phrase</span></a>
+							<a href="#addPhrase" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i><span>Crea nuova Training Phrase</span></a>
+							<a href="#clearPhrases" class="btn btn-danger" data-toggle="modal"><i class="material-icons">&#xE15C;</i><span>Cancella tutte le Training Phrases</span></a>
 						</div>
 					</div>
 				</div>
@@ -390,7 +407,7 @@ $(document).ready(function() {
 				</table>
 				<div class="clearfix">
 					{% if (phrases| length) == 0 %}
-						<div class="hint-text">La tabella delle training phrases è vuota</div>
+						<div class="hint-text">La tabella delle Training Phrases è vuota</div>
 					{% else %}
 						<div class="hint-text">Training Phrases mostrate comprese tra <b>{{ page * 20 - 19 }}</b>-<b>{% if page == (((phrases| length) / 20) + 1)| int %}{{ (phrases| length) }}{% else %}{{ page * 20 }}{% endif %}</b></div>
 					{% endif %}
@@ -488,9 +505,9 @@ $(document).ready(function() {
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
-							<label>La training phrase selezionata è la seguente</label>
+							<label>La Training Phrase selezionata è la seguente</label>
 							<input name="oldPhrase" id="oldModifyPhrase" type="text" readonly class="form-control">
-							<label>Inserire di seguito la nuova training phrase</label>
+							<label>Inserire di seguito la nuova Training Phrase</label>
 							<input name="newPhrase" id="newModifyPhrase" type="text" class="form-control" required pattern="[a-zA-Z0-9 ]+">
 						</div>
 					</div>
@@ -513,15 +530,36 @@ $(document).ready(function() {
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
-							<label>La training phrase selezionata è la seguente</label>
+							<label>La Training Phrase selezionata è la seguente</label>
 							<input name="oldPhrase" id="oldDeletePhrase" type="text" readonly class="form-control">
 						</div>
-						<p>Sei sicuro di voler cancellare questa training phrase?</p>
+						<p>Sei sicuro di voler cancellare questa Training Phrase?</p>
 						<p class="text-warning"><small>Questa azione non e' reversibile.</small></p>
 					</div>
 					<div class="modal-footer">
 						<input type="button" class="btn btn-default" data-dismiss="modal" value="Indietro">
 						<input type="submit" name="submitButton" class="btn btn-danger" value="Elimina">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Delete-All Modal HTML -->
+	<div id="clearPhrases" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form method="POST">
+					<div class="modal-header">
+						<h4 class="modal-title">Cancella tutte le Training Phrases</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">
+						<p>Sei sicuro di voler cancellare tutte le Training Phrases?</p>
+						<p class="text-warning"><small>Questa azione non e' reversibile.</small></p>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Indietro">
+						<input type="submit" name="submitButton" class="btn btn-danger" value="Svuotamento">
 					</div>
 				</form>
 			</div>
