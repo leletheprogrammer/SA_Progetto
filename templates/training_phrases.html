@@ -144,7 +144,7 @@
 	}
 	.pagination li i {
 		font-size: 16px;
-		padding-top: 6px
+		padding-top: 6px;
 	}
 	.hint-text {
 		float: left;
@@ -449,7 +449,7 @@ $(document).ready(function() {
 					</div>
 					<div class="modal-body">
 						<div id="namedEntitiesDiv">Legenda delle named Entities<br>
-						{% for row in namedEntities %}<span id="spanEntities{{ loop.index }}" style="background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})">{{ row['namedEntity'] }}</span>{% endfor %}
+							{% for row in namedEntities %}<span id="spanEntities{{ loop.index }}" style="background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})">{{ row['namedEntity'] }}</span>{% endfor %}
 						</div>
 						<div id="divAddId" class="form-group">
 							<label>Aggiungi Training Phrase e seleziona entity(opzionale)</label>
@@ -576,7 +576,7 @@ $(document).ready(function() {
 					</div>
 					<div class="modal-body">
 						<div id="EntitiesDiv">Legenda delle named Entities<br>
-						{% for row in namedEntities %}<span id="spanEntities{{ loop.index }}" style="background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})">{{ row['namedEntity'] }}</span>{% endfor %}
+							{% for row in namedEntities %}<span id="spanEntities{{ loop.index }}" style="background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})">{{ row['namedEntity'] }}</span>{% endfor %}
 						</div>
 						<div id="divNoteId" class="form-group">
 							<label>Seleziona entity(opzionale)</label>
