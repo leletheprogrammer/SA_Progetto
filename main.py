@@ -9,8 +9,7 @@ from random import randint
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-#import spacy
-#from spacy.util import minibatch, compounding
+import training_intent_recognition as tir
 
 '''app represents the web application and
 __name__ represents the name of the current file'''
@@ -428,17 +427,17 @@ def training_phrases():
 of the page where to train the models'''
 @app.route('/home/start_training_model', methods = ['POST', 'GET'])
 def start_training_model():
-	if request.method == 'POST':
-		form_data = request.form
-		if (form_data['submitButton'] == 'intentRecognition'):
-			pass
-		elif (form_data['submitButton'] == 'entitiesExtraction'):
-			trainingEntitiesExtraction()
-		elif (form_data['submitButton'] == 'sentimentAnalysis'):
-			pass
-		return render_template('start_training_model.html')
-	elif request.method == 'GET':
-		return render_template('start_training_model.html')
+    if request.method == 'POST':
+        form_data = request.form
+        if (form_data['submitButton'] == 'intentRecognition'):
+            tir.start_training(mongo)
+        elif (form_data['submitButton'] == 'entitiesExtraction'):
+            trainingEntitiesExtraction()
+        elif (form_data['submitButton'] == 'sentimentAnalysis'):
+            pass
+        return render_template('start_training_model.html')
+    elif request.method == 'GET':
+        return render_template('start_training_model.html')
 
 def trainingEntitiesExtraction():
     '''
@@ -549,4 +548,4 @@ def download_erasure_model():
 	return 'download_erasure_model'
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug = False)

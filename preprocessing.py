@@ -1,0 +1,14 @@
+import spacy
+import pandas as pd
+from transformers import AutoTokenizer
+from dataset import DatasetProcessor
+
+def preprocess(df_train, df_val):
+    transformer_model_name = 'dbmdz/bert-base-italian-xxl-cased'
+    spacy_model_name = 'it_core_news_sm'
+    tokenizer = AutoTokenizer.from_pretrained(transformer_model_name)
+    nlp = spacy.load(spacy_model_name)
+    for name, df in [('train', df_train), ('val', df_val)]:
+        processor = DatasetProcessor(
+            df=df, tokenizer=tokenizer, nlp=nlp, max_len=80, text_col='phrase', label_col='intent')
+        processor.run(f'{name}_preprocessed.json')
