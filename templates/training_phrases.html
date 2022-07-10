@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -237,6 +237,11 @@ function cleanAll(phraseId, intentId, sentimentId, emotionId, divId, operation) 
 	$(operation).modal('hide');
 }
 
+function cleanFile() {
+	document.getElementById('file').value = '';
+	$('#dragFile').modal('hide');
+}
+
 function modifyDeleteClicked(phrase, id, operation) {
 	$(operation).modal('show');
 	document.getElementById(id).value = phrase;
@@ -263,18 +268,8 @@ function entitySelected(divId) {
 
 function entityAdded(substringId, divId) {
 	var input = document.createElement('input');
-	var i = 1;
-	var istr = '';
-	while (true) {
-		istr = 'entity' + i.toString();
-		if (document.getElementById(divId).querySelector('#'+istr) === null) {
-			break;
-		}
-		i++;
-	}
-	input.name = istr;
-	input.id = istr;
 	input.type = 'text';
+	input.readonly = 'true';
 	
 	var split_list = (document.getElementById(substringId).value).split(' ');
 	for (j = 0; j < split_list.length; j++) {
@@ -286,18 +281,45 @@ function entityAdded(substringId, divId) {
 	split_list = split_list.join(' ');
 	
 	input.value = split_list;
-	input.setAttribute('readonly', 'true');
+	
+	var i = 1;
+	var istr = '';
+	var nistr = [];
+	while (true) {
+		istr = 'entity' + i.toString();
+		if (document.getElementById(divId).querySelector('#'+istr) === null) {
+			break;
+		} else {
+			if (document.getElementById(istr).value == input.value) {
+				nistr.push('namedEntity' + i.toString());
+			}
+		}
+		i++;
+	}
+	input.name = istr;
+	input.id = istr;
+	
 	var namedEntity = document.getElementById('namedEntitySelected').value;
 	var controlEntity = '';
-	var found = false;
+	var found1 = false;
+	var found2 = true;
 	{% for row in namedEntities %}
 		controlEntity = '{{ row["namedEntity"] }}';
 		if (controlEntity == namedEntity) {
 			input.setAttribute('style', 'background-color: rgb({{ (loop.index * 100) % 255 }},{{ (loop.index * 40) % 255 }},{{ (loop.index * 50) % 255 }})');
-			found = true;
+			found1 = true;
+			if (nistr.length > 0) {
+				var k = 0;
+				while (k < nistr.length) {
+					if (document.getElementById(nistr[k]).value == controlEntity) {
+						found2 = false;
+					}
+					k++;
+				}
+			}
 		}
 	{% endfor %}
-	if (found) {
+	if (found1 && found2) {
 		$('#entitySelectedPhrase').modal('hide');
 		document.getElementById(divId).appendChild(input);
 		var inputNamedEntity = document.createElement('input');
@@ -363,6 +385,7 @@ $(document).ready(function() {
 						<div class="col-xs-6">
 							<a href="#addPhrase" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i><span>Crea nuova Training Phrase</span></a>
 							<a href="#clearPhrases" class="btn btn-danger" data-toggle="modal"><i class="material-icons">&#xE15C;</i><span>Cancella tutte le Training Phrases</span></a>
+							<a href="#dragFile" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE169;</i><span>Importa Dataset</span></a>
 						</div>
 					</div>
 				</div>
@@ -398,7 +421,7 @@ $(document).ready(function() {
 									<td>
 										<a id="modify{{ loop.index }}" href="#" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Modifica">&#xE254;</i></a>
 										<a id="delete{{ loop.index }}" href="#" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Elimina">&#xE872;</i></a>
-										<a id="note{{ loop.index }}" href="#" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Annota">&#xE254;</i></a>
+										<a id="note{{ loop.index }}" href="#" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Annota">&#xE175;</i></a>
 									</td>
 								</tr>
 							{% endif %}
@@ -650,6 +673,38 @@ $(document).ready(function() {
 					<div class="modal-footer">
 						<input type="button" class="btn btn-default" onclick="cleanEntity()" value="Indietro">
 						<input type="button" class="btn btn-info" value="Aggiungi" onclick="entityAdded('entitySubstring', document.getElementById('hiddenDivision').value)">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Drag Dataset Modal HTML -->
+	<div id="dragFile" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form method="POST" enctype="multipart/form-data">
+					<div class="modal-header">
+						<h4 class="modal-title">Trascina qui sotto il Dataset</h4>
+						<button type="button" class="close" onclick="cleanFile()" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">
+						<input type="file" style="cursor: pointer" id="file" class="form-control" name="file" accept=".txt" required>
+						<br>
+						<p>
+							Inserire file con estensione .txt in questo formato:
+							<br>
+							<br>
+							Frase/:Intent/:Entity:N.Entity,.../:Sentiment/:Emotion
+							<br>
+							Frase/:Intent/:Entity:N.Entity,.../:Sentiment/:Emotion
+							<br>
+							...
+						</p>
+						<p class="text-warning"><small>Questa azione cancellerà il Dataset attuale.</small></p>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" onclick="cleanFile()" value="Indietro">
+						<input type="submit" name="submitButton" class="btn btn-success" value="Invia">
 					</div>
 				</form>
 			</div>
