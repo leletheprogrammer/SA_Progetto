@@ -197,7 +197,7 @@ def initialization_database():
         mongo.db.sentiments.insert_one({'category': 'Negativo'})
     numberEmotions = mongo.db.emotions.estimated_document_count()
     if (numberEmotions == 0):
-        mongo.db.emotions.insert_one({'type': 'Felicita'})
+        mongo.db.emotions.insert_one({'type': 'Felicità'})
         mongo.db.emotions.insert_one({'type': 'Tristezza'})
         mongo.db.emotions.insert_one({'type': 'Rabbia'})
         mongo.db.emotions.insert_one({'type': 'Disgusto'})
@@ -373,7 +373,6 @@ def training_phrases():
             
                     if phrase == None:
                         mongo.db.training_phrases.insert_one({'phrase': newPhrase, 'intent': intentAssociated, 'entities': entitiesAssociated, 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
-                
             elif form_data['submitButton'] == 'Annota':
                 phraseSelected = form_data['notePhraseSelected']
                 intentAssociated = form_data['selectNoteIntent']
@@ -400,6 +399,60 @@ def training_phrases():
                     i = i + 1
                 
                 mongo.db.training_phrases.replace_one(phrase, {'phrase': phraseSelected, 'intent': intentAssociated, 'entities': entitiesAssociated, 'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
+            elif form_data['submitButton'] == 'Invia':
+                file = request.files['file']
+                text = file.read().decode('utf-8').splitlines()
+                
+                phrases = ''.join(text).split('/:')
+                
+                i = 0
+                while i < (len(phrases) - 1):
+                    phrase = phrases[i]
+                    intent = phrases[i + 1]
+                    entities = phrases[i + 2]
+                    sentiment = phrases[i + 3]
+                    emotion = phrases[i + 4]
+                    
+                    if mongo.db.training_phrases.find_one({'phrase': phrase}) == None:
+                        if intent != '':
+                            temp_intent = mongo.db.intents.find_one({'typology': intent})
+                            if temp_intent == None:
+                                mongo.db.intents.insert_one({'typology': intent})
+                        
+                        if entities == '':
+                            entities = '[]'
+                        else:
+                            entities_list = ':'.join(entities.split(',')).split(':')
+                            entities = '['
+                            j = 0
+                            while j < (len(entities_list) - 1):
+                                first_index = phrase.find(entities_list[j])
+                                last_index = len(entities_list[j]) + first_index - 1
+                                
+                                if j != 0:
+                                    entities += ','
+                                entities += '(' + str(first_index) + ',' + str(last_index) + ',' + entities_list[j + 1] + ')'
+                                
+                                if mongo.db.entities.find_one({'namedEntity': entities_list[j + 1]}) == None:
+                                    mongo.db.entities.insert_one({'namedEntity': entities_list[j + 1]})
+                                
+                                j += 2
+                            
+                            entities += ']'
+                        
+                        if sentiment != '':
+                            temp_sentiment = mongo.db.sentiments.find_one({'category': sentiment})
+                            if temp_sentiment == None:
+                                mongo.db.sentiments.insert_one({'category': sentiment})
+                        
+                        if emotion != '':
+                            temp_emotion = mongo.db.emotions.find_one({'type': emotion})
+                            if temp_emotion == None:
+                                mongo.db.emotions.insert_one({'type': emotion})
+                        
+                        mongo.db.training_phrases.insert_one({'phrase': phrase, 'intent': intent, 'entities': entities, 'sentiment': sentiment, 'emotion': emotion})
+                    
+                    i += 5
             
             #offers a html template on the page
             return redirect(url_for('training_phrases', page = page))
