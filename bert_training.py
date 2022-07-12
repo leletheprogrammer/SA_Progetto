@@ -13,7 +13,18 @@ from transformers import BertForSequenceClassification, AutoTokenizer
 from transformers.optimization import AdamW
 from dataset import TextualDataset
 
-def train(df_train, learning_rate, eps, batch_size, hidden_dropout_prob, patience, max_epoch):
+num_epoch = -1
+num_iteration = -1
+length_epoch = -1
+
+def train(df_train, col_name, learning_rate, eps, batch_size, hidden_dropout_prob, patience, max_epoch):
+
+    global num_epoch
+    global num_iteration
+    global length_epoch
+    num_epoch = 0
+    num_iteration = 1
+
     # Set Seed
     SEED = 123
     torch.manual_seed(SEED)
@@ -26,8 +37,8 @@ def train(df_train, learning_rate, eps, batch_size, hidden_dropout_prob, patienc
     models_dir = 'models'
     num_labels = len(df.intent.unique())
     print('num_labels:', num_labels)
-    train_ds = TextualDataset('train_preprocessed.json', device)
-    val_ds = TextualDataset('val_preprocessed.json', device)
+    train_ds = TextualDataset('train_' + col_name + '_preprocessed.json', device)
+    val_ds = TextualDataset('val_' + col_name + '_preprocessed.json', device)
 
     bert_model = BertForSequenceClassification.from_pretrained(
         pretrained_model_name_or_path=model_name,
@@ -103,6 +114,21 @@ def train(df_train, learning_rate, eps, batch_size, hidden_dropout_prob, patienc
 
     validation_evaluator.add_event_handler(Events.COMPLETED, early_stopping_handler)
 
+    @trainer.on(Events.STARTED)
+    def assign_epoch_length(engine):
+        global length_epoch
+        length_epoch = engine.state.epoch_length
+
+    @trainer.on(Events.ITERATION_COMPLETED(every = 1))
+    def increase_num_iteration(engine):
+        global num_iteration
+        num_iteration = engine.state.iteration
+
+    @trainer.on(Events.EPOCH_COMPLETED)
+    def increase_num_epoch(engine):
+        global num_epoch
+        num_epoch = engine.state.epoch
+
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):
         train_evaluator.run(train_dl)
@@ -128,7 +154,7 @@ def train(df_train, learning_rate, eps, batch_size, hidden_dropout_prob, patienc
             f"F1: {f1:.2f}%")
 
     checkpoint_handler = ModelCheckpoint(
-        models_dir, 'checkpoint', n_saved=1, save_as_state_dict=True, require_empty=False)
+        models_dir, 'checkpoint_intent', n_saved=1, save_as_state_dict=True, require_empty=False)
     trainer.add_event_handler(Events.EPOCH_COMPLETED, checkpoint_handler, {'model': bert_model})
 
     @trainer.on(Events.COMPLETED)
@@ -142,10 +168,41 @@ def train(df_train, learning_rate, eps, batch_size, hidden_dropout_prob, patienc
 
     @trainer.on(Events.COMPLETED)
     def intent_recognition_save_handler():
+        if os.path.isdir(os.path.join(models_dir, 'intent_recognition')):
+            for file_name in os.listdir(os.path.join(models_dir, 'intent_recognition')):
+                file = os.path.join(models_dir, 'intent_recognition') + file_name
+                if os.path.isfile(file):
+                    os.remove(file)
+            os.rmdir(os.path.join(models_dir, 'intent_recognition'))
         os.mkdir(os.path.join(models_dir, 'intent_recognition'))
         bert_model.save_pretrained(save_directory=os.path.join(models_dir, 'intent_recognition'))
         AutoTokenizer.from_pretrained(model_name).save_pretrained(os.path.join(models_dir, 'intent_recognition'))
 
     trainer.run(train_dl, max_epochs=max_epoch)
-    print('Run ended')
     validation_evaluator.run(val_dl)
+
+def get_num_epoch():
+    global num_epoch
+    return num_epoch
+
+def get_num_iteration():
+    global num_iteration
+    global length_epoch
+    while (num_iteration > length_epoch):
+        num_iteration -= length_epoch
+    return num_iteration
+
+def get_epoch_length():
+    global length_epoch
+    return length_epoch
+
+def get_num_progress():
+    global num_iteration
+    global length_epoch
+    fraction_progress = (num_iteration / length_epoch) * 100
+    num_progress = 0
+    if ((fraction_progress - int(fraction_progress)) > 0.5):
+        num_progress = int(fraction_progress) + 1
+    else:
+        num_progress = int(fraction_progress)
+    return num_progress

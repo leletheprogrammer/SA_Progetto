@@ -11,7 +11,7 @@ from joblib import dump
 class DatasetProcessor:
 
     def __init__(self, df, tokenizer, nlp, text_col='phrase', label_col='intent', max_len=80):
-        self.df = df.sample(frac=1, random_state=97)
+        self.df = df.sample(frac=1, random_state=123)
         self.nlp = nlp
         self.label_col = label_col
         self.text_col = text_col
