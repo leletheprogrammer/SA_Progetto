@@ -4,7 +4,11 @@ import preprocessing as pc
 import bert_training as bt
 import os
 
+ended = True
+
 def start_training(mongo, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob):
+    global ended
+    ended = False
     phrasesIntents = []
     for phraseIntent in mongo.db.training_phrases.find({'intent': {'$exists': 1,'$ne': ''}},{'_id': 0,'entities': 0, 'sentiment': 0, 'emotion': 0}):
         phrasesIntents.append(phraseIntent)
@@ -19,17 +23,21 @@ def start_training(mongo, learning_rate, eps, batch_size, max_epoch, patience, h
         if 'checkpoint_intent' in file_name:
             file = os.path.join('models', file_name)
             if os.path.isfile(file):
-                os.remove(file_name)
-                break
+                os.remove(file)
+    ended = True
 
 def get_num_epoch():
-    return bt.get_num_epoch()
+    return bt.get_num_epoch_intent()
 
 def get_num_iteration():
-    return bt.get_num_iteration()
+    return bt.get_num_iteration_intent()
 
 def get_epoch_length():
-    return bt.get_epoch_length()
+    return bt.get_epoch_length_intent()
 
 def get_num_progress():
-    return bt.get_num_progress()
+    return bt.get_num_progress_intent()
+
+def get_ended():
+    global ended
+    return ended

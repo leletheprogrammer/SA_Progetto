@@ -68,6 +68,48 @@
 				<br>
 			</div>
 			<div class = "form-group">
+				<label for="insertLearningSentiment">Inserire il learning rate di seguito compreso tra 1.0 e 0.00001(default = 0.1)</label>
+				<input type="text" class="form-control" id="insertLearningSentiment" name="insertLearningSentiment" placeholder="Learning Rate">
+				<label for="insertEpsSentiment">Inserire l'eps di seguito maggiore di 0.0(default = 0.5)</label>
+				<input type="text" class="form-control" id="insertEpsSentiment" name="insertEpsSentiment" placeholder="Eps">
+				<label for="selectBatchSentiment">Selezionare la batch size di seguito(default = 16)
+				<select class="form-control" id="selectBatchSentiment" name="selectBatchSentiment">
+					<option selected label="Clicca qui per selezionare la batch size">
+						<option>
+							1
+						</option>
+						<option>
+							2
+						</option>
+						<option>
+							4
+						</option>
+						<option>
+							8
+						</option>
+						<option>
+							16
+						</option>
+						<option>
+							32
+						</option>
+						<option>
+							64
+						</option>
+						<option>
+							128
+						</option>
+						<option>
+							256
+						</option>
+					</option>
+				</select>
+				<label for="insertEpochSentiment">Inserire l'epoca massima di seguito maggiore di 0(default = 2)</label>
+				<input type="text" class="form-control" id="insertEpochSentiment" name="insertEpochSentiment" placeholder="Epoca massima">
+				<label for="insertPatienceSentiment">Inserire la patience di seguito maggiore di 0(default = 2)</label>
+				<input type="text" class="form-control" id="insertPatienceSentiment" name="insertPatienceSentiment" placeholder="Patience">
+				<label for="insertHiddenSentiment">Inserire l' hidden dropout probability di seguito maggiore di 0.0(default = 0.3)</label>
+				<input type="text" class="form-control" id="insertHiddenSentiment" name="insertHiddenSentiment" placeholder="Hidden Dropout Probability">
 				<button type = "submit" class = "btn btn-primary" name = "submitButton" value = "sentimentAnalysis">
 					Inizia l'addestramento del modello di Sentiment Analysis
 				</button>

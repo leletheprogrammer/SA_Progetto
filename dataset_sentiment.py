@@ -4,13 +4,24 @@ from multiprocessing import Pool
 import torch
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset
+import string
 import json
+import re
 from joblib import dump
+
+EMOJI_PATTERN = re.compile(
+    "["
+    u"\U0001F600-\U0001F64F"
+    u"\U0001F300-\U0001F5FF"
+    u"\U0001F680-\U0001F6FF"
+    u"\U0001F1E0-\U0001F1FF"
+    "]+", flags=re.UNICODE)
+_RE_COMBINE_WHITESPACE = re.compile(r"\s+")
 
 
 class DatasetProcessor:
 
-    def __init__(self, df, tokenizer, nlp, text_col='phrase', label_col='intent', max_len=80):
+    def __init__(self, df, tokenizer, nlp, text_col='phrase', label_col='sentiment', max_len=80):
         self.df = df.sample(frac=1, random_state=123)
         self.nlp = nlp
         self.label_col = label_col
@@ -21,13 +32,30 @@ class DatasetProcessor:
 
     def get_mapping(self):
         le = LabelEncoder()
-        le.fit(self.df['intent'])
+        le.fit(self.df[self.label_col])
         le_name_mapping = dict(zip(le.classes_, le.transform(le.classes_)))
-        dump(le, 'mapping_intent.joblib')
+        dump(le, 'mapping_sentiment.joblib')
         return le_name_mapping
+
+    def clean(self, doc):
+        out = ''
+        for t in doc:
+            bad = t.like_url
+            bad |= t.text.startswith('@')
+            bad |= t.text.startswith('#')
+            bad |= t.like_email
+            bad |= t.like_num
+            if not bad:
+                out += t.text_with_ws
+        out = re.sub(r"""([?.!,;"'])""", r" ", out)
+        out = out.translate(str.maketrans('', '', string.punctuation))
+        out = EMOJI_PATTERN.sub(r'', out)
+        out = _RE_COMBINE_WHITESPACE.sub(" ", out).strip()
+        return self.nlp(out)
 
     def process(self, df_row):
         doc = self.nlp(df_row[self.text_col])
+        doc = self.clean(doc)
         doc = doc[:self.max_len]
         input_ids = self.tokenizer.encode(doc.text, add_special_tokens=True)
         size = len(input_ids)

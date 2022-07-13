@@ -13,6 +13,7 @@ from random import randint
 from werkzeug.security import generate_password_hash, check_password_hash
 
 import training_intent_recognition as tir
+import training_sentiment_analysis as tsa
 
 '''app represents the web application and
 __name__ represents the name of the current file'''
@@ -25,8 +26,10 @@ login_user = None
 needed = None
 
 thread_training_intent = None
+thread_training_sentiment = None
 thread_lock = Lock()
 max_epoch_intent = 0
+max_epoch_sentiment = 0
 
 '''decorator that defines the url path
 where will be the index page of the site'''
@@ -477,12 +480,52 @@ def start_training_model():
                     hidden_dropout_prob = 0.3
             global thread_training_intent
             with thread_lock:
-                if thread_training_intent is None:
+                if tir.get_ended():
                     thread_training_intent = sio.start_background_task(tir.start_training, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
         elif (form_data['submitButton'] == 'entitiesExtraction'):
             trainingEntitiesExtraction()
         elif (form_data['submitButton'] == 'sentimentAnalysis'):
-            pass
+            learning_rate = 0.1
+            eps = 0.5
+            batch_size = 16
+            global max_epoch_sentiment
+            max_epoch_intent = 2
+            patience = 2
+            hidden_dropout_prob = 0.3
+            if 'insertLearningSentiment' in form_data:
+                try:
+                    learning_rate = float(form_data['insertLearningSentiment'])
+                except ValueError:
+                    learning_rate = 0.1
+            if 'insertEpsSentiment' in form_data:
+                try:
+                    eps = float(form_data['insertEpsSentiment'])
+                except ValueError:
+                    eps = 0.5
+            if 'selectBatchSentiment' in form_data:
+                if form_data['selectBatchSentiment'] != '':
+                    batch_size = int(form_data['selectBatchSentiment'])
+                else:
+                    batch_size = 16
+            if 'insertEpochSentiment' in form_data:
+                try:
+                    max_epoch_sentiment = int(form_data['insertEpochSentiment'])
+                except ValueError:
+                    max_epoch_sentiment = 2
+            if 'insertPatienceSentiment' in form_data:
+                try:
+                    patience = int(form_data['insertPatienceSentiment'])
+                except ValueError:
+                    patience = 2
+            if 'insertHiddenSentiment' in form_data:
+                try:
+                    hidden_dropout_prob = float(form_data['insertHiddenSentiment'])
+                except ValueError:
+                    hidden_dropout_prob = 0.3
+            global thread_training_sentiment
+            with thread_lock:
+                if tsa.get_ended():
+                    thread_training_sentiment = sio.start_background_task(tsa.start_training, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
         return render_template('start_training_model.html')
     elif request.method == 'GET':
         return render_template('start_training_model.html')
@@ -596,6 +639,20 @@ def status_model_intent():
         else:
             global max_epoch_intent
             return render_template("status_model_intent.html", num_epoch = tir.get_num_epoch(), num_iteration = tir.get_num_iteration(), length_epoch = tir.get_epoch_length(), num_progress = tir.get_num_progress(), max_epoch = max_epoch_intent)
+
+'''decorator that defines the url path
+of the page where see the status of the
+training of the sentiment analysis model'''
+@app.route('/home/status_model_sentiment', methods = ['POST', 'GET'])
+def status_model_sentiment():
+    if thread_training_sentiment is None:
+        return render_template("status_model_sentiment.html", not_training = True)
+    else:
+        if(tsa.get_num_epoch() == -1):
+            return render_template("status_model_sentiment.html", loading = True)
+        else:
+            global max_epoch_sentiment
+            return render_template("status_model_sentiment.html", num_epoch = tsa.get_num_epoch(), num_iteration = tsa.get_num_iteration(), length_epoch = tsa.get_epoch_length(), num_progress = tsa.get_num_progress(), max_epoch = max_epoch_sentiment)
 
 '''decorator that defines the url path of the
 page where to test and show results of the models'''

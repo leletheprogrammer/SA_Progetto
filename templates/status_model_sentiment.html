@@ -4,7 +4,7 @@
 		<meta charset = "UTF-8">
 		<meta name = "viewport" content = "width=device-width, initial-scale=1">
 		<title>
-			Status_Model_Intent
+			Status_Model_Sentiment
 		</title>
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 	</head>
@@ -12,14 +12,14 @@
 		{% if loading %}
 			<br><br><br><br><br><br><br><br>
 			<h2><p>
-				L'addestramento del modello di Intent Recognition sta per incominciare.
+				L'addestramento del modello di Sentiment Analysis sta per incominciare.
 				Si prega di attendere qualche secondo
 			</p></h2>
 		{% else %}
 			{% if not_training %}
 				<br><br><br><br><br><br><br><br>
 				<h2><p>
-					Al momento non è in corso l'addestramento del modello di Intent Recognition
+					Al momento non è in corso l'addestramento del modello di Sentiment Analysis
 				</p></h2>
 			{% else %}
 				{% for i in range(0, num_epoch) %}
