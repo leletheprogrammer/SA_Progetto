@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_pymongo import PyMongo
 
+from threading import Lock
+from flask_socketio import SocketIO
+
 import smtplib, ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -9,17 +12,24 @@ from random import randint
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-#import spacy
-#from spacy.util import minibatch, compounding
+import training_intent_recognition as tir
+import training_sentiment_analysis as tsa
 
 '''app represents the web application and
 __name__ represents the name of the current file'''
 app = Flask(__name__)
+sio = SocketIO(app)
 
 mongo = PyMongo(app, 'mongodb://localhost:27017/NLPDatabase', connect = True)
 
 login_user = None
 needed = None
+
+thread_training_intent = None
+thread_training_sentiment = None
+thread_lock = Lock()
+max_epoch_intent = 0
+max_epoch_sentiment = 0
 
 '''decorator that defines the url path
 where will be the index page of the site'''
@@ -564,17 +574,97 @@ def training_phrases():
 of the page where to train the models'''
 @app.route('/home/start_training_model', methods = ['POST', 'GET'])
 def start_training_model():
-	if request.method == 'POST':
-		form_data = request.form
-		if (form_data['submitButton'] == 'intentRecognition'):
-			pass
-		elif (form_data['submitButton'] == 'entitiesExtraction'):
-			trainingEntitiesExtraction()
-		elif (form_data['submitButton'] == 'sentimentAnalysis'):
-			pass
-		return render_template('start_training_model.html')
-	elif request.method == 'GET':
-		return render_template('start_training_model.html')
+    if request.method == 'POST':
+        form_data = request.form
+        if (form_data['submitButton'] == 'intentRecognition'):
+            learning_rate = 0.1
+            eps = 0.5
+            batch_size = 16
+            global max_epoch_intent
+            max_epoch_intent = 2
+            patience = 2
+            hidden_dropout_prob = 0.3
+            if 'insertLearningIntent' in form_data:
+                try:
+                    learning_rate = float(form_data['insertLearningIntent'])
+                except ValueError:
+                    learning_rate = 0.1
+            if 'insertEpsIntent' in form_data:
+                try:
+                    eps = float(form_data['insertEpsIntent'])
+                except ValueError:
+                    eps = 0.5
+            if 'selectBatchIntent' in form_data:
+                if form_data['selectBatchIntent'] != '':
+                    batch_size = int(form_data['selectBatchIntent'])
+                else:
+                    batch_size = 16
+            if 'insertEpochIntent' in form_data:
+                try:
+                    max_epoch_intent = int(form_data['insertEpochIntent'])
+                except ValueError:
+                    max_epoch_intent = 2
+            if 'insertPatienceIntent' in form_data:
+                try:
+                    patience = int(form_data['insertPatienceIntent'])
+                except ValueError:
+                    patience = 2
+            if 'insertHiddenIntent' in form_data:
+                try:
+                    hidden_dropout_prob = float(form_data['insertHiddenIntent'])
+                except ValueError:
+                    hidden_dropout_prob = 0.3
+            global thread_training_intent
+            with thread_lock:
+                if tir.get_ended():
+                    thread_training_intent = sio.start_background_task(tir.start_training, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
+        elif (form_data['submitButton'] == 'entitiesExtraction'):
+            trainingEntitiesExtraction()
+        elif (form_data['submitButton'] == 'sentimentAnalysis'):
+            learning_rate = 0.1
+            eps = 0.5
+            batch_size = 16
+            global max_epoch_sentiment
+            max_epoch_intent = 2
+            patience = 2
+            hidden_dropout_prob = 0.3
+            if 'insertLearningSentiment' in form_data:
+                try:
+                    learning_rate = float(form_data['insertLearningSentiment'])
+                except ValueError:
+                    learning_rate = 0.1
+            if 'insertEpsSentiment' in form_data:
+                try:
+                    eps = float(form_data['insertEpsSentiment'])
+                except ValueError:
+                    eps = 0.5
+            if 'selectBatchSentiment' in form_data:
+                if form_data['selectBatchSentiment'] != '':
+                    batch_size = int(form_data['selectBatchSentiment'])
+                else:
+                    batch_size = 16
+            if 'insertEpochSentiment' in form_data:
+                try:
+                    max_epoch_sentiment = int(form_data['insertEpochSentiment'])
+                except ValueError:
+                    max_epoch_sentiment = 2
+            if 'insertPatienceSentiment' in form_data:
+                try:
+                    patience = int(form_data['insertPatienceSentiment'])
+                except ValueError:
+                    patience = 2
+            if 'insertHiddenSentiment' in form_data:
+                try:
+                    hidden_dropout_prob = float(form_data['insertHiddenSentiment'])
+                except ValueError:
+                    hidden_dropout_prob = 0.3
+            global thread_training_sentiment
+            with thread_lock:
+                if tsa.get_ended():
+                    thread_training_sentiment = sio.start_background_task(tsa.start_training, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
+        return render_template('start_training_model.html')
+    elif request.method == 'GET':
+        return render_template('start_training_model.html')
 
 def trainingEntitiesExtraction():
     '''
@@ -672,6 +762,34 @@ def tupleEntity(entity):
     entityTuple = (int(firstIndex), int(lastIndex), entity[i:len(entity) - 1])
     return entityTuple
 
+'''decorator that defines the url path
+of the page where see the status of the
+training of the intent recognition model'''
+@app.route('/home/status_model_intent', methods = ['POST', 'GET'])
+def status_model_intent():
+    if thread_training_intent is None:
+        return render_template("status_model_intent.html", not_training = True)
+    else:
+        if(tir.get_num_epoch() == -1):
+            return render_template("status_model_intent.html", loading = True)
+        else:
+            global max_epoch_intent
+            return render_template("status_model_intent.html", num_epoch = tir.get_num_epoch(), num_iteration = tir.get_num_iteration(), length_epoch = tir.get_epoch_length(), num_progress = tir.get_num_progress(), max_epoch = max_epoch_intent)
+
+'''decorator that defines the url path
+of the page where see the status of the
+training of the sentiment analysis model'''
+@app.route('/home/status_model_sentiment', methods = ['POST', 'GET'])
+def status_model_sentiment():
+    if thread_training_sentiment is None:
+        return render_template("status_model_sentiment.html", not_training = True)
+    else:
+        if(tsa.get_num_epoch() == -1):
+            return render_template("status_model_sentiment.html", loading = True)
+        else:
+            global max_epoch_sentiment
+            return render_template("status_model_sentiment.html", num_epoch = tsa.get_num_epoch(), num_iteration = tsa.get_num_iteration(), length_epoch = tsa.get_epoch_length(), num_progress = tsa.get_num_progress(), max_epoch = max_epoch_sentiment)
+
 '''decorator that defines the url path of the
 page where to test and show results of the models'''
 @app.route('/home/show_results_testing')
@@ -685,4 +803,4 @@ def download_erasure_model():
 	return 'download_erasure_model'
 
 if __name__ == '__main__':
-    app.run()
+    sio.run(app)
