@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_file
 from flask_pymongo import PyMongo
 
 from threading import Lock
@@ -11,6 +11,11 @@ from email.mime.multipart import MIMEMultipart
 from random import randint
 
 from werkzeug.security import generate_password_hash, check_password_hash
+
+import os
+from os.path import basename
+from io import BytesIO
+import zipfile
 
 import training_intent_recognition as tir
 import training_sentiment_analysis as tsa
@@ -798,9 +803,35 @@ def show_results_testing():
 
 '''decorator that defines the url path of
 the page where to download or erase the models'''
-@app.route('/home/download_erasure_model')
+@app.route('/home/download_erasure_model', methods = ['POST', 'GET'])
 def download_erasure_model():
-	return 'download_erasure_model'
+    if request.method == 'POST':
+        form_data = request.form
+        if(form_data['submitButton'] == 'downloadIntentRecognition'):
+            if(os.path.isdir(os.path.join('models', 'intent'))):
+                memory_file = BytesIO()
+                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for file_name in os.listdir(os.path.join('models', 'intent')):
+                        file = os.path.join('models', 'intent', file_name)
+                        zipf.write(file, basename(file))
+                memory_file.seek(0)
+                return send_file(memory_file, attachment_filename = 'intent.zip', as_attachment = True)
+            else:
+                return render_template('download_erasure_model.html', model_download = 'Intent Recognition')
+        elif(form_data['submitButton'] == 'downloadSentimentAnalysis'):
+            if(os.path.isdir(os.path.join('models', 'sentiment'))):
+                memory_file = BytesIO()
+                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for file_name in os.listdir(os.path.join('models', 'sentiment')):
+                        file = os.path.join('models', 'sentiment', file_name)
+                        zipf.write(file, basename(file))
+                memory_file.seek(0)
+                return send_file(memory_file, attachment_filename = 'sentiment.zip', as_attachment = True)
+            else:
+                return render_template('download_erasure_model.html', model_download = 'Sentiment Analysis')
+        return render_template('download_erasure_model.html')
+    elif request.method == 'GET':
+        return render_template('download_erasure_model.html')
 
 if __name__ == '__main__':
     sio.run(app)
