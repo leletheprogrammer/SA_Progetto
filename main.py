@@ -613,33 +613,33 @@ def start_training_model():
                 except ValueError:
                     hidden_dropout_prob = 0.3
             if(form_data['submitButton'] == 'intentRecognition'):
-                global max_epoch_intent
-                max_epoch_intent = 2
-                if 'insertMaxEpoch' in form_data:
-                    try:
-                        max_epoch_intent = int(form_data['insertMaxEpoch'])
-                    except ValueError:
-                        max_epoch_intent = 2
-                global thread_training_intent
-                with thread_lock:
-                    if tir.get_ended():
+                if tir.get_ended():
+                    global max_epoch_intent
+                    max_epoch_intent = 2
+                    if 'insertMaxEpoch' in form_data:
+                        try:
+                            max_epoch_intent = int(form_data['insertMaxEpoch'])
+                        except ValueError:
+                            max_epoch_intent = 2
+                    global thread_training_intent
+                    with thread_lock:
                         thread_training_intent = sio.start_background_task(tir.start_training, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
-                    else:
-                        return render_template('start_training_model.html', model_training = 'Intent Recognition')
+                else:
+                    return render_template('start_training_model.html', model_training = 'Intent Recognition')
             elif(form_data['submitButton'] == 'sentimentAnalysis'):
-                global max_epoch_sentiment
-                max_epoch_intent = 2
-                if 'insertMaxEpoch' in form_data:
-                    try:
-                        max_epoch_sentiment = int(form_data['insertMaxEpoch'])
-                    except ValueError:
-                        max_epoch_sentiment = 2
-                global thread_training_sentiment
-                with thread_lock:
-                    if tsa.get_ended():
+                if tsa.get_ended():
+                    global max_epoch_sentiment
+                    max_epoch_intent = 2
+                    if 'insertMaxEpoch' in form_data:
+                        try:
+                            max_epoch_sentiment = int(form_data['insertMaxEpoch'])
+                        except ValueError:
+                            max_epoch_sentiment = 2
+                    global thread_training_sentiment
+                    with thread_lock:
                         thread_training_sentiment = sio.start_background_task(tsa.start_training, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
-                    else:
-                        return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
+                else:
+                    return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
         elif (form_data['submitButton'] == 'entitiesExtraction'):
             trainingEntitiesExtraction()
         return render_template('start_training_model.html')
