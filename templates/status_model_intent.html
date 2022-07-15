@@ -22,6 +22,9 @@
 					Al momento non è in corso l'addestramento del modello di Intent Recognition
 				</p></h2>
 			{% else %}
+				<h2><p>
+					Questa pagina mostra lo status dell'addestramento del modello di Intent Recognition
+				</p></h2>
 				{% for i in range(0, num_epoch) %}
 					Epoca [{{ i + 1 }}/{{ max_epoch }}], iterazione {{ length_epoch }}/{{ length_epoch }}:
 					<div class = "progress" style="height: 40px;">

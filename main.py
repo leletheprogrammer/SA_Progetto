@@ -581,92 +581,67 @@ of the page where to train the models'''
 def start_training_model():
     if request.method == 'POST':
         form_data = request.form
-        if (form_data['submitButton'] == 'intentRecognition'):
+        if (form_data['submitButton'] == 'intentRecognition' or form_data['submitButton'] == 'sentimentAnalysis'):
             learning_rate = 0.1
             eps = 0.5
             batch_size = 16
-            global max_epoch_intent
-            max_epoch_intent = 2
             patience = 2
             hidden_dropout_prob = 0.3
-            if 'insertLearningIntent' in form_data:
+            if 'insertLearningRate' in form_data:
                 try:
-                    learning_rate = float(form_data['insertLearningIntent'])
+                    learning_rate = float(form_data['insertLearningRate'])
                 except ValueError:
                     learning_rate = 0.1
-            if 'insertEpsIntent' in form_data:
+            if 'insertEps' in form_data:
                 try:
-                    eps = float(form_data['insertEpsIntent'])
+                    eps = float(form_data['insertEps'])
                 except ValueError:
                     eps = 0.5
-            if 'selectBatchIntent' in form_data:
-                if form_data['selectBatchIntent'] != '':
-                    batch_size = int(form_data['selectBatchIntent'])
+            if 'selectBatchSize' in form_data:
+                if form_data['selectBatchSize'] != '':
+                    batch_size = int(form_data['selectBatchSize'])
                 else:
                     batch_size = 16
-            if 'insertEpochIntent' in form_data:
+            if 'insertPatience' in form_data:
                 try:
-                    max_epoch_intent = int(form_data['insertEpochIntent'])
-                except ValueError:
-                    max_epoch_intent = 2
-            if 'insertPatienceIntent' in form_data:
-                try:
-                    patience = int(form_data['insertPatienceIntent'])
+                    patience = int(form_data['insertPatience'])
                 except ValueError:
                     patience = 2
-            if 'insertHiddenIntent' in form_data:
+            if 'insertHiddenDropout' in form_data:
                 try:
-                    hidden_dropout_prob = float(form_data['insertHiddenIntent'])
+                    hidden_dropout_prob = float(form_data['insertHiddenDropout'])
                 except ValueError:
                     hidden_dropout_prob = 0.3
-            global thread_training_intent
-            with thread_lock:
-                if tir.get_ended():
-                    thread_training_intent = sio.start_background_task(tir.start_training, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
+            if(form_data['submitButton'] == 'intentRecognition'):
+                global max_epoch_intent
+                max_epoch_intent = 2
+                if 'insertMaxEpoch' in form_data:
+                    try:
+                        max_epoch_intent = int(form_data['insertMaxEpoch'])
+                    except ValueError:
+                        max_epoch_intent = 2
+                global thread_training_intent
+                with thread_lock:
+                    if tir.get_ended():
+                        thread_training_intent = sio.start_background_task(tir.start_training, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
+                    else:
+                        return render_template('start_training_model.html', model_training = 'Intent Recognition')
+            elif(form_data['submitButton'] == 'sentimentAnalysis'):
+                global max_epoch_sentiment
+                max_epoch_intent = 2
+                if 'insertMaxEpoch' in form_data:
+                    try:
+                        max_epoch_sentiment = int(form_data['insertMaxEpoch'])
+                    except ValueError:
+                        max_epoch_sentiment = 2
+                global thread_training_sentiment
+                with thread_lock:
+                    if tsa.get_ended():
+                        thread_training_sentiment = sio.start_background_task(tsa.start_training, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
+                    else:
+                        return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
         elif (form_data['submitButton'] == 'entitiesExtraction'):
             trainingEntitiesExtraction()
-        elif (form_data['submitButton'] == 'sentimentAnalysis'):
-            learning_rate = 0.1
-            eps = 0.5
-            batch_size = 16
-            global max_epoch_sentiment
-            max_epoch_intent = 2
-            patience = 2
-            hidden_dropout_prob = 0.3
-            if 'insertLearningSentiment' in form_data:
-                try:
-                    learning_rate = float(form_data['insertLearningSentiment'])
-                except ValueError:
-                    learning_rate = 0.1
-            if 'insertEpsSentiment' in form_data:
-                try:
-                    eps = float(form_data['insertEpsSentiment'])
-                except ValueError:
-                    eps = 0.5
-            if 'selectBatchSentiment' in form_data:
-                if form_data['selectBatchSentiment'] != '':
-                    batch_size = int(form_data['selectBatchSentiment'])
-                else:
-                    batch_size = 16
-            if 'insertEpochSentiment' in form_data:
-                try:
-                    max_epoch_sentiment = int(form_data['insertEpochSentiment'])
-                except ValueError:
-                    max_epoch_sentiment = 2
-            if 'insertPatienceSentiment' in form_data:
-                try:
-                    patience = int(form_data['insertPatienceSentiment'])
-                except ValueError:
-                    patience = 2
-            if 'insertHiddenSentiment' in form_data:
-                try:
-                    hidden_dropout_prob = float(form_data['insertHiddenSentiment'])
-                except ValueError:
-                    hidden_dropout_prob = 0.3
-            global thread_training_sentiment
-            with thread_lock:
-                if tsa.get_ended():
-                    thread_training_sentiment = sio.start_background_task(tsa.start_training, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
         return render_template('start_training_model.html')
     elif request.method == 'GET':
         return render_template('start_training_model.html')
