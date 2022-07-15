@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang = "it">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Start_Training_Model</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+	.modal .modal-dialog {
+		max-width: 400px;
+	}
+	.modal .modal-header, .modal .modal-body, .modal .modal-footer {
+		padding: 20px 30px;
+	}
+	.modal .modal-content {
+		border-radius: 3px;
+	}
+	.modal .modal-footer {
+		background: #ecf0f1;
+		border-radius: 0 0 3px 3px;
+	}
+	.modal .modal-title {
+		display: inline-block;
+	}
+	.modal .form-control {
+		border-radius: 2px;
+		box-shadow: none;
+		border-color: #dddddd;
+	}
+	.modal textarea.form-control {
+		resize: vertical;
+	}
+	.modal .btn {
+		border-radius: 2px;
+		min-width: 100px;
+	}
+	.modal form label {
+		font-weight: normal;
+	}
+</style>
+<script>
+function downloadModelClicked(model) {
+	$('#downloadModel').modal('show');
+	document.getElementById('downloadModalBody').innerHTML = "<p>E' stato scelto di scaricare il modello di ";
+	if(model == "downloadIntentRecognition") {
+		document.getElementById('downloadModalBody').innerHTML += "Intent Recognition";
+	}
+	else if(model == "downloadSentimentAnalysis") {
+		document.getElementById('downloadModalBody').innerHTML += "Sentiment Analysis";
+	}
+	document.getElementById('downloadModalBody').innerHTML += ". Premere sul bottone scarica per completare l'operazione</p>"
+	document.getElementById('downloadButton').value = model;
+}
+function deleteModelClicked(model) {
+	$('#deleteModel').modal('show');
+	document.getElementById('deleteModalBody').innerHTML = "<p>E' stato scelto di cancellare il modello di ";
+	if(model == "deleteIntentRecognition") {
+		document.getElementById('deleteModalBody').innerHTML += "Intent Recognition";
+	}
+	else if(model == "deleteSentimentAnalysis") {
+		document.getElementById('deleteModalBody').innerHTML += "Sentiment Analysis";
+	}
+	document.getElementById('deleteModalBody').innerHTML += ". Premere sul bottone cancella per completare l'operazione.</p><p class='text-warning'><small>Attenzione, questa azione non è reversibile</p>"
+	document.getElementById('deleteButton').value = model;
+}
+function closeModal(modal) {
+	$(modal).modal('hide');
+}
+	
+$(document).ready(function() {
+	{% if model_download %}
+		$('#warningModel').modal('show');
+		document.getElementById('warningModalBody').innerHTML = "<p>Il modello di {{ model_download }} da scaricare non è presente";
+	{% endif %}
+	{% if model_erasure %}
+		$('#warningModel').modal('show');
+		document.getElementById('warningModalBody').innerHTML = "<p>Il modello di {{ model_erasure }} da cancellare non è presente";		
+	{% endif %}
+});
+</script>
+</head>
+<body>
+	<h2><p>
+		In questa pagina è possibile scaricare e/o cancellare i modelli
+		di NLP addestrati, se presenti
+	</p></h2>
+	<br>
+	<button type = "button" class = "btn btn-primary btn-lg" onclick = "downloadModelClicked('downloadIntentRecognition')">
+		Scarica il modello addestrato di Intent Recognition
+	</button>
+	<br><br>
+	<button type = "button" class = "btn btn-primary btn-lg" onclick = "downloadModelClicked('downloadSentimentAnalysis')">
+		Scarica il modello addestrato di Sentiment Analysis
+	</button>
+	<br><br><br><br><br><br>
+	<button type = "button" class = "btn btn-danger btn-lg" onclick = "deleteModelClicked('deleteIntentRecognition')">
+		Cancella il modello addestrato di Intent Recognition
+	</button>
+	<br><br>
+	<button type = "button" class = "btn btn-danger btn-lg" onclick = "deleteModelClicked('deleteSentimentAnalysis')">
+		Cancella il modello addestrato di Sentiment Analysis
+	</button>
+	<!-- Download Model Modal -->
+	<div id="downloadModel" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form method="POST">
+					<div class="modal-header">
+						<h4 class="modal-title">Scarica modello addestrato</h4>
+						<button type="button" class="close" aria-hidden="true" data-dismiss = "modal">&times;</button>
+					</div>
+					<div id="downloadModalBody" class="modal-body"></div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss = "modal">Indietro</button>
+						<button type="submit" id="downloadButton" name="submitButton" class="btn btn-success" onclick="closeModal('#downloadModel')" value="">Scarica</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Delete Model Modal -->
+	<div id="deleteModel" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form method="POST">
+					<div class="modal-header">
+						<h4 class="modal-title">Cancella modello addestrato</h4>
+						<button type="button" class="close" aria-hidden="true" data-dismiss = "modal">&times;</button>
+					</div>
+					<div id="deleteModalBody" class="modal-body"></div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss = "modal">Indietro</button>
+						<button type="submit" id="deleteButton" name="submitButton" class="btn btn-danger" onclick="closeModal('#deleteModel')" value="">Cancella</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Warning Model Present Modal -->
+	<div id="warningModel" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title">Modello non presente</h4>
+					<button type="button" class="close" aria-hidden="true" data-dismiss = "modal">&times;</button>
+				</div>
+				<div id="warningModalBody" class="modal-body"></div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-warning" data-dismiss = "modal">Indietro</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

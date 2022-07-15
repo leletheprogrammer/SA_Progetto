@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_file
 from flask_pymongo import PyMongo
 
 from threading import Lock
@@ -11,6 +11,11 @@ from email.mime.multipart import MIMEMultipart
 from random import randint
 
 from werkzeug.security import generate_password_hash, check_password_hash
+
+import os
+from os.path import basename
+from io import BytesIO
+import zipfile
 
 import training_intent_recognition as tir
 import training_sentiment_analysis as tsa
@@ -576,92 +581,67 @@ of the page where to train the models'''
 def start_training_model():
     if request.method == 'POST':
         form_data = request.form
-        if (form_data['submitButton'] == 'intentRecognition'):
+        if (form_data['submitButton'] == 'intentRecognition' or form_data['submitButton'] == 'sentimentAnalysis'):
             learning_rate = 0.1
             eps = 0.5
             batch_size = 16
-            global max_epoch_intent
-            max_epoch_intent = 2
             patience = 2
             hidden_dropout_prob = 0.3
-            if 'insertLearningIntent' in form_data:
+            if 'insertLearningRate' in form_data:
                 try:
-                    learning_rate = float(form_data['insertLearningIntent'])
+                    learning_rate = float(form_data['insertLearningRate'])
                 except ValueError:
                     learning_rate = 0.1
-            if 'insertEpsIntent' in form_data:
+            if 'insertEps' in form_data:
                 try:
-                    eps = float(form_data['insertEpsIntent'])
+                    eps = float(form_data['insertEps'])
                 except ValueError:
                     eps = 0.5
-            if 'selectBatchIntent' in form_data:
-                if form_data['selectBatchIntent'] != '':
-                    batch_size = int(form_data['selectBatchIntent'])
+            if 'selectBatchSize' in form_data:
+                if form_data['selectBatchSize'] != '':
+                    batch_size = int(form_data['selectBatchSize'])
                 else:
                     batch_size = 16
-            if 'insertEpochIntent' in form_data:
+            if 'insertPatience' in form_data:
                 try:
-                    max_epoch_intent = int(form_data['insertEpochIntent'])
-                except ValueError:
-                    max_epoch_intent = 2
-            if 'insertPatienceIntent' in form_data:
-                try:
-                    patience = int(form_data['insertPatienceIntent'])
+                    patience = int(form_data['insertPatience'])
                 except ValueError:
                     patience = 2
-            if 'insertHiddenIntent' in form_data:
+            if 'insertHiddenDropout' in form_data:
                 try:
-                    hidden_dropout_prob = float(form_data['insertHiddenIntent'])
+                    hidden_dropout_prob = float(form_data['insertHiddenDropout'])
                 except ValueError:
                     hidden_dropout_prob = 0.3
-            global thread_training_intent
-            with thread_lock:
+            if(form_data['submitButton'] == 'intentRecognition'):
                 if tir.get_ended():
-                    thread_training_intent = sio.start_background_task(tir.start_training, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
+                    global max_epoch_intent
+                    max_epoch_intent = 2
+                    if 'insertMaxEpoch' in form_data:
+                        try:
+                            max_epoch_intent = int(form_data['insertMaxEpoch'])
+                        except ValueError:
+                            max_epoch_intent = 2
+                    global thread_training_intent
+                    with thread_lock:
+                        thread_training_intent = sio.start_background_task(tir.start_training, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
+                else:
+                    return render_template('start_training_model.html', model_training = 'Intent Recognition')
+            elif(form_data['submitButton'] == 'sentimentAnalysis'):
+                if tsa.get_ended():
+                    global max_epoch_sentiment
+                    max_epoch_intent = 2
+                    if 'insertMaxEpoch' in form_data:
+                        try:
+                            max_epoch_sentiment = int(form_data['insertMaxEpoch'])
+                        except ValueError:
+                            max_epoch_sentiment = 2
+                    global thread_training_sentiment
+                    with thread_lock:
+                        thread_training_sentiment = sio.start_background_task(tsa.start_training, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
+                else:
+                    return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
         elif (form_data['submitButton'] == 'entitiesExtraction'):
             trainingEntitiesExtraction()
-        elif (form_data['submitButton'] == 'sentimentAnalysis'):
-            learning_rate = 0.1
-            eps = 0.5
-            batch_size = 16
-            global max_epoch_sentiment
-            max_epoch_intent = 2
-            patience = 2
-            hidden_dropout_prob = 0.3
-            if 'insertLearningSentiment' in form_data:
-                try:
-                    learning_rate = float(form_data['insertLearningSentiment'])
-                except ValueError:
-                    learning_rate = 0.1
-            if 'insertEpsSentiment' in form_data:
-                try:
-                    eps = float(form_data['insertEpsSentiment'])
-                except ValueError:
-                    eps = 0.5
-            if 'selectBatchSentiment' in form_data:
-                if form_data['selectBatchSentiment'] != '':
-                    batch_size = int(form_data['selectBatchSentiment'])
-                else:
-                    batch_size = 16
-            if 'insertEpochSentiment' in form_data:
-                try:
-                    max_epoch_sentiment = int(form_data['insertEpochSentiment'])
-                except ValueError:
-                    max_epoch_sentiment = 2
-            if 'insertPatienceSentiment' in form_data:
-                try:
-                    patience = int(form_data['insertPatienceSentiment'])
-                except ValueError:
-                    patience = 2
-            if 'insertHiddenSentiment' in form_data:
-                try:
-                    hidden_dropout_prob = float(form_data['insertHiddenSentiment'])
-                except ValueError:
-                    hidden_dropout_prob = 0.3
-            global thread_training_sentiment
-            with thread_lock:
-                if tsa.get_ended():
-                    thread_training_sentiment = sio.start_background_task(tsa.start_training, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
         return render_template('start_training_model.html')
     elif request.method == 'GET':
         return render_template('start_training_model.html')
@@ -798,9 +778,61 @@ def show_results_testing():
 
 '''decorator that defines the url path of
 the page where to download or erase the models'''
-@app.route('/home/download_erasure_model')
+@app.route('/home/download_erasure_model', methods = ['POST', 'GET'])
 def download_erasure_model():
-	return 'download_erasure_model'
+    if request.method == 'POST':
+        form_data = request.form
+        if(form_data['submitButton'] == 'downloadIntentRecognition'):
+            if(os.path.isdir(os.path.join('models', 'intent'))):
+                memory_file = BytesIO()
+                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for file_name in os.listdir(os.path.join('models', 'intent')):
+                        file = os.path.join('models', 'intent', file_name)
+                        zipf.write(file, basename(file))
+                memory_file.seek(0)
+                return send_file(memory_file, attachment_filename = 'intent.zip', as_attachment = True)
+            else:
+                return render_template('download_erasure_model.html', model_download = 'Intent Recognition')
+        elif(form_data['submitButton'] == 'downloadSentimentAnalysis'):
+            if(os.path.isdir(os.path.join('models', 'sentiment'))):
+                memory_file = BytesIO()
+                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for file_name in os.listdir(os.path.join('models', 'sentiment')):
+                        file = os.path.join('models', 'sentiment', file_name)
+                        zipf.write(file, basename(file))
+                memory_file.seek(0)
+                return send_file(memory_file, attachment_filename = 'sentiment.zip', as_attachment = True)
+            else:
+                return render_template('download_erasure_model.html', model_download = 'Sentiment Analysis')
+        elif(form_data['submitButton'] == 'deleteIntentRecognition'):
+            if os.path.isfile('mapping_intent.joblib'):
+                os.remove('mapping_intent.joblib')
+            if os.path.isfile('results_intent.csv'):
+                os.remove('results_intent.csv')
+            if os.path.isdir(os.path.join('models', 'intent')):
+                for file_name in os.listdir(os.path.join('models', 'intent')):
+                    file = os.path.join('models', 'intent', file_name)
+                    if os.path.isfile(file):
+                        os.remove(file)
+                os.rmdir(os.path.join('models', 'intent'))
+            else:
+                return render_template('download_erasure_model.html', model_erasure = 'Intent Recognition')
+        elif(form_data['submitButton'] == 'deleteSentimentAnalysis'):
+            if os.path.isfile('mapping_sentiment.joblib'):
+                os.remove('mapping_sentiment.joblib')
+            if os.path.isfile('results_sentiment.csv'):
+                os.remove('results_sentiment.csv')
+            if os.path.isdir(os.path.join('models', 'sentiment')):
+                for file_name in os.listdir(os.path.join('models', 'sentiment')):
+                    file = os.path.join('models', 'sentiment', file_name)
+                    if os.path.isfile(file):
+                        os.remove(file)
+                os.rmdir(os.path.join('models', 'sentiment'))
+            else:
+                return render_template('download_erasure_model.html', model_erasure = 'Sentiment Analysis')
+        return render_template('download_erasure_model.html')
+    elif request.method == 'GET':
+        return render_template('download_erasure_model.html')
 
 if __name__ == '__main__':
     sio.run(app)
