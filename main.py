@@ -829,6 +829,32 @@ def download_erasure_model():
                 return send_file(memory_file, attachment_filename = 'sentiment.zip', as_attachment = True)
             else:
                 return render_template('download_erasure_model.html', model_download = 'Sentiment Analysis')
+        elif(form_data['submitButton'] == 'deleteIntentRecognition'):
+            if os.path.isfile('mapping_intent.joblib'):
+                os.remove('mapping_intent.joblib')
+            if os.path.isfile('results_intent.csv'):
+                os.remove('results_intent.csv')
+            if os.path.isdir(os.path.join('models', 'intent')):
+                for file_name in os.listdir(os.path.join('models', 'intent')):
+                    file = os.path.join('models', 'intent', file_name)
+                    if os.path.isfile(file):
+                        os.remove(file)
+                os.rmdir(os.path.join('models', 'intent'))
+            else:
+                return render_template('download_erasure_model.html', model_erasure = 'Intent Recognition')
+        elif(form_data['submitButton'] == 'deleteSentimentAnalysis'):
+            if os.path.isfile('mapping_sentiment.joblib'):
+                os.remove('mapping_sentiment.joblib')
+            if os.path.isfile('results_sentiment.csv'):
+                os.remove('results_sentiment.csv')
+            if os.path.isdir(os.path.join('models', 'sentiment')):
+                for file_name in os.listdir(os.path.join('models', 'sentiment')):
+                    file = os.path.join('models', 'sentiment', file_name)
+                    if os.path.isfile(file):
+                        os.remove(file)
+                os.rmdir(os.path.join('models', 'sentiment'))
+            else:
+                return render_template('download_erasure_model.html', model_erasure = 'Sentiment Analysis')
         return render_template('download_erasure_model.html')
     elif request.method == 'GET':
         return render_template('download_erasure_model.html')
