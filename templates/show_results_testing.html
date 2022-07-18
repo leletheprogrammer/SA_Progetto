@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang = "it">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Show_Results_Testing</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+	.modal .modal-dialog {
+		width: 700px;
+	}
+	.modal .modal-header, .modal .modal-body, .modal .modal-footer {
+		padding: 20px 30px;
+	}
+	.modal .modal-content {
+		border-radius: 3px;
+	}
+	.modal .modal-footer {
+		background: #ecf0f1;
+		border-radius: 0 0 3px 3px;
+	}
+	.modal .modal-title {
+		display: inline-block;
+	}
+	.modal .form-control {
+		border-radius: 2px;
+		box-shadow: none;
+		border-color: #dddddd;
+	}
+	.modal textarea.form-control {
+		resize: vertical;
+	}
+	.modal .btn {
+		border-radius: 2px;
+		min-width: 100px;
+	}
+	.modal form label {
+		font-weight: normal;
+	}
+</style>
+<script>
+$(document).ready(function() {
+	{% if results_intent or results_sentiment %}
+		$('#visualizeResultsModel').modal('show');
+	{% endif %}
+	{% if loss_intent or loss_sentiment %}
+		$('#visualizeGraphic').modal('show');
+		document.getElementById('modalGraphic').innerHTML = '<img src="/static/images/{% if loss_intent %}{{ loss_intent }}{% else %}{% if loss_sentiment %}{{ loss_sentiment }}{% endif %}{% endif %}" alt="Grafico Loss"/>';
+	{% endif %}
+	{% if score_intent or score_sentiment %}
+		$('#visualizeGraphic').modal('show');
+		document.getElementById('modalGraphic').innerHTML = '<img src="/static/images/{% if score_intent %}{{ score_intent }}{% else %}{% if score_sentiment %}{{ score_sentiment }}{% endif %}{% endif %}" alt="Grafico Score"/>';
+	{% endif %}
+});
+</script>
+</head>
+<body>
+	<h2><p>
+		In questa pagina è possibile visualizzare i risultati
+		dell'addestramento ed effettuare il testing dei modelli di NLP
+	</p></h2>
+	<br>
+	<form method="POST">
+		<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="visualizeIntent">
+			Visualizza risultati Intent Recognition
+		</button>
+		<br><br><br>
+		<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="visualizeEntities">
+			Visualizza risultati Entities Extraction
+		</button>
+		<br><br><br>
+		<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="visualizeSentiment">
+			Visualizza risultati Sentiment Analysis
+		</button>
+		<br><br><br>
+	</form>
+	<!-- Visualize Results Training Modal -->
+	<div id="visualizeResultsModel" class="modal fade">
+		<div class="modal-dialog" style="overflow-y: scroll; max-height:85%; margin-top: 50px; margin-bottom:50px;">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title">Risultati addestramento {% if results_intent %}Intent Recognition{% else %}{% if results_sentiment %}Sentiment Analysis{% endif %}{% endif %}</h4>
+					<button type="button" class="close" aria-hidden="true" data-dismiss = "modal">&times;</button>
+				</div>
+				<div class="modal-body">
+					<p>
+						Il risultato ottenuto dall'addestramento è il seguente:
+					</p>
+					{% if results_intent %}
+						{% for row in results_intent %}
+							<p>
+								Epoca {{ loop.index }}:F1-Score Training = {{ row[0] }}, Loss Training = {{ row[1] }}, F1-Score Validation = {{ row[2] }}, Loss Validation = {{ row[3] }}
+							</p>
+						{% endfor %}
+					{% endif %}
+					{% if results_sentiment %}
+						{% for row in results_sentiment %}
+							<p>
+								Epoca {{ loop.index }}:F1-Score Training = {{ row[0] }}, Loss Training = {{ row[1] }}, F1-Score Validation = {{ row[2] }}, Loss Validation = {{ row[3] }}
+							</p>
+						{% endfor %}
+					{% endif %}
+				</div>
+				<div class="modal-footer">
+					<form method="POST">
+						<button type="button" class="btn btn-success" data-dismiss = "modal">Indietro</button>
+						<button type="submit" name="graphicLoss" class="btn btn-primary" value="{% if results_intent %}graphicLossIntent{% else %}{% if results_sentiment %}graphicLossSentiment{% endif %}{%endif%}">Grafico Loss</button>
+						<button type="submit" name="graphicScore" class="btn btn-primary" value="{% if results_intent %}graphicScoreIntent{% else %}{% if results_sentiment %}graphicScoreSentiment{% endif %}{%endif%}">Grafico F1-Score</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Visualize Graphic Modal -->
+	<div id="visualizeGraphic" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title">Grafico {% if loss_intent or loss_sentiment %}Loss{% else %}{% if score_intent or score_sentiment %}Score{% endif %}{% endif %} modello {% if loss_intent or score_intent %}Intent Recognition{% else %}{% if loss_sentiment or score_sentiment %}Sentiment Analysis{% endif %}{% endif %}</h4>
+					<button type="button" class="close" aria-hidden="true" data-dismiss = "modal">&times;</button>
+				</div>
+				<div id="modalGraphic" class="modal-body"></div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-success" data-dismiss = "modal">Indietro</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

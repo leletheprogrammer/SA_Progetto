@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file
+from flask import Flask, render_template, request, redirect, url_for, Response, send_file
 from flask_pymongo import PyMongo
 
 from threading import Lock
@@ -16,6 +16,10 @@ import os
 from os.path import basename
 from io import BytesIO
 import zipfile
+
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+import pandas as pd
 
 import training_intent_recognition as tir
 import training_sentiment_analysis as tsa
@@ -772,9 +776,63 @@ def status_model_sentiment():
 
 '''decorator that defines the url path of the
 page where to test and show results of the models'''
-@app.route('/home/show_results_testing')
+@app.route('/home/show_results_testing', methods = ['POST', 'GET'])
 def show_results_testing():
-	return 'show_results_testing'
+    if request.method == 'POST':
+        form_data = request.form
+        if('submitButton' in form_data):
+            if(form_data['submitButton'] == 'visualizeIntent'):
+                return render_template('show_results_testing.html', results_intent = pd.read_csv('results.csv').values.tolist())
+            elif(form_data['submitButton'] == 'visualizeEntities'):
+                pass
+            elif(form_data['submitButton'] == 'visualizeSentiment'):
+                return render_template('show_results_testing.html', results_sentiment = pd.read_csv('results_sentiment.csv').values.tolist())
+        if('graphicLoss' in form_data):
+            fig = Figure()
+            axis = fig.add_subplot(1, 1, 1)
+            if(form_data['graphicLoss'] == 'graphicLossIntent'):
+                df_intent = pd.read_csv('results_intent.csv')
+                axis.plot(df_intent[['Loss Training', 'Loss Validation']])
+            elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
+                df_sentiment = pd.read_csv('results_sentiment.csv')
+                axis.plot(df_sentiment[['Loss Training', 'Loss Validation']])
+            axis.set_xlabel('epoch')
+            axis.set_ylabel('loss')
+            axis.legend(['Loss Training', 'Loss Validation'])
+            if not os.path.isdir('static'):
+                os.mkdir('static')
+            if not os.path.isdir(os.path.join('static', 'images')):
+                os.mkdir(os.path.join('static', 'images'))
+            if(form_data['graphicLoss'] == 'graphicLossIntent'):
+                fig.savefig(os.path.join('static', 'images','loss_graphic_intent.png'))
+                return render_template('show_results_testing.html', loss_intent = 'loss_graphic_intent.png')
+            elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
+                fig.savefig(os.path.join('static', 'images','loss_graphic_sentiment.png'))
+                return render_template('show_results_testing.html', loss_sentiment = 'loss_graphic_sentiment.png')
+        if('graphicScore' in form_data):
+            fig = Figure()
+            axis = fig.add_subplot(1, 1, 1)
+            if(form_data['graphicScore'] == 'graphicScoreIntent'):
+                df_intent = pd.read_csv('results_intent.csv')
+                axis.plot(df_intent[['F1-Score Training', 'F1-Score Validation']])
+            elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
+                df_sentiment = pd.read_csv('results_sentiment.csv')
+                axis.plot(df_sentiment[['F1-Score Training', 'F1-Score Validation']])
+            axis.set_xlabel('epoch')
+            axis.set_ylabel('score')
+            axis.legend(['F1-Score Training', 'F1-Score Validation'])
+            if not os.path.isdir('static'):
+                os.mkdir('static')
+            if not os.path.isdir(os.path.join('static', 'images')):
+                os.mkdir(os.path.join('static', 'images'))
+            if(form_data['graphicScore'] == 'graphicScoreIntent'):
+                fig.savefig(os.path.join('static', 'images','score_graphic_intent.png'))
+                return render_template('show_results_testing.html', score_intent = 'score_graphic_intent.png')
+            elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
+                fig.savefig(os.path.join('static', 'images','score_graphic_sentiment.png'))
+                return render_template('show_results_testing.html', score_sentiment = 'score_graphic_sentiment.png')
+    elif request.method == 'GET':
+        return render_template('show_results_testing.html')
 
 '''decorator that defines the url path of
 the page where to download or erase the models'''
