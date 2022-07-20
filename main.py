@@ -23,6 +23,8 @@ import pandas as pd
 
 import training_intent_recognition as tir
 import training_sentiment_analysis as tsa
+import testing_intent as tei
+import testing_sentiment as tes
 
 '''app represents the web application and
 __name__ represents the name of the current file'''
@@ -831,6 +833,15 @@ def show_results_testing():
             elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
                 fig.savefig(os.path.join('static', 'images','score_graphic_sentiment.png'))
                 return render_template('show_results_testing.html', score_sentiment = 'score_graphic_sentiment.png')
+        if('testingButton' in form_data):
+            if(form_data['testingButton'] == 'testingIntent'):
+                file = request.files['file']
+                score = tei.testing(file)
+                return render_template('show_results_testing.html', testing_intent = score)
+            elif(form_data['testingButton'] == 'testingSentiment'):
+                file = request.files['file']
+                score = tes.testing(file)
+                return render_template('show_results_testing.html', testing_sentiment = score)
     elif request.method == 'GET':
         return render_template('show_results_testing.html')
 
