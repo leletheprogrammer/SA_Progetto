@@ -869,28 +869,42 @@ the page where to download or erase the models'''
 def download_erasure_model():
     if request.method == 'POST':
         form_data = request.form
-        if(form_data['submitButton'] == 'downloadIntentRecognition'):
-            if(os.path.isdir(os.path.join('models', 'intent'))):
-                memory_file = BytesIO()
-                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                    for file_name in os.listdir(os.path.join('models', 'intent')):
-                        file = os.path.join('models', 'intent', file_name)
-                        zipf.write(file, basename(file))
-                memory_file.seek(0)
-                return send_file(memory_file, attachment_filename = 'intent.zip', as_attachment = True)
-            else:
+        if(form_data['submitButton'] == 'downloadIntent'):
+            if(not os.path.isdir(os.path.join('models', 'intent'))):
                 return render_template('download_erasure_model.html', model_download = 'Intent Recognition')
-        elif(form_data['submitButton'] == 'downloadSentimentAnalysis'):
-            if(os.path.isdir(os.path.join('models', 'sentiment'))):
-                memory_file = BytesIO()
-                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                    for file_name in os.listdir(os.path.join('models', 'sentiment')):
-                        file = os.path.join('models', 'sentiment', file_name)
-                        zipf.write(file, basename(file))
-                memory_file.seek(0)
-                return send_file(memory_file, attachment_filename = 'sentiment.zip', as_attachment = True)
             else:
+                return render_template('download_erasure_model.html', model_download_present = 'downloadIntentRecognition')
+        elif(form_data['submitButton'] == 'downloadSentiment'):
+            if(not os.path.isdir(os.path.join('models', 'sentiment'))):
                 return render_template('download_erasure_model.html', model_download = 'Sentiment Analysis')
+            else:
+                return render_template('download_erasure_model.html', model_download_present = 'downloadSentimentAnalysis')
+        elif(form_data['submitButton'] == 'deleteIntent'):
+            if(not os.path.isdir(os.path.join('models', 'intent'))):
+                return render_template('download_erasure_model.html', model_erasure = 'Intent Recognition')
+            else:
+                return render_template('download_erasure_model.html', model_erasure_present = 'deleteIntentRecognition')
+        elif(form_data['submitButton'] == 'deleteSentiment'):
+            if(not os.path.isdir(os.path.join('models', 'sentiment'))):
+                return render_template('download_erasure_model.html', model_erasure = 'Sentiment Analysis')
+            else:
+                return render_template('download_erasure_model.html', model_erasure_present = 'deleteSentimentAnalysis')
+        elif(form_data['submitButton'] == 'downloadIntentRecognition'):
+            memory_file = BytesIO()
+            with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for file_name in os.listdir(os.path.join('models', 'intent')):
+                    file = os.path.join('models', 'intent', file_name)
+                    zipf.write(file, basename(file))
+            memory_file.seek(0)
+            return send_file(memory_file, attachment_filename = 'intent.zip', as_attachment = True)
+        elif(form_data['submitButton'] == 'downloadSentimentAnalysis'):
+            memory_file = BytesIO()
+            with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for file_name in os.listdir(os.path.join('models', 'sentiment')):
+                    file = os.path.join('models', 'sentiment', file_name)
+                    zipf.write(file, basename(file))
+            memory_file.seek(0)
+            return send_file(memory_file, attachment_filename = 'sentiment.zip', as_attachment = True)
         elif(form_data['submitButton'] == 'deleteIntentRecognition'):
             if os.path.isfile('mapping_intent.joblib'):
                 os.remove('mapping_intent.joblib')
@@ -902,14 +916,11 @@ def download_erasure_model():
                         os.remove(os.path.join('static', 'images', 'loss_graphic_intent.png'))
                     if os.path.isfile(os.path.join('static', 'images', 'score_graphic_intent.png')):
                         os.remove(os.path.join('static', 'images', 'score_graphic_intent.png'))
-            if os.path.isdir(os.path.join('models', 'intent')):
-                for file_name in os.listdir(os.path.join('models', 'intent')):
-                    file = os.path.join('models', 'intent', file_name)
-                    if os.path.isfile(file):
-                        os.remove(file)
-                os.rmdir(os.path.join('models', 'intent'))
-            else:
-                return render_template('download_erasure_model.html', model_erasure = 'Intent Recognition')
+            for file_name in os.listdir(os.path.join('models', 'intent')):
+                file = os.path.join('models', 'intent', file_name)
+                if os.path.isfile(file):
+                    os.remove(file)
+            os.rmdir(os.path.join('models', 'intent'))
         elif(form_data['submitButton'] == 'deleteSentimentAnalysis'):
             if os.path.isfile('mapping_sentiment.joblib'):
                 os.remove('mapping_sentiment.joblib')
@@ -921,14 +932,11 @@ def download_erasure_model():
                         os.remove(os.path.join('static', 'images', 'loss_graphic_sentiment.png'))
                     if os.path.isfile(os.path.join('static', 'images', 'score_graphic_sentiment.png')):
                         os.remove(os.path.join('static', 'images', 'score_graphic_sentiment.png'))
-            if os.path.isdir(os.path.join('models', 'sentiment')):
-                for file_name in os.listdir(os.path.join('models', 'sentiment')):
-                    file = os.path.join('models', 'sentiment', file_name)
-                    if os.path.isfile(file):
-                        os.remove(file)
-                os.rmdir(os.path.join('models', 'sentiment'))
-            else:
-                return render_template('download_erasure_model.html', model_erasure = 'Sentiment Analysis')
+            for file_name in os.listdir(os.path.join('models', 'sentiment')):
+                file = os.path.join('models', 'sentiment', file_name)
+                if os.path.isfile(file):
+                    os.remove(file)
+            os.rmdir(os.path.join('models', 'sentiment'))
         return render_template('download_erasure_model.html')
     elif request.method == 'GET':
         return render_template('download_erasure_model.html')
