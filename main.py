@@ -784,11 +784,29 @@ def show_results_testing():
         form_data = request.form
         if('submitButton' in form_data):
             if(form_data['submitButton'] == 'visualizeIntent'):
-                return render_template('show_results_testing.html', results_intent = pd.read_csv('results.csv').values.tolist())
+                if(os.path.isfile('results_intent.csv')):
+                    return render_template('show_results_testing.html', results_intent = pd.read_csv('results_intent.csv').values.tolist())
+                else:
+                    return render_template('show_results_testing.html', not_present = 'Intent Recognition')
             elif(form_data['submitButton'] == 'visualizeEntities'):
                 pass
             elif(form_data['submitButton'] == 'visualizeSentiment'):
-                return render_template('show_results_testing.html', results_sentiment = pd.read_csv('results_sentiment.csv').values.tolist())
+                if(os.path.isfile('results_sentiment.csv')):
+                    return render_template('show_results_testing.html', results_sentiment = pd.read_csv('results_sentiment.csv').values.tolist())
+                else:
+                    return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
+            elif(form_data['submitButton'] == 'buttonTestingIntent'):
+                if(os.path.isfile('mapping_intent.joblib')):
+                    return render_template('show_results_testing.html', testing_accepted = 'testingIntent')
+                else:
+                    return render_template('show_results_testing.html', not_present = 'Intent Recognition')
+            elif(form_data['submitButton'] == 'buttonTestingEntities'):
+                pass
+            elif(form_data['submitButton'] == 'buttonTestingSentiment'):
+                if(os.path.isfile('mapping_sentiment.joblib')):
+                    return render_template('show_results_testing.html', testing_accepted = 'testingSentiment')
+                else:
+                    return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
         if('graphicLoss' in form_data):
             fig = Figure()
             axis = fig.add_subplot(1, 1, 1)
@@ -878,6 +896,12 @@ def download_erasure_model():
                 os.remove('mapping_intent.joblib')
             if os.path.isfile('results_intent.csv'):
                 os.remove('results_intent.csv')
+            if os.path.isdir('static'):
+                if os.path.isdir(os.path.join('static', 'images')):
+                    if os.path.isfile(os.path.join('static', 'images', 'loss_graphic_intent.png')):
+                        os.remove(os.path.join('static', 'images', 'loss_graphic_intent.png'))
+                    if os.path.isfile(os.path.join('static', 'images', 'score_graphic_intent.png')):
+                        os.remove(os.path.join('static', 'images', 'score_graphic_intent.png'))
             if os.path.isdir(os.path.join('models', 'intent')):
                 for file_name in os.listdir(os.path.join('models', 'intent')):
                     file = os.path.join('models', 'intent', file_name)
@@ -891,6 +915,12 @@ def download_erasure_model():
                 os.remove('mapping_sentiment.joblib')
             if os.path.isfile('results_sentiment.csv'):
                 os.remove('results_sentiment.csv')
+            if os.path.isdir('static'):
+                if os.path.isdir(os.path.join('static', 'images')):
+                    if os.path.isfile(os.path.join('static', 'images', 'loss_graphic_sentiment.png')):
+                        os.remove(os.path.join('static', 'images', 'loss_graphic_sentiment.png'))
+                    if os.path.isfile(os.path.join('static', 'images', 'score_graphic_sentiment.png')):
+                        os.remove(os.path.join('static', 'images', 'score_graphic_sentiment.png'))
             if os.path.isdir(os.path.join('models', 'sentiment')):
                 for file_name in os.listdir(os.path.join('models', 'sentiment')):
                     file = os.path.join('models', 'sentiment', file_name)
