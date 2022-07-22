@@ -585,72 +585,78 @@ def training_phrases():
 of the page where to train the models'''
 @app.route('/home/start_training_model', methods = ['POST', 'GET'])
 def start_training_model():
-    if request.method == 'POST':
-        form_data = request.form
-        if (form_data['submitButton'] == 'intentRecognition' or form_data['submitButton'] == 'sentimentAnalysis'):
-            learning_rate = 0.1
-            eps = 0.5
-            batch_size = 16
-            patience = 2
-            hidden_dropout_prob = 0.3
-            if 'insertLearningRate' in form_data:
-                try:
-                    learning_rate = float(form_data['insertLearningRate'])
-                except ValueError:
-                    learning_rate = 0.1
-            if 'insertEps' in form_data:
-                try:
-                    eps = float(form_data['insertEps'])
-                except ValueError:
-                    eps = 0.5
-            if 'selectBatchSize' in form_data:
-                if form_data['selectBatchSize'] != '':
-                    batch_size = int(form_data['selectBatchSize'])
-                else:
-                    batch_size = 16
-            if 'insertPatience' in form_data:
-                try:
-                    patience = int(form_data['insertPatience'])
-                except ValueError:
-                    patience = 2
-            if 'insertHiddenDropout' in form_data:
-                try:
-                    hidden_dropout_prob = float(form_data['insertHiddenDropout'])
-                except ValueError:
-                    hidden_dropout_prob = 0.3
-            if(form_data['submitButton'] == 'intentRecognition'):
-                if tir.get_ended():
-                    global max_epoch_intent
-                    max_epoch_intent = 2
-                    if 'insertMaxEpoch' in form_data:
-                        try:
-                            max_epoch_intent = int(form_data['insertMaxEpoch'])
-                        except ValueError:
-                            max_epoch_intent = 2
-                    global thread_training_intent
-                    with thread_lock:
-                        thread_training_intent = sio.start_background_task(tir.start_training, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
-                else:
-                    return render_template('start_training_model.html', model_training = 'Intent Recognition')
-            elif(form_data['submitButton'] == 'sentimentAnalysis'):
-                if tsa.get_ended():
-                    global max_epoch_sentiment
-                    max_epoch_intent = 2
-                    if 'insertMaxEpoch' in form_data:
-                        try:
-                            max_epoch_sentiment = int(form_data['insertMaxEpoch'])
-                        except ValueError:
-                            max_epoch_sentiment = 2
-                    global thread_training_sentiment
-                    with thread_lock:
-                        thread_training_sentiment = sio.start_background_task(tsa.start_training, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
-                else:
-                    return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
-        elif (form_data['submitButton'] == 'entitiesExtraction'):
-            trainingEntitiesExtraction()
-        return render_template('start_training_model.html')
-    elif request.method == 'GET':
-        return render_template('start_training_model.html')
+    global login_user
+    if login_user:
+        if request.method == 'POST':
+            form_data = request.form
+            if (form_data['submitButton'] == 'intentRecognition' or form_data['submitButton'] == 'sentimentAnalysis'):
+                learning_rate = 0.1
+                eps = 0.5
+                batch_size = 16
+                patience = 2
+                hidden_dropout_prob = 0.3
+                if 'insertLearningRate' in form_data:
+                    try:
+                        learning_rate = float(form_data['insertLearningRate'])
+                    except ValueError:
+                        learning_rate = 0.1
+                if 'insertEps' in form_data:
+                    try:
+                        eps = float(form_data['insertEps'])
+                    except ValueError:
+                        eps = 0.5
+                if 'selectBatchSize' in form_data:
+                    if form_data['selectBatchSize'] != '':
+                        batch_size = int(form_data['selectBatchSize'])
+                    else:
+                        batch_size = 16
+                if 'insertPatience' in form_data:
+                    try:
+                        patience = int(form_data['insertPatience'])
+                    except ValueError:
+                        patience = 2
+                if 'insertHiddenDropout' in form_data:
+                    try:
+                        hidden_dropout_prob = float(form_data['insertHiddenDropout'])
+                    except ValueError:
+                        hidden_dropout_prob = 0.3
+                if (form_data['submitButton'] == 'intentRecognition'):
+                    if tir.get_ended():
+                        global max_epoch_intent
+                        max_epoch_intent = 2
+                        if 'insertMaxEpoch' in form_data:
+                            try:
+                                max_epoch_intent = int(form_data['insertMaxEpoch'])
+                            except ValueError:
+                                max_epoch_intent = 2
+                        global thread_training_intent
+                        with thread_lock:
+                            thread_training_intent = sio.start_background_task(tir.start_training, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
+                    else:
+                        return render_template('start_training_model.html', model_training = 'Intent Recognition')
+                elif (form_data['submitButton'] == 'sentimentAnalysis'):
+                    if tsa.get_ended():
+                        global max_epoch_sentiment
+                        max_epoch_intent = 2
+                        if 'insertMaxEpoch' in form_data:
+                            try:
+                                max_epoch_sentiment = int(form_data['insertMaxEpoch'])
+                            except ValueError:
+                                max_epoch_sentiment = 2
+                        global thread_training_sentiment
+                        with thread_lock:
+                            thread_training_sentiment = sio.start_background_task(tsa.start_training, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
+                    else:
+                        return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
+            elif (form_data['submitButton'] == 'entitiesExtraction'):
+                trainingEntitiesExtraction()
+            return render_template('start_training_model.html')
+        elif request.method == 'GET':
+            return render_template('start_training_model.html')
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
 
 def trainingEntitiesExtraction():
     '''
@@ -753,193 +759,217 @@ of the page where see the status of the
 training of the intent recognition model'''
 @app.route('/home/status_model_intent', methods = ['POST', 'GET'])
 def status_model_intent():
-    if thread_training_intent is None:
-        return render_template("status_model_intent.html", not_training = True)
-    else:
-        if(tir.get_num_epoch() == -1):
-            return render_template("status_model_intent.html", loading = True)
+    global login_user
+    if login_user:
+        if thread_training_intent is None:
+            return render_template("status_model_intent.html", not_training = True)
         else:
-            global max_epoch_intent
-            return render_template("status_model_intent.html", num_epoch = tir.get_num_epoch(), num_iteration = tir.get_num_iteration(), length_epoch = tir.get_epoch_length(), num_progress = tir.get_num_progress(), max_epoch = max_epoch_intent)
+            if(tir.get_num_epoch() == -1):
+                return render_template("status_model_intent.html", loading = True)
+            else:
+                global max_epoch_intent
+                return render_template("status_model_intent.html", num_epoch = tir.get_num_epoch(), num_iteration = tir.get_num_iteration(), length_epoch = tir.get_epoch_length(), num_progress = tir.get_num_progress(), max_epoch = max_epoch_intent)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
 
 '''decorator that defines the url path
 of the page where see the status of the
 training of the sentiment analysis model'''
 @app.route('/home/status_model_sentiment', methods = ['POST', 'GET'])
 def status_model_sentiment():
-    if thread_training_sentiment is None:
-        return render_template("status_model_sentiment.html", not_training = True)
-    else:
-        if(tsa.get_num_epoch() == -1):
-            return render_template("status_model_sentiment.html", loading = True)
+    global login_user
+    if login_user:
+        if thread_training_sentiment is None:
+            return render_template("status_model_sentiment.html", not_training = True)
         else:
-            global max_epoch_sentiment
-            return render_template("status_model_sentiment.html", num_epoch = tsa.get_num_epoch(), num_iteration = tsa.get_num_iteration(), length_epoch = tsa.get_epoch_length(), num_progress = tsa.get_num_progress(), max_epoch = max_epoch_sentiment)
+            if(tsa.get_num_epoch() == -1):
+                return render_template("status_model_sentiment.html", loading = True)
+            else:
+                global max_epoch_sentiment
+                return render_template("status_model_sentiment.html", num_epoch = tsa.get_num_epoch(), num_iteration = tsa.get_num_iteration(), length_epoch = tsa.get_epoch_length(), num_progress = tsa.get_num_progress(), max_epoch = max_epoch_sentiment)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
 
 '''decorator that defines the url path of the
 page where to test and show results of the models'''
 @app.route('/home/show_results_testing', methods = ['POST', 'GET'])
 def show_results_testing():
-    if request.method == 'POST':
-        form_data = request.form
-        if('submitButton' in form_data):
-            if(form_data['submitButton'] == 'visualizeIntent'):
-                if(os.path.isfile('results_intent.csv')):
-                    return render_template('show_results_testing.html', results_intent = pd.read_csv('results_intent.csv').values.tolist())
-                else:
-                    return render_template('show_results_testing.html', not_present = 'Intent Recognition')
-            elif(form_data['submitButton'] == 'visualizeEntities'):
-                pass
-            elif(form_data['submitButton'] == 'visualizeSentiment'):
-                if(os.path.isfile('results_sentiment.csv')):
-                    return render_template('show_results_testing.html', results_sentiment = pd.read_csv('results_sentiment.csv').values.tolist())
-                else:
-                    return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
-            elif(form_data['submitButton'] == 'buttonTestingIntent'):
-                if(os.path.isfile('mapping_intent.joblib')):
-                    return render_template('show_results_testing.html', testing_accepted = 'testingIntent')
-                else:
-                    return render_template('show_results_testing.html', not_present = 'Intent Recognition')
-            elif(form_data['submitButton'] == 'buttonTestingEntities'):
-                pass
-            elif(form_data['submitButton'] == 'buttonTestingSentiment'):
-                if(os.path.isfile('mapping_sentiment.joblib')):
-                    return render_template('show_results_testing.html', testing_accepted = 'testingSentiment')
-                else:
-                    return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
-        if('graphicLoss' in form_data):
-            fig = Figure()
-            axis = fig.add_subplot(1, 1, 1)
-            if(form_data['graphicLoss'] == 'graphicLossIntent'):
-                df_intent = pd.read_csv('results_intent.csv')
-                axis.plot(df_intent[['Loss Training', 'Loss Validation']])
-            elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
-                df_sentiment = pd.read_csv('results_sentiment.csv')
-                axis.plot(df_sentiment[['Loss Training', 'Loss Validation']])
-            axis.set_xlabel('epoch')
-            axis.set_ylabel('loss')
-            axis.legend(['Loss Training', 'Loss Validation'])
-            if not os.path.isdir('static'):
-                os.mkdir('static')
-            if not os.path.isdir(os.path.join('static', 'images')):
-                os.mkdir(os.path.join('static', 'images'))
-            if(form_data['graphicLoss'] == 'graphicLossIntent'):
-                fig.savefig(os.path.join('static', 'images','loss_graphic_intent.png'))
-                return render_template('show_results_testing.html', loss_intent = 'loss_graphic_intent.png')
-            elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
-                fig.savefig(os.path.join('static', 'images','loss_graphic_sentiment.png'))
-                return render_template('show_results_testing.html', loss_sentiment = 'loss_graphic_sentiment.png')
-        if('graphicScore' in form_data):
-            fig = Figure()
-            axis = fig.add_subplot(1, 1, 1)
-            if(form_data['graphicScore'] == 'graphicScoreIntent'):
-                df_intent = pd.read_csv('results_intent.csv')
-                axis.plot(df_intent[['F1-Score Training', 'F1-Score Validation']])
-            elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
-                df_sentiment = pd.read_csv('results_sentiment.csv')
-                axis.plot(df_sentiment[['F1-Score Training', 'F1-Score Validation']])
-            axis.set_xlabel('epoch')
-            axis.set_ylabel('score')
-            axis.legend(['F1-Score Training', 'F1-Score Validation'])
-            if not os.path.isdir('static'):
-                os.mkdir('static')
-            if not os.path.isdir(os.path.join('static', 'images')):
-                os.mkdir(os.path.join('static', 'images'))
-            if(form_data['graphicScore'] == 'graphicScoreIntent'):
-                fig.savefig(os.path.join('static', 'images','score_graphic_intent.png'))
-                return render_template('show_results_testing.html', score_intent = 'score_graphic_intent.png')
-            elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
-                fig.savefig(os.path.join('static', 'images','score_graphic_sentiment.png'))
-                return render_template('show_results_testing.html', score_sentiment = 'score_graphic_sentiment.png')
-        if('testingButton' in form_data):
-            if(form_data['testingButton'] == 'testingIntent'):
-                file = request.files['file']
-                score = tei.testing(file)
-                return render_template('show_results_testing.html', testing_intent = score)
-            elif(form_data['testingButton'] == 'testingSentiment'):
-                file = request.files['file']
-                score = tes.testing(file)
-                return render_template('show_results_testing.html', testing_sentiment = score)
-    elif request.method == 'GET':
-        return render_template('show_results_testing.html')
+    global login_user
+    if login_user:
+        if request.method == 'POST':
+            form_data = request.form
+            if('submitButton' in form_data):
+                if(form_data['submitButton'] == 'visualizeIntent'):
+                    if(os.path.isfile('results_intent.csv')):
+                        return render_template('show_results_testing.html', results_intent = pd.read_csv('results_intent.csv').values.tolist())
+                    else:
+                        return render_template('show_results_testing.html', not_present = 'Intent Recognition')
+                elif(form_data['submitButton'] == 'visualizeEntities'):
+                    pass
+                elif(form_data['submitButton'] == 'visualizeSentiment'):
+                    if(os.path.isfile('results_sentiment.csv')):
+                        return render_template('show_results_testing.html', results_sentiment = pd.read_csv('results_sentiment.csv').values.tolist())
+                    else:
+                        return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
+                elif(form_data['submitButton'] == 'buttonTestingIntent'):
+                    if(os.path.isfile('mapping_intent.joblib')):
+                        return render_template('show_results_testing.html', testing_accepted = 'testingIntent')
+                    else:
+                        return render_template('show_results_testing.html', not_present = 'Intent Recognition')
+                elif(form_data['submitButton'] == 'buttonTestingEntities'):
+                    pass
+                elif(form_data['submitButton'] == 'buttonTestingSentiment'):
+                    if(os.path.isfile('mapping_sentiment.joblib')):
+                        return render_template('show_results_testing.html', testing_accepted = 'testingSentiment')
+                    else:
+                        return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
+            if('graphicLoss' in form_data):
+                fig = Figure()
+                axis = fig.add_subplot(1, 1, 1)
+                if(form_data['graphicLoss'] == 'graphicLossIntent'):
+                    df_intent = pd.read_csv('results_intent.csv')
+                    axis.plot(df_intent[['Loss Training', 'Loss Validation']])
+                elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
+                    df_sentiment = pd.read_csv('results_sentiment.csv')
+                    axis.plot(df_sentiment[['Loss Training', 'Loss Validation']])
+                axis.set_xlabel('epoch')
+                axis.set_ylabel('loss')
+                axis.legend(['Loss Training', 'Loss Validation'])
+                if not os.path.isdir('static'):
+                    os.mkdir('static')
+                if not os.path.isdir(os.path.join('static', 'images')):
+                    os.mkdir(os.path.join('static', 'images'))
+                if(form_data['graphicLoss'] == 'graphicLossIntent'):
+                    fig.savefig(os.path.join('static', 'images','loss_graphic_intent.png'))
+                    return render_template('show_results_testing.html', loss_intent = 'loss_graphic_intent.png')
+                elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
+                    fig.savefig(os.path.join('static', 'images','loss_graphic_sentiment.png'))
+                    return render_template('show_results_testing.html', loss_sentiment = 'loss_graphic_sentiment.png')
+            if('graphicScore' in form_data):
+                fig = Figure()
+                axis = fig.add_subplot(1, 1, 1)
+                if(form_data['graphicScore'] == 'graphicScoreIntent'):
+                    df_intent = pd.read_csv('results_intent.csv')
+                    axis.plot(df_intent[['F1-Score Training', 'F1-Score Validation']])
+                elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
+                    df_sentiment = pd.read_csv('results_sentiment.csv')
+                    axis.plot(df_sentiment[['F1-Score Training', 'F1-Score Validation']])
+                axis.set_xlabel('epoch')
+                axis.set_ylabel('score')
+                axis.legend(['F1-Score Training', 'F1-Score Validation'])
+                if not os.path.isdir('static'):
+                    os.mkdir('static')
+                if not os.path.isdir(os.path.join('static', 'images')):
+                    os.mkdir(os.path.join('static', 'images'))
+                if(form_data['graphicScore'] == 'graphicScoreIntent'):
+                    fig.savefig(os.path.join('static', 'images','score_graphic_intent.png'))
+                    return render_template('show_results_testing.html', score_intent = 'score_graphic_intent.png')
+                elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
+                    fig.savefig(os.path.join('static', 'images','score_graphic_sentiment.png'))
+                    return render_template('show_results_testing.html', score_sentiment = 'score_graphic_sentiment.png')
+            if('testingButton' in form_data):
+                if(form_data['testingButton'] == 'testingIntent'):
+                    file = request.files['file']
+                    score = tei.testing(file)
+                    return render_template('show_results_testing.html', testing_intent = score)
+                elif(form_data['testingButton'] == 'testingSentiment'):
+                    file = request.files['file']
+                    score = tes.testing(file)
+                    return render_template('show_results_testing.html', testing_sentiment = score)
+        elif request.method == 'GET':
+            return render_template('show_results_testing.html')
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
 
 '''decorator that defines the url path of
 the page where to download or erase the models'''
 @app.route('/home/download_erasure_model', methods = ['POST', 'GET'])
 def download_erasure_model():
-    if request.method == 'POST':
-        form_data = request.form
-        if(form_data['submitButton'] == 'downloadIntent'):
-            if(not os.path.isdir(os.path.join('models', 'intent'))):
-                return render_template('download_erasure_model.html', model_download = 'Intent Recognition')
-            else:
-                return render_template('download_erasure_model.html', model_download_present = 'downloadIntentRecognition')
-        elif(form_data['submitButton'] == 'downloadSentiment'):
-            if(not os.path.isdir(os.path.join('models', 'sentiment'))):
-                return render_template('download_erasure_model.html', model_download = 'Sentiment Analysis')
-            else:
-                return render_template('download_erasure_model.html', model_download_present = 'downloadSentimentAnalysis')
-        elif(form_data['submitButton'] == 'deleteIntent'):
-            if(not os.path.isdir(os.path.join('models', 'intent'))):
-                return render_template('download_erasure_model.html', model_erasure = 'Intent Recognition')
-            else:
-                return render_template('download_erasure_model.html', model_erasure_present = 'deleteIntentRecognition')
-        elif(form_data['submitButton'] == 'deleteSentiment'):
-            if(not os.path.isdir(os.path.join('models', 'sentiment'))):
-                return render_template('download_erasure_model.html', model_erasure = 'Sentiment Analysis')
-            else:
-                return render_template('download_erasure_model.html', model_erasure_present = 'deleteSentimentAnalysis')
-        elif(form_data['submitButton'] == 'downloadIntentRecognition'):
-            memory_file = BytesIO()
-            with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    global login_user
+    if login_user:
+        if request.method == 'POST':
+            form_data = request.form
+            if(form_data['submitButton'] == 'downloadIntent'):
+                if(not os.path.isdir(os.path.join('models', 'intent'))):
+                    return render_template('download_erasure_model.html', model_download = 'Intent Recognition')
+                else:
+                    return render_template('download_erasure_model.html', model_download_present = 'downloadIntentRecognition')
+            elif(form_data['submitButton'] == 'downloadSentiment'):
+                if(not os.path.isdir(os.path.join('models', 'sentiment'))):
+                    return render_template('download_erasure_model.html', model_download = 'Sentiment Analysis')
+                else:
+                    return render_template('download_erasure_model.html', model_download_present = 'downloadSentimentAnalysis')
+            elif(form_data['submitButton'] == 'deleteIntent'):
+                if(not os.path.isdir(os.path.join('models', 'intent'))):
+                    return render_template('download_erasure_model.html', model_erasure = 'Intent Recognition')
+                else:
+                    return render_template('download_erasure_model.html', model_erasure_present = 'deleteIntentRecognition')
+            elif(form_data['submitButton'] == 'deleteSentiment'):
+                if(not os.path.isdir(os.path.join('models', 'sentiment'))):
+                    return render_template('download_erasure_model.html', model_erasure = 'Sentiment Analysis')
+                else:
+                    return render_template('download_erasure_model.html', model_erasure_present = 'deleteSentimentAnalysis')
+            elif(form_data['submitButton'] == 'downloadIntentRecognition'):
+                memory_file = BytesIO()
+                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for file_name in os.listdir(os.path.join('models', 'intent')):
+                        file = os.path.join('models', 'intent', file_name)
+                        zipf.write(file, basename(file))
+                memory_file.seek(0)
+                return send_file(memory_file, attachment_filename = 'intent.zip', as_attachment = True)
+            elif(form_data['submitButton'] == 'downloadSentimentAnalysis'):
+                memory_file = BytesIO()
+                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for file_name in os.listdir(os.path.join('models', 'sentiment')):
+                        file = os.path.join('models', 'sentiment', file_name)
+                        zipf.write(file, basename(file))
+                memory_file.seek(0)
+                return send_file(memory_file, attachment_filename = 'sentiment.zip', as_attachment = True)
+            elif(form_data['submitButton'] == 'deleteIntentRecognition'):
+                if os.path.isfile('mapping_intent.joblib'):
+                    os.remove('mapping_intent.joblib')
+                if os.path.isfile('results_intent.csv'):
+                    os.remove('results_intent.csv')
+                if os.path.isdir('static'):
+                    if os.path.isdir(os.path.join('static', 'images')):
+                        if os.path.isfile(os.path.join('static', 'images', 'loss_graphic_intent.png')):
+                            os.remove(os.path.join('static', 'images', 'loss_graphic_intent.png'))
+                        if os.path.isfile(os.path.join('static', 'images', 'score_graphic_intent.png')):
+                            os.remove(os.path.join('static', 'images', 'score_graphic_intent.png'))
                 for file_name in os.listdir(os.path.join('models', 'intent')):
                     file = os.path.join('models', 'intent', file_name)
-                    zipf.write(file, basename(file))
-            memory_file.seek(0)
-            return send_file(memory_file, attachment_filename = 'intent.zip', as_attachment = True)
-        elif(form_data['submitButton'] == 'downloadSentimentAnalysis'):
-            memory_file = BytesIO()
-            with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    if os.path.isfile(file):
+                        os.remove(file)
+                os.rmdir(os.path.join('models', 'intent'))
+            elif(form_data['submitButton'] == 'deleteSentimentAnalysis'):
+                if os.path.isfile('mapping_sentiment.joblib'):
+                    os.remove('mapping_sentiment.joblib')
+                if os.path.isfile('results_sentiment.csv'):
+                    os.remove('results_sentiment.csv')
+                if os.path.isdir('static'):
+                    if os.path.isdir(os.path.join('static', 'images')):
+                        if os.path.isfile(os.path.join('static', 'images', 'loss_graphic_sentiment.png')):
+                            os.remove(os.path.join('static', 'images', 'loss_graphic_sentiment.png'))
+                        if os.path.isfile(os.path.join('static', 'images', 'score_graphic_sentiment.png')):
+                            os.remove(os.path.join('static', 'images', 'score_graphic_sentiment.png'))
                 for file_name in os.listdir(os.path.join('models', 'sentiment')):
                     file = os.path.join('models', 'sentiment', file_name)
-                    zipf.write(file, basename(file))
-            memory_file.seek(0)
-            return send_file(memory_file, attachment_filename = 'sentiment.zip', as_attachment = True)
-        elif(form_data['submitButton'] == 'deleteIntentRecognition'):
-            if os.path.isfile('mapping_intent.joblib'):
-                os.remove('mapping_intent.joblib')
-            if os.path.isfile('results_intent.csv'):
-                os.remove('results_intent.csv')
-            if os.path.isdir('static'):
-                if os.path.isdir(os.path.join('static', 'images')):
-                    if os.path.isfile(os.path.join('static', 'images', 'loss_graphic_intent.png')):
-                        os.remove(os.path.join('static', 'images', 'loss_graphic_intent.png'))
-                    if os.path.isfile(os.path.join('static', 'images', 'score_graphic_intent.png')):
-                        os.remove(os.path.join('static', 'images', 'score_graphic_intent.png'))
-            for file_name in os.listdir(os.path.join('models', 'intent')):
-                file = os.path.join('models', 'intent', file_name)
-                if os.path.isfile(file):
-                    os.remove(file)
-            os.rmdir(os.path.join('models', 'intent'))
-        elif(form_data['submitButton'] == 'deleteSentimentAnalysis'):
-            if os.path.isfile('mapping_sentiment.joblib'):
-                os.remove('mapping_sentiment.joblib')
-            if os.path.isfile('results_sentiment.csv'):
-                os.remove('results_sentiment.csv')
-            if os.path.isdir('static'):
-                if os.path.isdir(os.path.join('static', 'images')):
-                    if os.path.isfile(os.path.join('static', 'images', 'loss_graphic_sentiment.png')):
-                        os.remove(os.path.join('static', 'images', 'loss_graphic_sentiment.png'))
-                    if os.path.isfile(os.path.join('static', 'images', 'score_graphic_sentiment.png')):
-                        os.remove(os.path.join('static', 'images', 'score_graphic_sentiment.png'))
-            for file_name in os.listdir(os.path.join('models', 'sentiment')):
-                file = os.path.join('models', 'sentiment', file_name)
-                if os.path.isfile(file):
-                    os.remove(file)
-            os.rmdir(os.path.join('models', 'sentiment'))
-        return render_template('download_erasure_model.html')
-    elif request.method == 'GET':
-        return render_template('download_erasure_model.html')
+                    if os.path.isfile(file):
+                        os.remove(file)
+                os.rmdir(os.path.join('models', 'sentiment'))
+            return render_template('download_erasure_model.html')
+        elif request.method == 'GET':
+            return render_template('download_erasure_model.html')
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
 
 if __name__ == '__main__':
     sio.run(app)
