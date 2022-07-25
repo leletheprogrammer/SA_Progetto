@@ -104,9 +104,11 @@ $(document).ready(function() {
 		Inizia l'addestramento del modello di Intent Recognition
 	</button>
 	<br><br><br>
-	<button type="button" class="btn btn-primary btn-lg" onclick="entitiesExtraction">
+	<form method = "POST">
+	<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="entitiesExtraction">
 		Inizia l'addestramento del modello di Entities Extraction
 	</button>
+	</form>
 	<br><br><br>
 	<button type="button" class="btn btn-primary btn-lg" onclick="startTrainingClicked('sentimentAnalysis')">
 		Inizia l'addestramento del modello di Sentiment Analysis

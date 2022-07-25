@@ -22,6 +22,7 @@ from matplotlib.figure import Figure
 import pandas as pd
 
 import training_intent_recognition as tir
+import training_entities_extraction as tee
 import training_sentiment_analysis as tsa
 import testing_intent as tei
 import testing_sentiment as tes
@@ -649,7 +650,7 @@ def start_training_model():
                     else:
                         return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
             elif (form_data['submitButton'] == 'entitiesExtraction'):
-                trainingEntitiesExtraction()
+                tee.train(mongo, app.root_path)
             return render_template('start_training_model.html')
         elif request.method == 'GET':
             return render_template('start_training_model.html')
@@ -734,25 +735,6 @@ def trainingEntitiesExtraction():
         output_dir = Path(#)
         nlp.to_disk(output_dir)
         print("Saved model to", output_dir)'''
-
-def tupleEntity(entity):
-    firstIndex = ''
-    lastIndex = ''
-    i = 1
-    while(entity[i] != ','):
-        firstIndex += entity[i]
-        i += 1
-
-    i += 2
-
-    while(entity[i] != ','):
-        lastIndex += entity[i]
-        i += 1
-
-    i += 2
-
-    entityTuple = (int(firstIndex), int(lastIndex), entity[i:len(entity) - 1])
-    return entityTuple
 
 '''decorator that defines the url path
 of the page where see the status of the
