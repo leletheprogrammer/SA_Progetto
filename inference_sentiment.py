@@ -1,6 +1,7 @@
+from joblib import load
+
 import torch
 from torch import nn
-from joblib import load
 from transformers import BertForSequenceClassification, AutoTokenizer
 
 
