@@ -1,17 +1,19 @@
-import os
-import torch
-import random
 import numpy as np
+import os
 import pandas as pd
-import dataset_intent as di
-import dataset_sentiment as ds
+import random
+
 from ignite.engine import Engine, Events
 from ignite.handlers import ModelCheckpoint, EarlyStopping
 from ignite.metrics import RunningAverage, Precision, Loss, Recall
+import torch
 from torch.nn.functional import cross_entropy
 from torch.utils.data import DataLoader
 from transformers import BertForSequenceClassification, AutoTokenizer
 from transformers.optimization import AdamW
+
+import dataset_intent as di
+import dataset_sentiment as ds
 
 num_epoch_intent = -1
 num_iteration_intent = -1
