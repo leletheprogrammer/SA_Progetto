@@ -16,9 +16,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_pymongo import PyMongo
 from flask_socketio import SocketIO
 
-import training as t
-import testing_intent as tei
-import testing_sentiment as tes
+import training_ir_sa as tis
+import testing_ir_sa as teis
 
 '''app represents the web application and
 __name__ represents the name of the current file'''
@@ -615,7 +614,7 @@ def start_training_model():
                     except ValueError:
                         hidden_dropout_prob = 0.3
                 if (form_data['submitButton'] == 'intentRecognition'):
-                    if t.get_ended_intent():
+                    if tis.get_ended_intent():
                         global max_epoch_intent
                         max_epoch_intent = 2
                         if 'insertMaxEpoch' in form_data:
@@ -625,11 +624,11 @@ def start_training_model():
                                 max_epoch_intent = 2
                         global thread_training_intent
                         with thread_lock:
-                            thread_training_intent = sio.start_background_task(t.start_training_intent, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
+                            thread_training_intent = sio.start_background_task(tis.start_training_intent, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
                     else:
                         return render_template('start_training_model.html', model_training = 'Intent Recognition')
                 elif (form_data['submitButton'] == 'sentimentAnalysis'):
-                    if t.get_ended_sentiment():
+                    if tis.get_ended_sentiment():
                         global max_epoch_sentiment
                         max_epoch_intent = 2
                         if 'insertMaxEpoch' in form_data:
@@ -639,7 +638,7 @@ def start_training_model():
                                 max_epoch_sentiment = 2
                         global thread_training_sentiment
                         with thread_lock:
-                            thread_training_sentiment = sio.start_background_task(t.start_training_sentiment, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
+                            thread_training_sentiment = sio.start_background_task(tis.start_training_sentiment, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
                     else:
                         return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
             elif (form_data['submitButton'] == 'entitiesExtraction'):
@@ -758,11 +757,11 @@ def status_model_intent():
         if thread_training_intent is None:
             return render_template("status_model_intent.html", not_training = True)
         else:
-            if(t.get_num_epoch_intent() == -1):
+            if(tis.get_num_epoch_intent() == -1):
                 return render_template("status_model_intent.html", loading = True)
             else:
                 global max_epoch_intent
-                return render_template("status_model_intent.html", num_epoch = t.get_num_epoch_intent(), num_iteration = t.get_num_iteration_intent(), length_epoch = t.get_epoch_length_intent(), num_progress = t.get_num_progress_intent(), max_epoch = max_epoch_intent)
+                return render_template("status_model_intent.html", num_epoch = tis.get_num_epoch_intent(), num_iteration = tis.get_num_iteration_intent(), length_epoch = tis.get_epoch_length_intent(), num_progress = tis.get_num_progress_intent(), max_epoch = max_epoch_intent)
     else:
         global needed
         needed = True
@@ -778,11 +777,11 @@ def status_model_sentiment():
         if thread_training_sentiment is None:
             return render_template("status_model_sentiment.html", not_training = True)
         else:
-            if(t.get_num_epoch_sentiment() == -1):
+            if(tis.get_num_epoch_sentiment() == -1):
                 return render_template("status_model_sentiment.html", loading = True)
             else:
                 global max_epoch_sentiment
-                return render_template("status_model_sentiment.html", num_epoch = t.get_num_epoch_sentiment(), num_iteration = t.get_num_iteration_sentiment(), length_epoch = t.get_epoch_length_sentiment(), num_progress = t.get_num_progress_sentiment(), max_epoch = max_epoch_sentiment)
+                return render_template("status_model_sentiment.html", num_epoch = tis.get_num_epoch_sentiment(), num_iteration = tis.get_num_iteration_sentiment(), length_epoch = tis.get_epoch_length_sentiment(), num_progress = tis.get_num_progress_sentiment(), max_epoch = max_epoch_sentiment)
     else:
         global needed
         needed = True
@@ -868,11 +867,11 @@ def show_results_testing():
             if('testingButton' in form_data):
                 if(form_data['testingButton'] == 'testingIntent'):
                     file = request.files['file']
-                    score = tei.testing(file)
+                    score = teis.testing_intent(file)
                     return render_template('show_results_testing.html', testing_intent = score)
                 elif(form_data['testingButton'] == 'testingSentiment'):
                     file = request.files['file']
-                    score = tes.testing(file)
+                    score = teis.testing_sentiment(file)
                     return render_template('show_results_testing.html', testing_sentiment = score)
         elif request.method == 'GET':
             return render_template('show_results_testing.html')
