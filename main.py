@@ -39,9 +39,11 @@ needed = None
 
 thread_training_intent = None
 thread_training_sentiment = None
+thread_training_entities = None
 thread_lock = Lock()
 max_epoch_intent = 0
 max_epoch_sentiment = 0
+max_iterations_entities = 0
 
 '''decorator that defines the url path
 where will be the index page of the site'''
@@ -650,91 +652,50 @@ def start_training_model():
                     else:
                         return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
             elif (form_data['submitButton'] == 'entitiesExtraction'):
-                tee.train(mongo, app.root_path)
-            return render_template('start_training_model.html')
+                dropout_from = 0.1
+                dropout_to = 0.5
+                batch_from = 100.0
+                batch_to = 1000.0
+                if 'insertDropoutFrom' in form_data:
+                    try:
+                        dropout_from = float(form_data['insertDropoutFrom'])
+                    except ValueError:
+                        dropout_from = 0.1
+                if 'insertDropoutTo' in form_data:
+                    try:
+                        dropout_to = float(form_data['insertDropoutTo'])
+                    except ValueError:
+                        dropout_to = 0.5
+                if 'insertBatchFrom' in form_data:
+                    try:
+                        batch_from = float(form_data['insertBatchFrom'])
+                    except ValueError:
+                        batch_from = 100.0
+                if 'insertBatchTo' in form_data:
+                    try:
+                        batch_to = float(form_data['insertBatchTo'])
+                    except ValueError:
+                        batch_to = 1000.0
+                if tee.get_ended():
+                    global max_iterations_entities
+                    max_iterations_entities = 30
+                    if 'insertNumIterations' in form_data:
+                        try:
+                            max_iterations_entities = int(form_data['insertNumIterations'])
+                        except ValueError:
+                            max_iterations_entities = 30
+                    global thread_training_entities
+                    with thread_lock:
+                        thread_training_entities = sio.start_background_task(tee.train, mongo, app.root_path, dropout_from, dropout_to, batch_from, batch_to, max_iterations_entities)
+                else:
+                    return render_template('start_training_model.html', model_training = 'Entities Extraction')
+            return render_template('start_training_model.html', model_success = form_data['submitButton'])
         elif request.method == 'GET':
             return render_template('start_training_model.html')
     else:
         global needed
         needed = True
         return redirect(url_for('login'))
-
-def trainingEntitiesExtraction():
-    '''
-    tup = {}
-    print(tup)
-
-    connection = sqlite3.connect('NLPDatabase.db')
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-
-    model = None
-
-    #create blank Language class
-    nlp = spacy.blank('it')
-    
-    print("Created blank 'it' model")
-
-    if 'ner' not in nlp.pipe_names:
-        ner = nlp.create_pipe('ner')
-        nlp.add_pipe('ner')
-    else:
-        ner = nlp.get_pipe('ner')
-    
-    entities = cursor.execute('SELECT Entity FROM NamedEntities').fetchall()
-
-    # Add new entity labels to entity recognizer
-    for i in entities:
-        for j in i:
-            ner.add_label(j)
-
-    training_data = []
-    training_phrases = cursor.execute('SELECT Phrase,Entities FROM TrainingPhrases').fetchall()
-
-    for phrases in training_phrases:
-        dict_entities = {}
-        entities_phrase = []
-        i = 0
-        j = 0
-        while phrases[1][i] != ']':
-            if (phrases[1][i] == '('):
-            	j = i
-            elif (phrases[1][i] == ')'):
-                entity_tuple = tupleEntity(phrases[1][j:i + 1])
-                entities_phrase.append(entity_tuple)
-            i += 1
-        dict_entities.setDefault("entities", entities_phrase)
-        phrase_tuple = (phrases[0], dict_entities)
-        training_data.append(phrase_tuple)
-
-
-    # Inititalizing optimizer
-    if model is None:
-        optimizer = nlp.begin_training()
-    else:
-        optimizer = nlp.entity.create_optimizer()
-
-    # Get names of other pipes to disable them during training to train # only NER and update the weights
-    other_pipes = [pipe for pipe in nlp.pipe_names if pipe != 'ner']
-    with nlp.disable_pipes(*other_pipes):  # only train NER
-        for itn in range(10): #numero di epoche(iperparametro)
-            random.shuffle(training_data)
-            losses = {}
-            batches = minibatch(training_data, size=compounding(4., 32., 1.001))
-            for batch in batches:
-                texts, annotations = zip(*batch)
-                #Updating the weights
-                nlp.update(texts, annotations, sgd = optimizer, drop = 0.35, losses = losses)
-                nlp.update(texts,annotations,sgd=optimizer,drop=0.35,losses=losses)
-                print('Losses', losses)
-                nlp.update(texts, annotations, sgd=optimizer, drop=0.35, losses=losses)
-                print('Losses', losses)
-
-    # Save model
-    if output_dir is not None:
-        output_dir = Path(#)
-        nlp.to_disk(output_dir)
-        print("Saved model to", output_dir)'''
 
 '''decorator that defines the url path
 of the page where see the status of the
@@ -751,6 +712,26 @@ def status_model_intent():
             else:
                 global max_epoch_intent
                 return render_template("status_model_intent.html", num_epoch = tir.get_num_epoch(), num_iteration = tir.get_num_iteration(), length_epoch = tir.get_epoch_length(), num_progress = tir.get_num_progress(), max_epoch = max_epoch_intent)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
+
+'''decorator that defines the url path
+of the page where see the status of the
+training of the sentiment analysis model'''
+@app.route('/home/status_model_entities', methods = ['POST', 'GET'])
+def status_model_entities():
+    global login_user
+    if login_user:
+        if thread_training_entities is None:
+            return render_template("status_model_entities.html", not_training = True)
+        else:
+            if(tee.get_num_iteration() == -1):
+                return render_template("status_model_entities.html", loading = True)
+            else:
+                global max_iterations_entities
+                return render_template("status_model_entities.html", iteration = tee.get_num_iteration(), max_iteration = max_iterations_entities, num_progress = tee.get_num_progress())
     else:
         global needed
         needed = True

@@ -6,6 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Status Model Sentiment</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script>
+setTimeout(function() {
+	window.location.reload();
+}, 15000);
+</script>
 </head>
 <body>
 	<nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -44,6 +49,11 @@
 				<div class="progress" style="height: 40px;">
 					<div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" id="epoch{{ num_epoch }}" style="width: {{ num_progress }}%;" aria-valuenow="{{ num_progress }}" aria-valuemin="0" aria-valuemax="100"> {{ num_progress }}% </div>
 				</div>
+			{% else %}
+				<br><br>
+				<h2><p class="text-center">
+					L'addestramento è terminato con successo
+				</p></h2>
 			{% endif %}
 		{% endif %}
 	{% endif %}

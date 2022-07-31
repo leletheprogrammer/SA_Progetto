@@ -1,7 +1,8 @@
 import random
+import os
 import json
 import spacy
-from spacy.training import offsets_to_biluo_tags
+from spacy.gold import biluo_tags_from_offsets
 from sklearn.model_selection import train_test_split
 
 def creation_files(query, path):
@@ -38,7 +39,7 @@ def creation_files(query, path):
                 entities.append((int(first_index), int(last_index) + 1, label))
                 if label not in nlp_entities:
                     nlp_entities.append(label)
-        tags = offsets_to_biluo_tags(nlp(phrase_entities['phrase']), entities)
+        tags = biluo_tags_from_offsets(nlp(phrase_entities['phrase']), entities)
         in_id = 0
         for word in phrase_entities['phrase'].split():
             in_list.append({'id': in_id, 'orth': word, 'ner': tags[in_id]})
@@ -52,7 +53,7 @@ def creation_files(query, path):
         ext_dict['paragraphs'] = ext_list
         phrases_entities.append(ext_dict)
     random.shuffle(phrases_entities)
-    training, test = train_test_split(phrases_entities, test_size=0.2)
+    training, test = train_test_split(phrases_entities, test_size = 0.2)
     id = 0
     while id < len(training):
         training[id]['id'] = id
@@ -85,7 +86,7 @@ def creation_files(query, path):
             else:
                 train.write('\n]')
             j += 1
-    validation, test = train_test_split(test, test_size=0.5)
+    validation, test = train_test_split(training, test_size = 0.75)
     id = 0
     while id < len(validation):
         validation[id]['id'] = id
@@ -120,4 +121,36 @@ def creation_files(query, path):
     ner = nlp.get_pipe('ner')
     for entity in nlp_entities:
         ner.add_label(entity)
-    nlp.to_disk(path + '/models/entities')
+    if not os.path.isdir(path + '/models/entities'):
+        os.mkdir(os.path.join(path, 'models', 'entities'))
+    else:
+        delete_entities(path)
+    nlp.to_disk(os.path.join(path, 'models', 'entities', 'base-model'))
+
+def delete_entities(path):
+    if os.path.isdir(os.path.join(path, 'models', 'entities', 'base-model')):
+        for element_name in os.listdir(os.path.join(path, 'models', 'entities', 'base-model')):
+            element = os.path.join(path, 'models', 'entities', 'base-model', element_name)
+            if os.path.isfile(element):
+                os.remove(element)
+            else:
+                for sub_element_name in os.listdir(element):
+                    sub_element = os.path.join(element, sub_element_name)
+                    if os.path.isfile(sub_element):
+                        os.remove(sub_element)
+                os.rmdir(element)
+        os.rmdir(os.path.join(path, 'models', 'entities', 'base-model'))
+    if os.path.isdir(os.path.join(path, 'models', 'entities', 'trained-model')):
+        for model in os.listdir(os.path.join(path, 'models', 'entities', 'trained-model')):
+            for element_name in os.listdir(os.path.join(path, 'models', 'entities', 'trained-model', model)):
+                element = os.path.join(path, 'models', 'entities', 'trained-model', model, element_name)
+                if os.path.isfile(element):
+                    os.remove(element)
+                else:
+                    for sub_element_name in os.listdir(element):
+                        sub_element = os.path.join(element, sub_element_name)
+                        if os.path.isfile(sub_element):
+                            os.remove(sub_element)
+                    os.rmdir(element)
+            os.rmdir(os.path.join(path, 'models', 'entities', 'trained-model', model))
+        os.rmdir(os.path.join(path, 'models', 'entities', 'trained-model'))
