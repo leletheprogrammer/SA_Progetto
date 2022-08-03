@@ -878,6 +878,11 @@ def download_erasure_model():
                     return render_template('download_erasure_model.html', model_download = 'Intent Recognition')
                 else:
                     return render_template('download_erasure_model.html', model_download_present = 'downloadIntentRecognition')
+            elif(form_data['submitButton'] == 'downloadEntities'):
+                if(not os.path.isdir(os.path.join('models', 'entities'))):
+                    return render_template('download_erasure_model.html', model_download = 'Entities Extraction')
+                else:
+                    return render_template('download_erasure_model.html', model_download_present = 'downloadEntitiesExtraction')
             elif(form_data['submitButton'] == 'downloadSentiment'):
                 if(not os.path.isdir(os.path.join('models', 'sentiment'))):
                     return render_template('download_erasure_model.html', model_download = 'Sentiment Analysis')
@@ -888,6 +893,11 @@ def download_erasure_model():
                     return render_template('download_erasure_model.html', model_erasure = 'Intent Recognition')
                 else:
                     return render_template('download_erasure_model.html', model_erasure_present = 'deleteIntentRecognition')
+            elif(form_data['submitButton'] == 'deleteEntities'):
+                if(not os.path.isdir(os.path.join('models', 'entities'))):
+                    return render_template('download_erasure_model.html', model_erasure = 'Entities Extraction')
+                else:
+                    return render_template('download_erasure_model.html', model_erasure_present = 'deleteEntitiesExtraction')
             elif(form_data['submitButton'] == 'deleteSentiment'):
                 if(not os.path.isdir(os.path.join('models', 'sentiment'))):
                     return render_template('download_erasure_model.html', model_erasure = 'Sentiment Analysis')
@@ -901,6 +911,19 @@ def download_erasure_model():
                         zipf.write(file, basename(file))
                 memory_file.seek(0)
                 return send_file(memory_file, attachment_filename = 'intent.zip', as_attachment = True)
+            elif(form_data['submitButton'] == 'downloadEntitiesExtraction'):
+                memory_file = BytesIO()
+                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for element_name in os.listdir(os.path.join('models', 'entities')):
+                        element = os.path.join('models', 'entities', element_name)
+                        if os.path.isfile(element):
+                            zipf.write(element, basename(element))
+                        else:
+                            for sub_element_name in os.listdir(element):
+                                sub_element = os.path.join(element, sub_element_name)
+                                zipf.write(sub_element, os.path.join(element_name, sub_element_name))
+                memory_file.seek(0)
+                return send_file(memory_file, attachment_filename = 'entities.zip', as_attachment = True)
             elif(form_data['submitButton'] == 'downloadSentimentAnalysis'):
                 memory_file = BytesIO()
                 with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -912,6 +935,8 @@ def download_erasure_model():
             elif(form_data['submitButton'] == 'deleteIntentRecognition'):
                 if os.path.isfile('mapping_intent.joblib'):
                     os.remove('mapping_intent.joblib')
+                if os.path.isfile('test_intent.csv'):
+                    os.remove('test_intent.csv')
                 if os.path.isfile('results_intent.csv'):
                     os.remove('results_intent.csv')
                 if os.path.isdir('static'):
@@ -925,9 +950,33 @@ def download_erasure_model():
                     if os.path.isfile(file):
                         os.remove(file)
                 os.rmdir(os.path.join('models', 'intent'))
+            elif(form_data['submitButton'] == 'deleteEntitiesExtraction'):
+                if os.path.isfile('test_entities.json'):
+                    os.remove('test_entities.json')
+                if os.path.isfile('results_entities.csv'):
+                    os.remove('results_entities.csv')
+                if os.path.isdir('static'):
+                    if os.path.isdir(os.path.join('static', 'images')):
+                        if os.path.isfile(os.path.join('static', 'images', 'loss_graphic_entities.png')):
+                            os.remove(os.path.join('static', 'images', 'loss_graphic_entities.png'))
+                        if os.path.isfile(os.path.join('static', 'images', 'score_graphic_entities.png')):
+                            os.remove(os.path.join('static', 'images', 'score_graphic_entities.png'))
+                for element_name in os.listdir(os.path.join('models', 'entities')):
+                    element = os.path.join('models', 'entities', element_name)
+                    if os.path.isfile(element):
+                        os.remove(element)
+                    else:
+                        for sub_element_name in os.listdir(element):
+                            sub_element = os.path.join(element, sub_element_name)
+                            if os.path.isfile(sub_element):
+                                os.remove(sub_element)
+                        os.rmdir(element)
+                os.rmdir(os.path.join('models', 'entities'))
             elif(form_data['submitButton'] == 'deleteSentimentAnalysis'):
                 if os.path.isfile('mapping_sentiment.joblib'):
                     os.remove('mapping_sentiment.joblib')
+                if os.path.isfile('test_sentiment.csv'):
+                    os.remove('test_sentiment.csv')
                 if os.path.isfile('results_sentiment.csv'):
                     os.remove('results_sentiment.csv')
                 if os.path.isdir('static'):
