@@ -5,7 +5,7 @@ import os
 import random
 import shutil
 from timeit import default_timer as timer
-from csv import writer
+import csv
 
 import srsly
 import tqdm
@@ -130,14 +130,6 @@ def train(
     if meta_path is not None and not meta_path.exists():
         msg.fail("Can't find model meta.json", meta_path, exits=1)
     meta = srsly.read_json(meta_path) if meta_path else {}
-    if output_path.exists() and [p for p in output_path.iterdir() if p.is_dir()]:
-        msg.warn(
-            "Output directory is not empty",
-            "This can lead to unintended side effects when saving the model. "
-            "Please use an empty directory or a different path instead. If "
-            "the specified output path doesn't exist, the directory will be "
-            "created for you.",
-        )
     if not output_path.exists():
         output_path.mkdir()
 
@@ -643,7 +635,7 @@ def _collate_best_model(meta, output_path, components):
     meta.setdefault("accuracy", {})
     for component in components:
         bests[component] = _find_best(output_path, component)
-    best_dest = output_path / "model-best"
+    best_dest = output_path / "entities"
     shutil.copytree(path2str(output_path / "model-final"), path2str(best_dest))
     for component, best_component_src in bests.items():
         shutil.rmtree(path2str(best_dest / component))
@@ -746,18 +738,14 @@ def _get_total_speed(speeds):
 
 def create_results():
     with open('results_entities.csv', 'w', newline = '') as res:
-        writer_object = writer(res)
-        writer_object.writerow(['loss, precision, recall, f1'])
+        writer_object = csv.DictWriter(res, fieldnames=['loss','precision','recall','f1'])
+        writer_object.writeheader()
         res.close()
 
 def update_results(scores):
     with open('results_entities.csv', 'a', newline = '') as res:
-        writer_object = writer(res)
-        loss = '{:.4f}'.format(scores['ner_loss'])
-        precision = '{:.4f}'.format(scores['ents_p'])
-        recall = '{:.4f}'.format(scores['ents_r'])
-        f1 = '{:.4f}'.format(scores['ents_f'])
-        writer_object.writerow([loss + ', ' + precision + ', ' + recall + ', ' + f1])
+        writer_object = csv.DictWriter(res, fieldnames=['loss','precision','recall','f1'])
+        writer_object.writerow({'loss': scores['ner_loss'], 'precision': scores['ents_p'], 'recall': scores['ents_r'], 'f1': scores['ents_f']})
         res.close()
 
 def get_num_iteration():

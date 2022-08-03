@@ -25,6 +25,7 @@ import training_intent_recognition as tir
 import training_entities_extraction as tee
 import training_sentiment_analysis as tsa
 import testing_intent as tei
+import testing_entities as ten
 import testing_sentiment as tes
 
 '''app represents the web application and
@@ -772,22 +773,31 @@ def show_results_testing():
                     else:
                         return render_template('show_results_testing.html', not_present = 'Intent Recognition')
                 elif(form_data['submitButton'] == 'visualizeEntities'):
-                    pass
+                    if(os.path.isfile('results_entities.csv')):
+                        return render_template('show_results_testing.html', results_entities = pd.read_csv('results_entities.csv').values.tolist())
+                    else:
+                        return render_template('show_results_testing.html', not_present = 'Entities Extraction')
                 elif(form_data['submitButton'] == 'visualizeSentiment'):
                     if(os.path.isfile('results_sentiment.csv')):
                         return render_template('show_results_testing.html', results_sentiment = pd.read_csv('results_sentiment.csv').values.tolist())
                     else:
                         return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
                 elif(form_data['submitButton'] == 'buttonTestingIntent'):
-                    if(os.path.isfile('mapping_intent.joblib')):
-                        return render_template('show_results_testing.html', testing_accepted = 'testingIntent')
+                    if(os.path.isfile('mapping_intent.joblib') and os.path.isfile('test_intent.csv')):
+                        score = tei.testing()
+                        return render_template('show_results_testing.html', testing_intent = str(score))
                     else:
                         return render_template('show_results_testing.html', not_present = 'Intent Recognition')
                 elif(form_data['submitButton'] == 'buttonTestingEntities'):
-                    pass
+                    if(os.path.isfile('test_entities.json')):
+                        score = ten.test()
+                        return render_template('show_results_testing.html', testing_entities = str(score))
+                    else:
+                        return render_template('show_results_testing.html', not_present = 'Entities Extraction')
                 elif(form_data['submitButton'] == 'buttonTestingSentiment'):
-                    if(os.path.isfile('mapping_sentiment.joblib')):
-                        return render_template('show_results_testing.html', testing_accepted = 'testingSentiment')
+                    if(os.path.isfile('mapping_sentiment.joblib') and os.path.isfile('test_sentiment.csv')):
+                        score = tes.testing()
+                        return render_template('show_results_testing.html', testing_sentiment = str(score))
                     else:
                         return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
             if('graphicLoss' in form_data):
@@ -796,12 +806,16 @@ def show_results_testing():
                 if(form_data['graphicLoss'] == 'graphicLossIntent'):
                     df_intent = pd.read_csv('results_intent.csv')
                     axis.plot(df_intent[['Loss Training', 'Loss Validation']])
+                    axis.legend(['Loss Training', 'Loss Validation'])
                 elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
                     df_sentiment = pd.read_csv('results_sentiment.csv')
                     axis.plot(df_sentiment[['Loss Training', 'Loss Validation']])
+                    axis.legend(['Loss Training', 'Loss Validation'])
+                elif(form_data['graphicLoss'] == 'graphicLossEntities'):
+                    df_entities = pd.read_csv('results_entities.csv')
+                    axis.plot(df_entities[['loss']])
                 axis.set_xlabel('epoch')
                 axis.set_ylabel('loss')
-                axis.legend(['Loss Training', 'Loss Validation'])
                 if not os.path.isdir('static'):
                     os.mkdir('static')
                 if not os.path.isdir(os.path.join('static', 'images')):
@@ -812,18 +826,25 @@ def show_results_testing():
                 elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
                     fig.savefig(os.path.join('static', 'images','loss_graphic_sentiment.png'))
                     return render_template('show_results_testing.html', loss_sentiment = 'loss_graphic_sentiment.png')
+                elif(form_data['graphicLoss'] == 'graphicLossEntities'):
+                    fig.savefig(os.path.join('static', 'images','loss_graphic_entities.png'))
+                    return render_template('show_results_testing.html', loss_entities = 'loss_graphic_entities.png')
             if('graphicScore' in form_data):
                 fig = Figure()
                 axis = fig.add_subplot(1, 1, 1)
                 if(form_data['graphicScore'] == 'graphicScoreIntent'):
                     df_intent = pd.read_csv('results_intent.csv')
                     axis.plot(df_intent[['F1-Score Training', 'F1-Score Validation']])
+                    axis.legend(['F1-Score Training', 'F1-Score Validation'])
                 elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
                     df_sentiment = pd.read_csv('results_sentiment.csv')
                     axis.plot(df_sentiment[['F1-Score Training', 'F1-Score Validation']])
+                    axis.legend(['F1-Score Training', 'F1-Score Validation'])
+                elif(form_data['graphicScore'] == 'graphicScoreEntities'):
+                    df_entities = pd.read_csv('results_entities.csv')
+                    axis.plot(df_entities[['f1']])
                 axis.set_xlabel('epoch')
                 axis.set_ylabel('score')
-                axis.legend(['F1-Score Training', 'F1-Score Validation'])
                 if not os.path.isdir('static'):
                     os.mkdir('static')
                 if not os.path.isdir(os.path.join('static', 'images')):
@@ -834,15 +855,9 @@ def show_results_testing():
                 elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
                     fig.savefig(os.path.join('static', 'images','score_graphic_sentiment.png'))
                     return render_template('show_results_testing.html', score_sentiment = 'score_graphic_sentiment.png')
-            if('testingButton' in form_data):
-                if(form_data['testingButton'] == 'testingIntent'):
-                    file = request.files['file']
-                    score = tei.testing(file)
-                    return render_template('show_results_testing.html', testing_intent = score)
-                elif(form_data['testingButton'] == 'testingSentiment'):
-                    file = request.files['file']
-                    score = tes.testing(file)
-                    return render_template('show_results_testing.html', testing_sentiment = score)
+                elif(form_data['graphicScore'] == 'graphicScoreEntities'):
+                    fig.savefig(os.path.join('static', 'images','score_graphic_entities.png'))
+                    return render_template('show_results_testing.html', score_entities = 'score_graphic_entities.png')
         elif request.method == 'GET':
             return render_template('show_results_testing.html')
     else:

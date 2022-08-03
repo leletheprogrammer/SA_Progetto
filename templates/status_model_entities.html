@@ -38,15 +38,20 @@ setTimeout(function() {
 			<h2><p class="text-center">
 				Questa pagina mostra lo status dell'addestramento del modello di Entities Extraction.
 			</p></h2>
-			Iterazione {{ iteration }}/{{ max_iteration }}:
-			<div class="progress" style="height: 40px;">
-				<div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" id="progressBarId" style="width: {{ num_progress }}%;" aria-valuenow="{{ num_progress }}" aria-valuemin="0" aria-valuemax="100"> {{ num_progress }}% </div>
-			</div>
 			{% if iteration == max_iteration %}
+				Epoca [{{ iteration }}/{{ max_iteration }}]:
+				<div class="progress" style="height: 40px;">
+					<div class="progress-bar progress-bar-striped bg-info" role="progressbar" id="progressBarId" style="width: {{ num_progress }}%;" aria-valuenow="{{ num_progress }}" aria-valuemin="0" aria-valuemax="100"> {{ num_progress }}% </div>
+				</div>
 				<br><br>
 				<h2><p class="text-center">
 					L'addestramento è terminato con successo
 				</p></h2>
+			{% else %}
+				Epoca [{{ iteration }}/{{ max_iteration }}]:
+				<div class="progress" style="height: 40px;">
+					<div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" id="progressBarId" style="width: {{ num_progress }}%;" aria-valuenow="{{ num_progress }}" aria-valuemin="0" aria-valuemax="100"> {{ num_progress }}% </div>
+				</div>
 			{% endif %}
 		{% endif %}
 	{% endif %}
