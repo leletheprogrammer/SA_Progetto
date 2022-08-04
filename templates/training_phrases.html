@@ -476,7 +476,7 @@ $(document).ready(function() {
 						</div>
 						<div id="divAddId" class="form-group">
 							<label>Aggiungi Training Phrase e seleziona entity(opzionale)</label>
-							<input name="newPhrase" id="addNewPhrase" type="text" class="form-control" pattern="[a-zA-Z0-9àèÈéÉìòù ]+" onselect="entitySelected('divAddId')" required>
+							<input name="newPhrase" id="addNewPhrase" type="text" class="form-control" pattern="[a-zA-Z0-9àèÈéÉìòù .:,;!?]+" onselect="entitySelected('divAddId')" required>
 							<label for="selectIntent">Selezionare l'intent(opzionale)</label>
 							<select class="form-control" id="intentSelected" name="selectIntent">
 								<option selected label="Clicca qui per selezionare l'intent">
@@ -531,7 +531,7 @@ $(document).ready(function() {
 							<label>La Training Phrase selezionata è la seguente</label>
 							<input name="oldPhrase" id="oldModifyPhrase" type="text" readonly class="form-control">
 							<label>Inserire di seguito la nuova Training Phrase</label>
-							<input name="newPhrase" id="newModifyPhrase" type="text" class="form-control" required pattern="[a-zA-Z0-9àèÈéÉìòù ]+">
+							<input name="newPhrase" id="newModifyPhrase" type="text" class="form-control" required pattern="[a-zA-Z0-9àèÈéÉìòù .:,;!?]+">
 						</div>
 					</div>
 					<div class="modal-footer">

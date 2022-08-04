@@ -12,8 +12,7 @@ from torch.utils.data import DataLoader
 from transformers import BertForSequenceClassification, AutoTokenizer
 from transformers.optimization import AdamW
 
-import dataset_intent as di
-import dataset_sentiment as ds
+import dataset as d
 
 num_epoch_intent = -1
 num_iteration_intent = -1
@@ -23,7 +22,6 @@ num_iteration_sentiment = -1
 length_epoch_sentiment = -1
 
 def train(df_train, col_name, learning_rate, eps, batch_size, hidden_dropout_prob, patience, max_epoch):
-
     global num_epoch_intent
     global num_iteration_intent
     global length_epoch_intent
@@ -51,12 +49,8 @@ def train(df_train, col_name, learning_rate, eps, batch_size, hidden_dropout_pro
         num_labels = len(df.intent.unique())
     elif(col_name == 'sentiment'):
         num_labels = len(df.sentiment.unique())
-    if(col_name == 'intent'):
-        train_ds = di.TextualDataset('train_' + col_name + '_preprocessed.json', device)
-        val_ds = di.TextualDataset('val_' + col_name + '_preprocessed.json', device)
-    elif(col_name == 'sentiment'):
-        train_ds = ds.TextualDataset('train_' + col_name + '_preprocessed.json', device)
-        val_ds = ds.TextualDataset('val_' + col_name + '_preprocessed.json', device)
+    train_ds = d.TextualDataset('train_' + col_name + '_preprocessed.json', device)
+    val_ds = d.TextualDataset('val_' + col_name + '_preprocessed.json', device)
 
     bert_model = BertForSequenceClassification.from_pretrained(
         pretrained_model_name_or_path=model_name,
