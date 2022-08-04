@@ -1,8 +1,8 @@
 import spacy
-import pandas as pd
+from transformers import AutoTokenizer
+
 import dataset_intent as di
 import dataset_sentiment as ds
-from transformers import AutoTokenizer
 
 def preprocess(df_train, df_val, col_name):
     transformer_model_name = 'dbmdz/bert-base-italian-xxl-cased'

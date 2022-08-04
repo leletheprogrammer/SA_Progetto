@@ -1,25 +1,20 @@
-from flask import Flask, render_template, request, redirect, url_for, Response, send_file
-from flask_pymongo import PyMongo
-
-from threading import Lock
-from flask_socketio import SocketIO
-
-import smtplib, ssl
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-
-from random import randint
-
-from werkzeug.security import generate_password_hash, check_password_hash
-
+from email.mime.text import MIMEText
+from io import BytesIO
+from matplotlib.figure import Figure
 import os
 from os.path import basename
-from io import BytesIO
+import pandas as pd
+from random import randint
+import smtplib
+import ssl
+from threading import Lock
 import zipfile
 
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
-import pandas as pd
+from flask import Flask, render_template, request, redirect, url_for, send_file
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_pymongo import PyMongo
+from flask_socketio import SocketIO
 
 import training_intent_recognition as tir
 import training_entities_extraction as tee

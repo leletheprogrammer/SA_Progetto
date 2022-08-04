@@ -1,10 +1,10 @@
-<!doctype html>
-<html lang = "it">
+<!DOCTYPE html>
+<html lang="it">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Show_Results_Testing</title>
+<title>Show Results Testing</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round">
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -67,6 +67,25 @@ $(document).ready(function() {
 </script>
 </head>
 <body>
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="{{ url_for('logout') }}">Logout</a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="{{ url_for('home') }}">Home</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
 	<h2><p>
 		In questa pagina è possibile visualizzare i risultati
 		dell'addestramento ed effettuare il testing dei modelli di NLP
@@ -104,7 +123,7 @@ $(document).ready(function() {
 			<div class="modal-content">
 				<div class="modal-header">
 					<h4 class="modal-title">Risultati addestramento {% if results_intent %}Intent Recognition{% else %}{% if results_sentiment %}Sentiment Analysis{% endif %}{% endif %}</h4>
-					<button type="button" class="close" aria-hidden="true" data-dismiss = "modal">&times;</button>
+					<button type="button" class="close" aria-hidden="true" data-dismiss="modal">&times;</button>
 				</div>
 				<div class="modal-body">
 					<p>
@@ -134,7 +153,7 @@ $(document).ready(function() {
 				</div>
 				<div class="modal-footer">
 					<form method="POST">
-						<button type="button" class="btn btn-success" data-dismiss = "modal">Indietro</button>
+						<button type="button" class="btn btn-success" data-dismiss="modal">Indietro</button>
 						<button type="submit" name="graphicLoss" class="btn btn-primary" value="{% if results_intent %}graphicLossIntent{% else %}{% if results_sentiment %}graphicLossSentiment{% else %}{% if results_entities %}graphicLossEntities{% endif %}{% endif %}{%endif%}">Grafico Loss</button>
 						<button type="submit" name="graphicScore" class="btn btn-primary" value="{% if results_intent %}graphicScoreIntent{% else %}{% if results_sentiment %}graphicScoreSentiment{% else %}{% if results_entities %}graphicScoreEntities{% endif %}{% endif %}{%endif%}">Grafico F1-Score</button>
 					</form>
@@ -148,11 +167,11 @@ $(document).ready(function() {
 			<div class="modal-content">
 				<div class="modal-header">
 					<h4 class="modal-title">Grafico {% if loss_intent or loss_sentiment or loss_entities %}Loss{% else %}{% if score_intent or score_sentiment or score_entities %}Score{% endif %}{% endif %} modello {% if loss_intent or score_intent %}Intent Recognition{% else %}{% if loss_sentiment or score_sentiment %}Sentiment Analysis{% else %}{% if loss_entities or score_entities %}Entities Extraction{% endif %}{% endif %}{% endif %}</h4>
-					<button type="button" class="close" aria-hidden="true" data-dismiss = "modal">&times;</button>
+					<button type="button" class="close" aria-hidden="true" data-dismiss="modal">&times;</button>
 				</div>
 				<div id="modalGraphic" class="modal-body"></div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-success" data-dismiss = "modal">Indietro</button>
+					<button type="button" class="btn btn-success" data-dismiss="modal">Indietro</button>
 				</div>
 			</div>
 		</div>
@@ -163,7 +182,7 @@ $(document).ready(function() {
 			<div class="modal-content">
 				<div class="modal-header">
 					<h4 class="modal-title">Risultati Testing modello</h4>
-					<button type="button" class="close" aria-hidden="true" data-dismiss = "modal">&times;</button>
+					<button type="button" class="close" aria-hidden="true" data-dismiss="modal">&times;</button>
 				</div>
 				<div class="modal-body">
 					{% if testing_intent %}
@@ -183,7 +202,7 @@ $(document).ready(function() {
 					{% endif %}
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-success" data-dismiss = "modal">Indietro</button>
+					<button type="button" class="btn btn-success" data-dismiss="modal">Indietro</button>
 				</div>
 			</div>
 		</div>
@@ -194,7 +213,7 @@ $(document).ready(function() {
 			<div class="modal-content">
 				<div class="modal-header">
 					<h4 class="modal-title">Modello non presente</h4>
-					<button type="button" class="close" aria-hidden="true" data-dismiss = "modal">&times;</button>
+					<button type="button" class="close" aria-hidden="true" data-dismiss="modal">&times;</button>
 				</div>
 				<div  class="modal-body">
 					<p>
@@ -202,7 +221,7 @@ $(document).ready(function() {
 					</p>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-warning" data-dismiss = "modal">Indietro</button>
+					<button type="button" class="btn btn-warning" data-dismiss="modal">Indietro</button>
 				</div>
 			</div>
 		</div>

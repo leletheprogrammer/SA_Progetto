@@ -1,8 +1,9 @@
-import pandas as pd
-import splitting as sp
-import preprocessing as pc
-import bert_training as bt
 import os
+import pandas as pd
+
+import bert_training as bt
+import preprocessing as pc
+import splitting as sp
 
 ended = True
 

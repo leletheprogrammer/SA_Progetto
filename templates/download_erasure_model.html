@@ -55,7 +55,7 @@ function downloadModelClicked(model) {
 	} else if (model == "downloadEntitiesExtraction") {
 		document.getElementById('downloadModalBody').innerHTML += "Entities Extraction";
 	}
-	document.getElementById('downloadModalBody').innerHTML += ". Premere sul bottone scarica per completare l'operazione</p>"
+	document.getElementById('downloadModalBody').innerHTML += ". Premere sul bottone scarica per completare l'operazione</p>";
 	document.getElementById('downloadButton').value = model;
 }
 
@@ -69,7 +69,7 @@ function deleteModelClicked(model) {
 	} else if (model == "deleteEntitiesExtraction") {
 		document.getElementById('deleteModalBody').innerHTML += "Entities Extraction";
 	}
-	document.getElementById('deleteModalBody').innerHTML += ". Premere sul bottone cancella per completare l'operazione.</p><p class='text-warning'><small>Attenzione, questa azione non è reversibile</p>"
+	document.getElementById('deleteModalBody').innerHTML += ". Premere sul bottone cancella per completare l'operazione.</p><p class='text-warning'><small>Attenzione, questa azione non è reversibile</p>";
 	document.getElementById('deleteButton').value = model;
 }
 
@@ -120,28 +120,28 @@ $(document).ready(function() {
 		di NLP addestrati, se presenti.
 	</p></h2>
 	<br>
-	<form method = "POST">
-		<button type = "submit" name="submitButton" class = "btn btn-primary btn-lg" value="downloadIntent">
+	<form method="POST">
+		<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="downloadIntent">
 			Scarica il modello addestrato di Intent Recognition
 		</button>
 		<br><br>
-		<button type = "submit" name="submitButton" class = "btn btn-primary btn-lg" value="downloadEntities">
+		<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="downloadEntities">
 			Scarica il modello addestrato di Entities Extraction
 		</button>
 		<br><br>
-		<button type = "submit" name="submitButton" class = "btn btn-primary btn-lg" value="downloadSentiment">
+		<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="downloadSentiment">
 			Scarica il modello addestrato di Sentiment Analysis
 		</button>
 		<br><br><br><br><br><br>
-		<button type = "submit" name="submitButton" class = "btn btn-danger btn-lg" value="deleteIntent">
+		<button type="submit" name="submitButton" class="btn btn-danger btn-lg" value="deleteIntent">
 			Cancella il modello addestrato di Intent Recognition
 		</button>
 		<br><br>
-		<button type = "submit" name="submitButton" class = "btn btn-danger btn-lg" value="deleteEntities">
+		<button type="submit" name="submitButton" class="btn btn-danger btn-lg" value="deleteEntities">
 			Cancella il modello addestrato di Entities Extraction
 		</button>
 		<br><br>
-		<button type = "submit" name="submitButton" class = "btn btn-danger btn-lg" value="deleteSentiment">
+		<button type="submit" name="submitButton" class="btn btn-danger btn-lg" value="deleteSentiment">
 			Cancella il modello addestrato di Sentiment Analysis
 		</button>
 	</form>
