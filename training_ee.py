@@ -1,14 +1,12 @@
 # coding: utf8
 from __future__ import unicode_literals, division, print_function
 
+import csv
 import os
 import random
 import shutil
 from timeit import default_timer as timer
-import csv
 
-import srsly
-import tqdm
 from spacy import about
 from spacy import util
 from spacy.compat import path2str
@@ -16,7 +14,9 @@ from spacy.errors import Errors
 from spacy.gold import GoldCorpus
 from spacy.lookups import Lookups
 from spacy.util import use_gpu as set_gpu
+import srsly
 from thinc.neural._classes.model import Model
+import tqdm
 from wasabi import msg
 
 num_iteration = -1
@@ -58,56 +58,12 @@ max_iterations = -1
 #     tag_map_path=("Location of JSON-formatted tag map", "option", "tm", Path),
 #     omit_extra_lookups=("Don't include extra lookups in model", "flag", "OEL", bool),
 #     verbose=("Display more information for debug", "flag", "VV", bool),
-
-def train(
-        lang,
-        output_path,
-        train_path,
-        dev_path,
-        raw_text=None,
-        base_model=None,
-        pipeline="tagger,parser,ner",
-        replace_components=False,
-        vectors=None,
-        width=96,
-        conv_depth=4,
-        cnn_window=1,
-        cnn_pieces=3,
-        use_chars=False,
-        bilstm_depth=0,
-        embed_rows=2000,
-        n_iter=30,
-        n_early_stopping=None,
-        n_examples=0,
-        use_gpu=-1,
-        version="0.0.0",
-        meta_path=None,
-        init_tok2vec=None,
-        parser_multitasks="",
-        entity_multitasks="",
-        noise_level=0.0,
-        orth_variant_level=0.0,
-        eval_beam_widths="",
-        gold_preproc=False,
-        learn_tokens=False,
-        textcat_multilabel=False,
-        textcat_arch="bow",
-        textcat_positive_label=None,
-        tag_map_path=None,
-        omit_extra_lookups=False,
-        verbose=False,
-        dropout_from=0.1,
-        dropout_to=0.5,
-        batch_from=100.0,
-        batch_to=1000.0
-
-):
-    """
-    Train or update a spaCy model. Requires data to be formatted in spaCy's
-    JSON format. To convert data from other formats, use the `spacy convert`
-    command.
-    """
-
+def train(lang, output_path, train_path, dev_path, raw_text=None, base_model=None, pipeline="tagger,parser,ner", replace_components=False,
+          vectors=None, width=96, conv_depth=4, cnn_window=1, cnn_pieces=3, use_chars=False, bilstm_depth=0, embed_rows=2000,
+          n_iter=30, n_early_stopping=None, n_examples=0, use_gpu=-1, version="0.0.0", meta_path=None, init_tok2vec=None,
+          parser_multitasks="", entity_multitasks="", noise_level=0.0, orth_variant_level=0.0, eval_beam_widths="", gold_preproc=False,
+          learn_tokens=False, textcat_multilabel=False, textcat_arch="bow", textcat_positive_label=None, tag_map_path=None,
+          omit_extra_lookups=False, verbose=False, dropout_from=0.1, dropout_to=0.5, batch_from=100.0, batch_to=1000.0):
     global num_iteration
     num_iteration = 0
     global max_iterations
@@ -594,7 +550,6 @@ def train(
         with msg.loading("Creating best model..."):
             _collate_best_model(final_meta, output_path, best_pipes)
 
-
 def _score_for_model(meta):
     """ Returns mean score between tasks in pipeline that can be used for early stopping. """
     mean_acc = list()
@@ -613,7 +568,6 @@ def _score_for_model(meta):
 def _load_vectors(nlp, vectors):
     util.load_model(vectors, vocab=nlp.vocab)
 
-
 def _load_pretrained_tok2vec(nlp, loc, base_components):
     """Load pretrained weights for the 'token-to-vector' part of the component
     models, which is typically a CNN. See 'spacy pretrain'. Experimental.
@@ -628,7 +582,6 @@ def _load_pretrained_tok2vec(nlp, loc, base_components):
             component.tok2vec.from_bytes(weights_data)
             loaded.append(name)
     return loaded
-
 
 def _collate_best_model(meta, output_path, components):
     bests = {}
@@ -647,7 +600,6 @@ def _collate_best_model(meta, output_path, components):
             meta["accuracy"][metric] = accs[metric]
     srsly.write_json(best_dest / "meta.json", meta)
 
-
 def _find_best(experiment_dir, component):
     accuracies = []
     for epoch_model in experiment_dir.iterdir():
@@ -662,7 +614,6 @@ def _find_best(experiment_dir, component):
     else:
         return None
 
-
 def _get_metrics(component):
     if component == "parser":
         return "las", "uas", "las_per_type", "token_acc"
@@ -673,7 +624,6 @@ def _get_metrics(component):
     elif component == "textcat":
         return "textcat_score", "token_acc"
     return ("token_acc",)
-
 
 def _configure_training_output(pipeline, use_gpu, has_beam_widths):
     row_head = ["Itn"]
@@ -701,7 +651,6 @@ def _configure_training_output(pipeline, use_gpu, has_beam_widths):
     if has_beam_widths:
         row_head.insert(1, "Beam W.")
     return row_head, output_stats
-
 
 def _get_progress(
         itn, losses, dev_scores, output_stats, beam_width=None, cpu_wps=0.0, gpu_wps=0.0
