@@ -47,23 +47,60 @@
 <script>
 function startTrainingClicked(model) {
 	$('#startTrainingModel').modal('show');
+	document.getElementById('addModalBody').innerHTML = "<p id='addTraining'></p>";
 	document.getElementById('addTraining').innerHTML = "Inizia l'addestramento del modello di ";
-	if (model == "intentRecognition") {
-		document.getElementById('addTraining').innerHTML += "Intent Recognition";
-	} else if (model == "sentimentAnalysis") {
-		document.getElementById('addTraining').innerHTML += "Sentiment Analysis";
+	if (model == "intentRecognition" || model == "sentimentAnalysis") {
+		document.getElementById('addModalBody').innerHTML += "<label for='insertLearningRate'>Inserire il learning rate di seguito compreso tra 1.0 e 0.00001 (default = 0.1)</label>";
+		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertLearningRate' name='insertLearningRate' placeholder='Learning Rate'>";
+		document.getElementById('addModalBody').innerHTML += "<label for='insertEps'>Inserire l' eps di seguito maggiore di 0.0 (default = 0.5)</label>";
+		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertEps' name='insertEps' placeholder='Eps'>";
+		document.getElementById('addModalBody').innerHTML += "<label for='selectBatchSize'>Selezionare la batch size di seguito (default = 16)</label>";
+		document.getElementById('addModalBody').innerHTML += "<select class='form-control' id='selectBatchSize' name='selectBatchSize'><option selected label='Clicca qui per selezionare la batch size'><option>8</option><option>16</option><option>32</option><option>64</option></option></select>";
+		document.getElementById('addModalBody').innerHTML += "<label for='insertMaxEpoch'>Inserire l' epoca massima di seguito maggiore di 0 (default = 2)</label>";
+		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertMaxEpoch' name='insertMaxEpoch' placeholder='Epoca massima'>";
+		document.getElementById('addModalBody').innerHTML += "<label for='insertPatience'>Inserire la patience di seguito maggiore di 0 (default = 2)</label>";
+		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertPatience' name='insertPatience' placeholder='Patience'>";
+		document.getElementById('addModalBody').innerHTML += "<label for='insertHiddenDropout'>Inserire l' hidden dropout probability di seguito maggiore di 0.0 (default = 0.3)</label>";
+		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertHiddenDropout' name='insertHiddenDropout' placeholder='Hidden Dropout Probability'>";
+		if (model == "intentRecognition") {
+			document.getElementById('addTraining').innerHTML += "Intent Recognition";
+		} else if (model == "sentimentAnalysis") {
+			document.getElementById('addTraining').innerHTML += "Sentiment Analysis";
+		}
+	}
+	if (model == "entitiesExtraction") {
+		document.getElementById('addModalBody').innerHTML += "<label for='insertNumIterations'>Inserire il numero di iterazioni da eseguire > 0 (default = 30)</label>";
+		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertNumIterations' name='insertNumIterations' placeholder='Numero iterazioni'>";
+		document.getElementById('addModalBody').innerHTML += "<label for='insertDropoutFrom'>Inserire l' hidden dropout from di seguito maggiore di 0.0 (default = 0.1)</label>";
+		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertDropoutFrom' name='insertDropoutFrom' placeholder='Hidden Dropout From'>";
+		document.getElementById('addModalBody').innerHTML += "<label for='insertDropoutTo'>Inserire l' hidden dropout from di seguito maggiore di 0.0 (default = 0.5)</label>";
+		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertDropoutTo' name='insertDropoutTo' placeholder='Hidden Dropout To'>";
+		document.getElementById('addModalBody').innerHTML += "<label for='insertBatchFrom'>Inserire la batch size from di seguito maggiore di 0.0 (default = 100.0)</label>";
+		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertBatchFrom' name='insertBatchFrom' placeholder='Batch size from'>";
+		document.getElementById('addModalBody').innerHTML += "<label for='insertBatchTo'>Inserire la batch size to di seguito maggiore di 0.0 (default = 1000.0)</label>";
+		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertBatchTo' name='insertBatchTo' placeholder='Batch size to'>";
+		document.getElementById('addTraining').innerHTML += "Entities Extraction";
 	}
 	document.getElementById('addTraining').innerHTML += " inserendo i seguenti iperparametri (opzionale)";
 	document.getElementById('startTrainingButton').value = model;
 }
 
 function clean() {
-	document.getElementById("insertLearningRate").value = "";
-	document.getElementById("insertEps").value = "";
-	document.getElementById("selectBatchSize").selectedIndex = 0;
-	document.getElementById("insertMaxEpoch").value = "";
-	document.getElementById("insertPatience").value = "";
-	document.getElementById("insertHiddenDropout").value = "";
+	if (document.getElementById('startTrainingButton').value == "intentRecognition" || document.getElementById('startTrainingButton').value == "sentimentAnalysis") {
+		document.getElementById("insertLearningRate").value = "";
+		document.getElementById("insertEps").value = "";
+		document.getElementById("selectBatchSize").selectedIndex = 0;
+		document.getElementById("insertMaxEpoch").value = "";
+		document.getElementById("insertPatience").value = "";
+		document.getElementById("insertHiddenDropout").value = "";
+	}
+	else if (document.getElementById('startTrainingButton').value == "entitiesExtraction") {
+		document.getElementById("insertNumIterations").value = "";
+		document.getElementById("insertDropoutFrom").value = "";
+		document.getElementById("insertDropoutTo").value = "";
+		document.getElementById("insertBatchFrom").value = "";
+		document.getElementById("insertBatchTo").value = "";
+	}
 	$('#startTrainingModel').modal('hide');
 }
 
@@ -71,6 +108,11 @@ $(document).ready(function() {
 	{% if model_training %}
 		$('#warningModelTraining').modal('show');
 		document.getElementById('warningModalBody').innerHTML = "<p>Il modello di {{ model_training }} è attualmente in addestramento</p>";
+	{% endif %}
+	{% if model_success %}
+		$('#successModelTraining').modal('show');
+		document.getElementById('successModalBody').innerHTML = "<p>L'addestramento del modello di {% if model_success == 'intentRecognition' %}Intent Recognition{% else %}{% if model_success == 'sentimentAnalysis' %}Sentiment Analysis{% else %}{% if model_success == 'entitiesExtraction' %}Entities Extraction{% endif %}{% endif %}{% endif %} è incominciato con successo</p>";
+		document.getElementById('successModalBody').innerHTML += "<p>Andare alla pagina di status associata per vedere il progresso dell'addestramento</p>";
 	{% endif %}
 });
 </script>
@@ -104,7 +146,7 @@ $(document).ready(function() {
 		Inizia l'addestramento del modello di Intent Recognition
 	</button>
 	<br><br><br>
-	<button type="button" class="btn btn-primary btn-lg" onclick="entitiesExtraction">
+	<button type="button" class="btn btn-primary btn-lg" onclick="startTrainingClicked('entitiesExtraction')">
 		Inizia l'addestramento del modello di Entities Extraction
 	</button>
 	<br><br><br>
@@ -120,36 +162,7 @@ $(document).ready(function() {
 						<h4 class="modal-title">Inizia addestramento modello</h4>
 						<button type="button" class="close" aria-hidden="true" onclick="clean()">&times;</button>
 					</div>
-					<div class="modal-body">
-						<p id="addTraining">
-						</p>
-						<label for="insertLearningRate">Inserire il learning rate di seguito compreso tra 1.0 e 0.00001 (default = 0.1)</label>
-						<input type="text" class="form-control" id="insertLearningRate" name="insertLearningRate" placeholder="Learning Rate">
-						<label for="insertEps">Inserire l'eps di seguito maggiore di 0.0 (default = 0.5)</label>
-						<input type="text" class="form-control" id="insertEps" name="insertEps" placeholder="Eps">
-						<label for="selectBatchSize">Selezionare la batch size di seguito (default = 16)</label>
-						<select class="form-control" id="selectBatchSize" name="selectBatchSize">
-							<option selected label="Clicca qui per selezionare la batch size">
-								<option>
-									8
-								</option>
-								<option>
-									16
-								</option>
-								<option>
-									32
-								</option>
-								<option>
-									64
-								</option>
-							</option>
-						</select>
-						<label for="insertMaxEpoch">Inserire l'epoca massima di seguito maggiore di 0 (default = 2)</label>
-						<input type="text" class="form-control" id="insertMaxEpoch" name="insertMaxEpoch" placeholder="Epoca massima">
-						<label for="insertPatience">Inserire la patience di seguito maggiore di 0 (default = 2)</label>
-						<input type="text" class="form-control" id="insertPatience" name="insertPatience" placeholder="Patience">
-						<label for="insertHiddenDropout">Inserire l' hidden dropout probability di seguito maggiore di 0.0 (default = 0.3)</label>
-						<input type="text" class="form-control" id="insertHiddenDropout" name="insertHiddenDropout" placeholder="Hidden Dropout Probability">
+					<div class="modal-body" id="addModalBody">
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" onclick="clean()">Indietro</button>
@@ -170,6 +183,21 @@ $(document).ready(function() {
 				<div id="warningModalBody" class="modal-body"></div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-warning" data-dismiss="modal">Indietro</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Success Model Training Modal -->
+	<div id="successModelTraining" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title">L'addestramento è iniziato</h4>
+					<button type="button" class="close" aria-hidden="true" data-dismiss="modal">&times;</button>
+				</div>
+				<div id="successModalBody" class="modal-body"></div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-success" data-dismiss="modal">Indietro</button>
 				</div>
 			</div>
 		</div>

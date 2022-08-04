@@ -15,6 +15,7 @@ def start_training(mongo, learning_rate, eps, batch_size, max_epoch, patience, h
         phrasesIntents.append(phraseIntent)
     df = pd.DataFrame.from_records(phrasesIntents).drop_duplicates()
     df_train, df_val, df_test = sp.split_strat_train_val_test(df, stratify_colname='intent')
+    df_test.to_csv('test_intent.csv', index=False)
     df_train_grouped = df_train.groupby('intent').apply(lambda x: x.sample(n=300, replace=True))
     pc.preprocess(df_train_grouped, df_val, col_name='intent')
     bt.train(df_train, col_name='intent', learning_rate=learning_rate, eps=eps, batch_size=batch_size, hidden_dropout_prob=hidden_dropout_prob, patience=patience, max_epoch=max_epoch)
