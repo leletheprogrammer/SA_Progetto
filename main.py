@@ -17,7 +17,9 @@ from flask_pymongo import PyMongo
 from flask_socketio import SocketIO
 
 import training_ir_sa as tis
+import training_entities_extraction as tee
 import testing_ir_sa as teis
+import testing_entities as ten
 
 '''app represents the web application and
 __name__ represents the name of the current file'''
@@ -31,9 +33,11 @@ needed = None
 
 thread_training_intent = None
 thread_training_sentiment = None
+thread_training_entities = None
 thread_lock = Lock()
 max_epoch_intent = 0
 max_epoch_sentiment = 0
+max_iterations_entities = 0
 
 '''decorator that defines the url path
 where will be the index page of the site'''
@@ -702,6 +706,26 @@ def status_model_intent():
             else:
                 global max_epoch_intent
                 return render_template("status_model_intent.html", num_epoch = tis.get_num_epoch_intent(), num_iteration = tis.get_num_iteration_intent(), length_epoch = tis.get_epoch_length_intent(), num_progress = tis.get_num_progress_intent(), max_epoch = max_epoch_intent)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
+
+'''decorator that defines the url path
+of the page where see the status of the
+training of the sentiment analysis model'''
+@app.route('/home/status_model_entities', methods = ['POST', 'GET'])
+def status_model_entities():
+    global login_user
+    if login_user:
+        if thread_training_entities is None:
+            return render_template("status_model_entities.html", not_training = True)
+        else:
+            if(tee.get_num_iteration() == -1):
+                return render_template("status_model_entities.html", loading = True)
+            else:
+                global max_iterations_entities
+                return render_template("status_model_entities.html", iteration = tee.get_num_iteration(), max_iteration = max_iterations_entities, num_progress = tee.get_num_progress())
     else:
         global needed
         needed = True
