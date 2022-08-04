@@ -2,15 +2,20 @@ import pandas as pd
 
 from sklearn.metrics import f1_score
 
-from inference_ir_sa import Recognition
+from inference import Recognition, SpacyTesting
 
 def testing_intent():
-    return testing('intent', 'test_intent.csv')
+    return testing_models('intent', 'test_intent.csv')
+
+def testing_entities():
+    st = SpacyTesting()
+    f1 = st.run()
+    return f1
 
 def testing_sentiment():
-    return testing('sentiment', 'test_sentiment.csv')
+    return testing_models('sentiment', 'test_sentiment.csv')
 
-def testing(name, file):
+def testing_models(name, file):
     r = Recognition(name)
     
     test_df = pd.read_csv(file)
