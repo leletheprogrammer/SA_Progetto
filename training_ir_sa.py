@@ -29,6 +29,7 @@ def start_training_sentiment(mongo, learning_rate, eps, batch_size, max_epoch, p
 def training(mongo, col_name, phrases, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob):
     df = pd.DataFrame.from_records(phrases).drop_duplicates()
     df_train, df_val, df_test = sp.split_strat_train_val_test(df, stratify_colname=col_name)
+    df_test.to_csv('test_' + col_name + '.csv', index=False)
     df_train_grouped = df_train.groupby(col_name).apply(lambda x: x.sample(n=300, replace=True))
     pc.preprocess(df_train_grouped, df_val, col_name=col_name)
     bt.train(df_train, col_name=col_name, learning_rate=learning_rate, eps=eps,

@@ -642,110 +642,50 @@ def start_training_model():
                     else:
                         return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
             elif (form_data['submitButton'] == 'entitiesExtraction'):
-                trainingEntitiesExtraction()
-            return render_template('start_training_model.html')
+                dropout_from = 0.1
+                dropout_to = 0.5
+                batch_from = 100.0
+                batch_to = 1000.0
+                if 'insertDropoutFrom' in form_data:
+                    try:
+                        dropout_from = float(form_data['insertDropoutFrom'])
+                    except ValueError:
+                        dropout_from = 0.1
+                if 'insertDropoutTo' in form_data:
+                    try:
+                        dropout_to = float(form_data['insertDropoutTo'])
+                    except ValueError:
+                        dropout_to = 0.5
+                if 'insertBatchFrom' in form_data:
+                    try:
+                        batch_from = float(form_data['insertBatchFrom'])
+                    except ValueError:
+                        batch_from = 100.0
+                if 'insertBatchTo' in form_data:
+                    try:
+                        batch_to = float(form_data['insertBatchTo'])
+                    except ValueError:
+                        batch_to = 1000.0
+                if tee.get_ended():
+                    global max_iterations_entities
+                    max_iterations_entities = 30
+                    if 'insertNumIterations' in form_data:
+                        try:
+                            max_iterations_entities = int(form_data['insertNumIterations'])
+                        except ValueError:
+                            max_iterations_entities = 30
+                    global thread_training_entities
+                    with thread_lock:
+                        thread_training_entities = sio.start_background_task(tee.train, mongo, app.root_path, dropout_from, dropout_to, batch_from, batch_to, max_iterations_entities)
+                else:
+                    return render_template('start_training_model.html', model_training = 'Entities Extraction')
+            return render_template('start_training_model.html', model_success = form_data['submitButton'])
         elif request.method == 'GET':
             return render_template('start_training_model.html')
     else:
         global needed
         needed = True
         return redirect(url_for('login'))
-
-def trainingEntitiesExtraction():
-    '''
-    tup = {}
-    print(tup)
-
-    connection = sqlite3.connect('NLPDatabase.db')
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-
-    model = None
-
-    #create blank Language class
-    nlp = spacy.blank('it')
-    
-    print("Created blank 'it' model")
-
-    if 'ner' not in nlp.pipe_names:
-        ner = nlp.create_pipe('ner')
-        nlp.add_pipe('ner')
-    else:
-        ner = nlp.get_pipe('ner')
-    
-    entities = cursor.execute('SELECT Entity FROM NamedEntities').fetchall()
-
-    # Add new entity labels to entity recognizer
-    for i in entities:
-        for j in i:
-            ner.add_label(j)
-
-    training_data = []
-    training_phrases = cursor.execute('SELECT Phrase,Entities FROM TrainingPhrases').fetchall()
-
-    for phrases in training_phrases:
-        dict_entities = {}
-        entities_phrase = []
-        i = 0
-        j = 0
-        while phrases[1][i] != ']':
-            if (phrases[1][i] == '('):
-            	j = i
-            elif (phrases[1][i] == ')'):
-                entity_tuple = tupleEntity(phrases[1][j:i + 1])
-                entities_phrase.append(entity_tuple)
-            i += 1
-        dict_entities.setDefault("entities", entities_phrase)
-        phrase_tuple = (phrases[0], dict_entities)
-        training_data.append(phrase_tuple)
-
-
-    # Inititalizing optimizer
-    if model is None:
-        optimizer = nlp.begin_training()
-    else:
-        optimizer = nlp.entity.create_optimizer()
-
-    # Get names of other pipes to disable them during training to train # only NER and update the weights
-    other_pipes = [pipe for pipe in nlp.pipe_names if pipe != 'ner']
-    with nlp.disable_pipes(*other_pipes):  # only train NER
-        for itn in range(10): #numero di epoche(iperparametro)
-            random.shuffle(training_data)
-            losses = {}
-            batches = minibatch(training_data, size=compounding(4., 32., 1.001))
-            for batch in batches:
-                texts, annotations = zip(*batch)
-                #Updating the weights
-                nlp.update(texts, annotations, sgd = optimizer, drop = 0.35, losses = losses)
-                nlp.update(texts,annotations,sgd=optimizer,drop=0.35,losses=losses)
-                print('Losses', losses)
-                nlp.update(texts, annotations, sgd=optimizer, drop=0.35, losses=losses)
-                print('Losses', losses)
-
-    # Save model
-    if output_dir is not None:
-        output_dir = Path(#)
-        nlp.to_disk(output_dir)
-        print("Saved model to", output_dir)'''
-
-def tupleEntity(entity):
-    firstIndex = ''
-    lastIndex = ''
-    i = 1
-    while(entity[i] != ','):
-        firstIndex += entity[i]
-        i += 1
-
-    i += 2
-
-    while(entity[i] != ','):
-        lastIndex += entity[i]
-        i += 1
-
-    i += 2
-
-    entityTuple = (int(firstIndex), int(lastIndex), entity[i:len(entity) - 1])
-    return entityTuple
 
 '''decorator that defines the url path
 of the page where see the status of the
@@ -762,6 +702,26 @@ def status_model_intent():
             else:
                 global max_epoch_intent
                 return render_template("status_model_intent.html", num_epoch = tis.get_num_epoch_intent(), num_iteration = tis.get_num_iteration_intent(), length_epoch = tis.get_epoch_length_intent(), num_progress = tis.get_num_progress_intent(), max_epoch = max_epoch_intent)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
+
+'''decorator that defines the url path
+of the page where see the status of the
+training of the sentiment analysis model'''
+@app.route('/home/status_model_entities', methods = ['POST', 'GET'])
+def status_model_entities():
+    global login_user
+    if login_user:
+        if thread_training_entities is None:
+            return render_template("status_model_entities.html", not_training = True)
+        else:
+            if(tee.get_num_iteration() == -1):
+                return render_template("status_model_entities.html", loading = True)
+            else:
+                global max_iterations_entities
+                return render_template("status_model_entities.html", iteration = tee.get_num_iteration(), max_iteration = max_iterations_entities, num_progress = tee.get_num_progress())
     else:
         global needed
         needed = True
@@ -802,22 +762,31 @@ def show_results_testing():
                     else:
                         return render_template('show_results_testing.html', not_present = 'Intent Recognition')
                 elif(form_data['submitButton'] == 'visualizeEntities'):
-                    pass
+                    if(os.path.isfile('results_entities.csv')):
+                        return render_template('show_results_testing.html', results_entities = pd.read_csv('results_entities.csv').values.tolist())
+                    else:
+                        return render_template('show_results_testing.html', not_present = 'Entities Extraction')
                 elif(form_data['submitButton'] == 'visualizeSentiment'):
                     if(os.path.isfile('results_sentiment.csv')):
                         return render_template('show_results_testing.html', results_sentiment = pd.read_csv('results_sentiment.csv').values.tolist())
                     else:
                         return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
                 elif(form_data['submitButton'] == 'buttonTestingIntent'):
-                    if(os.path.isfile('mapping_intent.joblib')):
-                        return render_template('show_results_testing.html', testing_accepted = 'testingIntent')
+                    if(os.path.isfile('mapping_intent.joblib') and os.path.isfile('test_intent.csv')):
+                        score = teis.testing_intent()
+                        return render_template('show_results_testing.html', testing_intent = str(score))
                     else:
                         return render_template('show_results_testing.html', not_present = 'Intent Recognition')
                 elif(form_data['submitButton'] == 'buttonTestingEntities'):
-                    pass
+                    if(os.path.isfile('test_entities.json')):
+                        score = ten.test()
+                        return render_template('show_results_testing.html', testing_entities = str(score))
+                    else:
+                        return render_template('show_results_testing.html', not_present = 'Entities Extraction')
                 elif(form_data['submitButton'] == 'buttonTestingSentiment'):
-                    if(os.path.isfile('mapping_sentiment.joblib')):
-                        return render_template('show_results_testing.html', testing_accepted = 'testingSentiment')
+                    if(os.path.isfile('mapping_sentiment.joblib') and os.path.isfile('test_sentiment.csv')):
+                        score = teis.testing_sentiment()
+                        return render_template('show_results_testing.html', testing_sentiment = str(score))
                     else:
                         return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
             if('graphicLoss' in form_data):
@@ -826,12 +795,16 @@ def show_results_testing():
                 if(form_data['graphicLoss'] == 'graphicLossIntent'):
                     df_intent = pd.read_csv('results_intent.csv')
                     axis.plot(df_intent[['Loss Training', 'Loss Validation']])
+                    axis.legend(['Loss Training', 'Loss Validation'])
                 elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
                     df_sentiment = pd.read_csv('results_sentiment.csv')
                     axis.plot(df_sentiment[['Loss Training', 'Loss Validation']])
+                    axis.legend(['Loss Training', 'Loss Validation'])
+                elif(form_data['graphicLoss'] == 'graphicLossEntities'):
+                    df_entities = pd.read_csv('results_entities.csv')
+                    axis.plot(df_entities[['loss']])
                 axis.set_xlabel('epoch')
                 axis.set_ylabel('loss')
-                axis.legend(['Loss Training', 'Loss Validation'])
                 if not os.path.isdir('static'):
                     os.mkdir('static')
                 if not os.path.isdir(os.path.join('static', 'images')):
@@ -842,18 +815,25 @@ def show_results_testing():
                 elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
                     fig.savefig(os.path.join('static', 'images','loss_graphic_sentiment.png'))
                     return render_template('show_results_testing.html', loss_sentiment = 'loss_graphic_sentiment.png')
+                elif(form_data['graphicLoss'] == 'graphicLossEntities'):
+                    fig.savefig(os.path.join('static', 'images','loss_graphic_entities.png'))
+                    return render_template('show_results_testing.html', loss_entities = 'loss_graphic_entities.png')
             if('graphicScore' in form_data):
                 fig = Figure()
                 axis = fig.add_subplot(1, 1, 1)
                 if(form_data['graphicScore'] == 'graphicScoreIntent'):
                     df_intent = pd.read_csv('results_intent.csv')
                     axis.plot(df_intent[['F1-Score Training', 'F1-Score Validation']])
+                    axis.legend(['F1-Score Training', 'F1-Score Validation'])
                 elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
                     df_sentiment = pd.read_csv('results_sentiment.csv')
                     axis.plot(df_sentiment[['F1-Score Training', 'F1-Score Validation']])
+                    axis.legend(['F1-Score Training', 'F1-Score Validation'])
+                elif(form_data['graphicScore'] == 'graphicScoreEntities'):
+                    df_entities = pd.read_csv('results_entities.csv')
+                    axis.plot(df_entities[['f1']])
                 axis.set_xlabel('epoch')
                 axis.set_ylabel('score')
-                axis.legend(['F1-Score Training', 'F1-Score Validation'])
                 if not os.path.isdir('static'):
                     os.mkdir('static')
                 if not os.path.isdir(os.path.join('static', 'images')):
@@ -864,15 +844,9 @@ def show_results_testing():
                 elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
                     fig.savefig(os.path.join('static', 'images','score_graphic_sentiment.png'))
                     return render_template('show_results_testing.html', score_sentiment = 'score_graphic_sentiment.png')
-            if('testingButton' in form_data):
-                if(form_data['testingButton'] == 'testingIntent'):
-                    file = request.files['file']
-                    score = teis.testing_intent(file)
-                    return render_template('show_results_testing.html', testing_intent = score)
-                elif(form_data['testingButton'] == 'testingSentiment'):
-                    file = request.files['file']
-                    score = teis.testing_sentiment(file)
-                    return render_template('show_results_testing.html', testing_sentiment = score)
+                elif(form_data['graphicScore'] == 'graphicScoreEntities'):
+                    fig.savefig(os.path.join('static', 'images','score_graphic_entities.png'))
+                    return render_template('show_results_testing.html', score_entities = 'score_graphic_entities.png')
         elif request.method == 'GET':
             return render_template('show_results_testing.html')
     else:
@@ -893,6 +867,11 @@ def download_erasure_model():
                     return render_template('download_erasure_model.html', model_download = 'Intent Recognition')
                 else:
                     return render_template('download_erasure_model.html', model_download_present = 'downloadIntentRecognition')
+            elif(form_data['submitButton'] == 'downloadEntities'):
+                if(not os.path.isdir(os.path.join('models', 'entities'))):
+                    return render_template('download_erasure_model.html', model_download = 'Entities Extraction')
+                else:
+                    return render_template('download_erasure_model.html', model_download_present = 'downloadEntitiesExtraction')
             elif(form_data['submitButton'] == 'downloadSentiment'):
                 if(not os.path.isdir(os.path.join('models', 'sentiment'))):
                     return render_template('download_erasure_model.html', model_download = 'Sentiment Analysis')
@@ -903,6 +882,11 @@ def download_erasure_model():
                     return render_template('download_erasure_model.html', model_erasure = 'Intent Recognition')
                 else:
                     return render_template('download_erasure_model.html', model_erasure_present = 'deleteIntentRecognition')
+            elif(form_data['submitButton'] == 'deleteEntities'):
+                if(not os.path.isdir(os.path.join('models', 'entities'))):
+                    return render_template('download_erasure_model.html', model_erasure = 'Entities Extraction')
+                else:
+                    return render_template('download_erasure_model.html', model_erasure_present = 'deleteEntitiesExtraction')
             elif(form_data['submitButton'] == 'deleteSentiment'):
                 if(not os.path.isdir(os.path.join('models', 'sentiment'))):
                     return render_template('download_erasure_model.html', model_erasure = 'Sentiment Analysis')
@@ -916,6 +900,19 @@ def download_erasure_model():
                         zipf.write(file, basename(file))
                 memory_file.seek(0)
                 return send_file(memory_file, attachment_filename = 'intent.zip', as_attachment = True)
+            elif(form_data['submitButton'] == 'downloadEntitiesExtraction'):
+                memory_file = BytesIO()
+                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for element_name in os.listdir(os.path.join('models', 'entities')):
+                        element = os.path.join('models', 'entities', element_name)
+                        if os.path.isfile(element):
+                            zipf.write(element, basename(element))
+                        else:
+                            for sub_element_name in os.listdir(element):
+                                sub_element = os.path.join(element, sub_element_name)
+                                zipf.write(sub_element, os.path.join(element_name, sub_element_name))
+                memory_file.seek(0)
+                return send_file(memory_file, attachment_filename = 'entities.zip', as_attachment = True)
             elif(form_data['submitButton'] == 'downloadSentimentAnalysis'):
                 memory_file = BytesIO()
                 with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -927,6 +924,8 @@ def download_erasure_model():
             elif(form_data['submitButton'] == 'deleteIntentRecognition'):
                 if os.path.isfile('mapping_intent.joblib'):
                     os.remove('mapping_intent.joblib')
+                if os.path.isfile('test_intent.csv'):
+                    os.remove('test_intent.csv')
                 if os.path.isfile('results_intent.csv'):
                     os.remove('results_intent.csv')
                 if os.path.isdir('static'):
@@ -940,9 +939,33 @@ def download_erasure_model():
                     if os.path.isfile(file):
                         os.remove(file)
                 os.rmdir(os.path.join('models', 'intent'))
+            elif(form_data['submitButton'] == 'deleteEntitiesExtraction'):
+                if os.path.isfile('test_entities.json'):
+                    os.remove('test_entities.json')
+                if os.path.isfile('results_entities.csv'):
+                    os.remove('results_entities.csv')
+                if os.path.isdir('static'):
+                    if os.path.isdir(os.path.join('static', 'images')):
+                        if os.path.isfile(os.path.join('static', 'images', 'loss_graphic_entities.png')):
+                            os.remove(os.path.join('static', 'images', 'loss_graphic_entities.png'))
+                        if os.path.isfile(os.path.join('static', 'images', 'score_graphic_entities.png')):
+                            os.remove(os.path.join('static', 'images', 'score_graphic_entities.png'))
+                for element_name in os.listdir(os.path.join('models', 'entities')):
+                    element = os.path.join('models', 'entities', element_name)
+                    if os.path.isfile(element):
+                        os.remove(element)
+                    else:
+                        for sub_element_name in os.listdir(element):
+                            sub_element = os.path.join(element, sub_element_name)
+                            if os.path.isfile(sub_element):
+                                os.remove(sub_element)
+                        os.rmdir(element)
+                os.rmdir(os.path.join('models', 'entities'))
             elif(form_data['submitButton'] == 'deleteSentimentAnalysis'):
                 if os.path.isfile('mapping_sentiment.joblib'):
                     os.remove('mapping_sentiment.joblib')
+                if os.path.isfile('test_sentiment.csv'):
+                    os.remove('test_sentiment.csv')
                 if os.path.isfile('results_sentiment.csv'):
                     os.remove('results_sentiment.csv')
                 if os.path.isdir('static'):

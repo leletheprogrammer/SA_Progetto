@@ -45,35 +45,19 @@
 	}
 </style>
 <script>
-function testingSelected(model) {
-	$('#testingModel').modal('show');
-	document.getElementById('testingButton').value = model;
-	if(model == 'testingIntent') {
-		document.getElementById('testingFirst').innerHTML = "phrase,intent";
-		document.getElementById('testingSecond').innerHTML = "Marco mangia la pizza,Mangiare la pizza";
-	}
-	else if(model == 'testingSentiment') {
-		document.getElementById('testingFirst').innerHTML = "phrase,sentiment";
-		document.getElementById('testingSecond').innerHTML = "Sono felice,Positivo";
-	}
-}
-
 $(document).ready(function() {
-	{% if results_intent or results_sentiment %}
+	{% if results_intent or results_entities or results_sentiment %}
 		$('#visualizeResultsModel').modal('show');
 	{% endif %}
-	{% if loss_intent or loss_sentiment %}
+	{% if loss_intent or loss_sentiment or loss_entities %}
 		$('#visualizeGraphic').modal('show');
-		document.getElementById('modalGraphic').innerHTML = '<img src="/static/images/{% if loss_intent %}{{ loss_intent }}{% else %}{% if loss_sentiment %}{{ loss_sentiment }}{% endif %}{% endif %}" alt="Grafico Loss"/>';
+		document.getElementById('modalGraphic').innerHTML = '<img src="/static/images/{% if loss_intent %}{{ loss_intent }}{% else %}{% if loss_sentiment %}{{ loss_sentiment }}{% else %}{% if loss_entities %}{{ loss_entities }}{% endif %}{% endif %}{% endif %}" alt="Grafico Loss"/>';
 	{% endif %}
-	{% if score_intent or score_sentiment %}
+	{% if score_intent or score_sentiment or score_entities %}
 		$('#visualizeGraphic').modal('show');
-		document.getElementById('modalGraphic').innerHTML = '<img src="/static/images/{% if score_intent %}{{ score_intent }}{% else %}{% if score_sentiment %}{{ score_sentiment }}{% endif %}{% endif %}" alt="Grafico Score"/>';
+		document.getElementById('modalGraphic').innerHTML = '<img src="/static/images/{% if score_intent %}{{ score_intent }}{% else %}{% if score_sentiment %}{{ score_sentiment }}{% else %}{% if score_entities %}{{ score_entities }}{% endif %}{% endif %}{% endif %}" alt="Grafico Score"/>';
 	{% endif %}
-	{% if testing_accepted %}
-		testingSelected('{{ testing_accepted }}');
-	{% endif %}
-	{% if testing_intent or testing_sentiment %}
+	{% if testing_intent or testing_sentiment or testing_entities %}
 		$('#resultsTesting').modal('show');
 	{% endif %}
 	{% if not_present %}
@@ -152,6 +136,13 @@ $(document).ready(function() {
 							</p>
 						{% endfor %}
 					{% endif %}
+					{% if results_entities %}
+						{% for row in results_entities %}
+							<p>
+								Epoca {{ loop.index }}:Loss = {{ row[0] }}, Precision = {{ row[1] }}, Recall = {{ row[2] }}, F1-Score = {{ row[3] }}
+							</p>
+						{% endfor %}
+					{% endif %}
 					{% if results_sentiment %}
 						{% for row in results_sentiment %}
 							<p>
@@ -163,8 +154,8 @@ $(document).ready(function() {
 				<div class="modal-footer">
 					<form method="POST">
 						<button type="button" class="btn btn-success" data-dismiss="modal">Indietro</button>
-						<button type="submit" name="graphicLoss" class="btn btn-primary" value="{% if results_intent %}graphicLossIntent{% else %}{% if results_sentiment %}graphicLossSentiment{% endif %}{%endif%}">Grafico Loss</button>
-						<button type="submit" name="graphicScore" class="btn btn-primary" value="{% if results_intent %}graphicScoreIntent{% else %}{% if results_sentiment %}graphicScoreSentiment{% endif %}{%endif%}">Grafico F1-Score</button>
+						<button type="submit" name="graphicLoss" class="btn btn-primary" value="{% if results_intent %}graphicLossIntent{% else %}{% if results_sentiment %}graphicLossSentiment{% else %}{% if results_entities %}graphicLossEntities{% endif %}{% endif %}{%endif%}">Grafico Loss</button>
+						<button type="submit" name="graphicScore" class="btn btn-primary" value="{% if results_intent %}graphicScoreIntent{% else %}{% if results_sentiment %}graphicScoreSentiment{% else %}{% if results_entities %}graphicScoreEntities{% endif %}{% endif %}{%endif%}">Grafico F1-Score</button>
 					</form>
 				</div>
 			</div>
@@ -175,39 +166,13 @@ $(document).ready(function() {
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h4 class="modal-title">Grafico {% if loss_intent or loss_sentiment %}Loss{% else %}{% if score_intent or score_sentiment %}Score{% endif %}{% endif %} modello {% if loss_intent or score_intent %}Intent Recognition{% else %}{% if loss_sentiment or score_sentiment %}Sentiment Analysis{% endif %}{% endif %}</h4>
+					<h4 class="modal-title">Grafico {% if loss_intent or loss_sentiment or loss_entities %}Loss{% else %}{% if score_intent or score_sentiment or score_entities %}Score{% endif %}{% endif %} modello {% if loss_intent or score_intent %}Intent Recognition{% else %}{% if loss_sentiment or score_sentiment %}Sentiment Analysis{% else %}{% if loss_entities or score_entities %}Entities Extraction{% endif %}{% endif %}{% endif %}</h4>
 					<button type="button" class="close" aria-hidden="true" data-dismiss="modal">&times;</button>
 				</div>
 				<div id="modalGraphic" class="modal-body"></div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-success" data-dismiss="modal">Indietro</button>
 				</div>
-			</div>
-		</div>
-	</div>
-	<!-- Testing Model Modal -->
-	<div id="testingModel" class="modal fade">
-		<div class="modal-dialog" style="width: 500px;">
-			<div class="modal-content">
-				<form method="POST" enctype="multipart/form-data">
-					<div class="modal-header">
-						<h4 class="modal-title">Testing modello addestrato</h4>
-						<button type="button" class="close" aria-hidden="true" data-dismiss="modal">&times;</button>
-					</div>
-					<div id="modalTesting" class="modal-body">
-						<input type="file" style="cursor: pointer" id="file" class="form-control" name="file" accept=".csv" required>
-						<p>
-							Inserire file con estensione .csv in questo formato:
-						
-						</p>
-						<p id="testingFirst"></p>
-						<p id="testingSecond"></p>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-success" data-dismiss="modal">Indietro</button>
-						<button type="submit" id="testingButton" name="testingButton" class="btn btn-primary" value="">Avvia Testing</button>
-					</div>
-				</form>
 			</div>
 		</div>
 	</div>
@@ -228,6 +193,11 @@ $(document).ready(function() {
 					{% if testing_sentiment %}
 						<p>
 							I risultati ottenuti dal testing del modello di Sentiment Analysis sono F1-Score = {{ testing_sentiment }}
+						</p>
+					{% endif %}
+					{% if testing_entities %}
+						<p>
+							I risultati ottenuti dal testing del modello di Entities Extraction sono F1-Score = {{ testing_entities }}
 						</p>
 					{% endif %}
 				</div>

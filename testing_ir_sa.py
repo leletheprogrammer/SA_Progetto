@@ -4,11 +4,11 @@ from sklearn.metrics import f1_score
 
 from inference_ir_sa import Recognition
 
-def testing_intent(file):
-    return testing('intent', file)
+def testing_intent():
+    return testing('intent', 'test_intent.csv')
 
-def testing_sentiment(file):
-    return testing('sentiment', file)
+def testing_sentiment():
+    return testing('sentiment', 'test_sentiment.csv')
 
 def testing(name, file):
     r = Recognition(name)
