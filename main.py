@@ -1,14 +1,11 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from io import BytesIO
 import os
-from os.path import basename
 import pandas as pd
 from random import randint
 import smtplib
 import ssl
 from threading import Lock
-import zipfile
 
 from flask import Flask, render_template, request, redirect, url_for, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -16,6 +13,7 @@ from flask_pymongo import PyMongo
 from flask_socketio import SocketIO
 
 import crud_tables_management as ct
+import download_erasure as de
 import plot_results as pr
 import training as tr
 import testing as te
@@ -567,92 +565,20 @@ def download_erasure_model():
                 else:
                     return render_template('download_erasure_model.html', model_erasure_present = 'deleteSentimentAnalysis')
             elif(form_data['submitButton'] == 'downloadIntentRecognition'):
-                memory_file = BytesIO()
-                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                    for file_name in os.listdir(os.path.join('models', 'intent')):
-                        file = os.path.join('models', 'intent', file_name)
-                        zipf.write(file, basename(file))
-                memory_file.seek(0)
+                memory_file = de.download_intent()
                 return send_file(memory_file, attachment_filename = 'intent.zip', as_attachment = True)
             elif(form_data['submitButton'] == 'downloadEntitiesExtraction'):
-                memory_file = BytesIO()
-                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                    for element_name in os.listdir(os.path.join('models', 'entities')):
-                        element = os.path.join('models', 'entities', element_name)
-                        if os.path.isfile(element):
-                            zipf.write(element, basename(element))
-                        else:
-                            for sub_element_name in os.listdir(element):
-                                sub_element = os.path.join(element, sub_element_name)
-                                zipf.write(sub_element, os.path.join(element_name, sub_element_name))
-                memory_file.seek(0)
+                memory_file = de.download_entities()
                 return send_file(memory_file, attachment_filename = 'entities.zip', as_attachment = True)
             elif(form_data['submitButton'] == 'downloadSentimentAnalysis'):
-                memory_file = BytesIO()
-                with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                    for file_name in os.listdir(os.path.join('models', 'sentiment')):
-                        file = os.path.join('models', 'sentiment', file_name)
-                        zipf.write(file, basename(file))
-                memory_file.seek(0)
+                memory_file = de.download_sentiment()
                 return send_file(memory_file, attachment_filename = 'sentiment.zip', as_attachment = True)
             elif(form_data['submitButton'] == 'deleteIntentRecognition'):
-                if os.path.isfile('mapping_intent.joblib'):
-                    os.remove('mapping_intent.joblib')
-                if os.path.isfile('test_intent.csv'):
-                    os.remove('test_intent.csv')
-                if os.path.isfile('results_intent.csv'):
-                    os.remove('results_intent.csv')
-                if os.path.isdir('static'):
-                    if os.path.isdir(os.path.join('static', 'images')):
-                        if os.path.isfile(os.path.join('static', 'images', 'loss_graphic_intent.png')):
-                            os.remove(os.path.join('static', 'images', 'loss_graphic_intent.png'))
-                        if os.path.isfile(os.path.join('static', 'images', 'score_graphic_intent.png')):
-                            os.remove(os.path.join('static', 'images', 'score_graphic_intent.png'))
-                for file_name in os.listdir(os.path.join('models', 'intent')):
-                    file = os.path.join('models', 'intent', file_name)
-                    if os.path.isfile(file):
-                        os.remove(file)
-                os.rmdir(os.path.join('models', 'intent'))
+                de.delete_intent()
             elif(form_data['submitButton'] == 'deleteEntitiesExtraction'):
-                if os.path.isfile('test_entities.json'):
-                    os.remove('test_entities.json')
-                if os.path.isfile('results_entities.csv'):
-                    os.remove('results_entities.csv')
-                if os.path.isdir('static'):
-                    if os.path.isdir(os.path.join('static', 'images')):
-                        if os.path.isfile(os.path.join('static', 'images', 'loss_graphic_entities.png')):
-                            os.remove(os.path.join('static', 'images', 'loss_graphic_entities.png'))
-                        if os.path.isfile(os.path.join('static', 'images', 'score_graphic_entities.png')):
-                            os.remove(os.path.join('static', 'images', 'score_graphic_entities.png'))
-                for element_name in os.listdir(os.path.join('models', 'entities')):
-                    element = os.path.join('models', 'entities', element_name)
-                    if os.path.isfile(element):
-                        os.remove(element)
-                    else:
-                        for sub_element_name in os.listdir(element):
-                            sub_element = os.path.join(element, sub_element_name)
-                            if os.path.isfile(sub_element):
-                                os.remove(sub_element)
-                        os.rmdir(element)
-                os.rmdir(os.path.join('models', 'entities'))
+                de.delete_entities()
             elif(form_data['submitButton'] == 'deleteSentimentAnalysis'):
-                if os.path.isfile('mapping_sentiment.joblib'):
-                    os.remove('mapping_sentiment.joblib')
-                if os.path.isfile('test_sentiment.csv'):
-                    os.remove('test_sentiment.csv')
-                if os.path.isfile('results_sentiment.csv'):
-                    os.remove('results_sentiment.csv')
-                if os.path.isdir('static'):
-                    if os.path.isdir(os.path.join('static', 'images')):
-                        if os.path.isfile(os.path.join('static', 'images', 'loss_graphic_sentiment.png')):
-                            os.remove(os.path.join('static', 'images', 'loss_graphic_sentiment.png'))
-                        if os.path.isfile(os.path.join('static', 'images', 'score_graphic_sentiment.png')):
-                            os.remove(os.path.join('static', 'images', 'score_graphic_sentiment.png'))
-                for file_name in os.listdir(os.path.join('models', 'sentiment')):
-                    file = os.path.join('models', 'sentiment', file_name)
-                    if os.path.isfile(file):
-                        os.remove(file)
-                os.rmdir(os.path.join('models', 'sentiment'))
+                de.delete_sentiment()
             return render_template('download_erasure_model.html')
         elif request.method == 'GET':
             return render_template('download_erasure_model.html')
