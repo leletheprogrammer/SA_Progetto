@@ -81,7 +81,7 @@ def post_entities_table(mongo, form_data):
                         entities += '(' + entities_list[i] + ',' + entities_list[i + 1] + ',' + entities_list[i + 2] + ')'
                     i += 3
             entities += ']'
-                    
+            
             mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': phrase['intent'], 'entities': entities,
                                                            'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
     elif form_data['submitButton'] == 'Svuotamento':
@@ -119,7 +119,7 @@ def post_entities_table(mongo, form_data):
                                 entities += '(' + entities_list[i] + ',' + entities_list[i + 1] + ',' + entities_list[i + 2] + ')'
                             i += 3
                     entities += ']'
-                            
+                    
                     mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': phrase['intent'], 'entities': entities,
                                                                    'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
     elif form_data['submitButton'] == 'Aggiungi':
@@ -213,7 +213,7 @@ def post_training_phrases_table(mongo, request):
                     entitiesAssociated += ']'
                 break
             i = i + 1
-                
+        
         mongo.db.training_phrases.replace_one(phrase, {'phrase': phraseSelected, 'intent': intentAssociated, 'entities': entitiesAssociated,
                                                        'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
     elif form_data['submitButton'] == 'Invia':
