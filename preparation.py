@@ -42,9 +42,34 @@ def creation_files(mongo, path):
                     nlp_entities.append(label)
         tags = biluo_tags_from_offsets(nlp(phrase_entities['phrase']), entities)
         in_id = 0
-        for word in phrase_entities['phrase'].split():
-            in_list.append({'id': in_id, 'orth': word, 'ner': tags[in_id]})
-            in_id += 1
+        k = 0
+        word = ''
+        while k < len(phrase_entities['phrase']):
+            if phrase_entities['phrase'][k] != ' ':
+                if phrase_entities['phrase'][k] == '.' or phrase_entities['phrase'][k] == ',' or phrase_entities['phrase'][k] == ';' or phrase_entities['phrase'][k] == ':' or phrase_entities['phrase'][k] == '?' or phrase_entities['phrase'][k] == '!':
+                    if word != '':
+                        in_list.append({'id': in_id, 'orth': word, 'ner': tags[in_id]})
+                        in_id += 1
+                    in_list.append({'id': in_id, 'orth': phrase_entities['phrase'][k], 'ner': tags[in_id]})
+                    in_id += 1
+                    word = ''
+                    if k < len(phrase_entities['phrase']) - 1:
+                        if phrase_entities['phrase'][k + 1] == ' ':
+                            k += 2
+                        else:
+                            k += 1
+                    else:
+                        break
+                else:
+                    word += phrase_entities['phrase'][k]
+                    k += 1
+            else:
+                in_list.append({'id': in_id, 'orth': word, 'ner': tags[in_id]})
+                in_id += 1
+                word = ''
+                k += 1
+            if k == len(phrase_entities['phrase']):
+                in_list.append({'id': in_id, 'orth': word, 'ner': tags[in_id]})
         in_dict['tokens'] = in_list
         in_dict['brackets'] = []
         mid_list.append(in_dict)
