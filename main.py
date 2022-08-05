@@ -15,8 +15,8 @@ from flask_socketio import SocketIO
 import crud_tables_management as ct
 import download_erasure as de
 import plot_results as pr
-import training as tr
 import testing as te
+import training as tr
 
 '''app represents the web application and
 __name__ represents the name of the current file'''
@@ -119,7 +119,8 @@ def sign_up():
                 else:
                     code = generate_password_hash(str(randint(0, 10000)), method = 'sha256')
                     
-                    mongo.db.users_to_validate.insert_one({'email': email, 'name': name, 'password': generate_password_hash(password, method = 'sha256'), 'code': code})
+                    mongo.db.users_to_validate.insert_one({'email': email, 'name': name,
+                                                           'password': generate_password_hash(password, method = 'sha256'), 'code': code})
                     
                     sender = 'nlpwebplatformserver@gmail.com'
                     receiver = email
@@ -213,7 +214,8 @@ def intents():
     if login_user:
         page = int(request.args.get('page'))
         numberIntents = mongo.db.intents.estimated_document_count()
-        if (numberIntents > 0 and (page < 1 or (page > 1 and ((int(numberIntents / 20) + 1) < page) or (numberIntents % 20 == 0 and  numberIntents / 20 < page)))):
+        if (numberIntents > 0 and (page < 1 or (page > 1 and ((int(numberIntents / 20) + 1) < page) or
+                                                (numberIntents % 20 == 0 and  numberIntents / 20 < page)))):
             return redirect(url_for('intents', page = 1))
         
         if request.method == 'POST':
@@ -241,7 +243,8 @@ def entities():
     if login_user:
         page = int(request.args.get('page'))
         numberEntities = mongo.db.entities.estimated_document_count()
-        if (numberEntities > 0 and (page < 1 or (page > 1 and ((int(numberEntities / 20) + 1) < page) or (numberEntities % 20 == 0 and  numberEntities / 20 < page)))):
+        if (numberEntities > 0 and (page < 1 or (page > 1 and ((int(numberEntities / 20) + 1) < page) or
+                                                 (numberEntities % 20 == 0 and  numberEntities / 20 < page)))):
             return redirect(url_for('entities', page = 1))
         
         if request.method == 'POST':
@@ -269,12 +272,12 @@ def training_phrases():
     if login_user:
         page = int(request.args.get('page'))
         numberPhrases = mongo.db.training_phrases.estimated_document_count()
-        if (numberPhrases > 0 and (page < 1 or (page > 1 and ((int(numberPhrases / 20) + 1) < page) or (numberPhrases % 20 == 0 and  numberPhrases / 20 < page)))):
+        if (numberPhrases > 0 and (page < 1 or (page > 1 and ((int(numberPhrases / 20) + 1) < page) or
+                                                (numberPhrases % 20 == 0 and  numberPhrases / 20 < page)))):
             return redirect(url_for('training_phrases', page = 1))
 
         if request.method == 'POST':
-            form_data = request.form
-            ct.post_training_phrases_table(mongo, form_data)
+            ct.post_training_phrases_table(mongo, request)
             
             #offers a html template on the page
             return redirect(url_for('training_phrases', page = page))
@@ -282,7 +285,8 @@ def training_phrases():
             phrases, intents, namedEntities, sentiments, emotions = ct.get_training_phrases_table(mongo)
             
             #offers a html template on the page
-            return render_template('training_phrases.html', page = page, phrases = phrases, intents = intents, namedEntities = namedEntities, sentiments = sentiments, emotions = emotions)
+            return render_template('training_phrases.html', page = page, phrases = phrases, intents = intents,
+                                   namedEntities = namedEntities, sentiments = sentiments, emotions = emotions)
     else:
         global needed
         needed = True
@@ -338,7 +342,8 @@ def start_training_model():
                                 max_epoch_intent = 2
                         global thread_training_intent
                         with thread_lock:
-                            thread_training_intent = sio.start_background_task(tr.start_training_intent, mongo, learning_rate, eps, batch_size, max_epoch_intent, patience, hidden_dropout_prob)
+                            thread_training_intent = sio.start_background_task(tr.start_training_intent, mongo, learning_rate, eps, batch_size,
+                                                                               max_epoch_intent, patience, hidden_dropout_prob)
                     else:
                         return render_template('start_training_model.html', model_training = 'Intent Recognition')
                 elif (form_data['submitButton'] == 'sentimentAnalysis'):
@@ -352,7 +357,8 @@ def start_training_model():
                                 max_epoch_sentiment = 2
                         global thread_training_sentiment
                         with thread_lock:
-                            thread_training_sentiment = sio.start_background_task(tr.start_training_sentiment, mongo, learning_rate, eps, batch_size, max_epoch_sentiment, patience, hidden_dropout_prob)
+                            thread_training_sentiment = sio.start_background_task(tr.start_training_sentiment, mongo, learning_rate, eps, batch_size,
+                                                                                  max_epoch_sentiment, patience, hidden_dropout_prob)
                     else:
                         return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
             elif (form_data['submitButton'] == 'entitiesExtraction'):
@@ -390,7 +396,8 @@ def start_training_model():
                             max_iterations_entities = 30
                     global thread_training_entities
                     with thread_lock:
-                        thread_training_entities = sio.start_background_task(tr.start_training_entities, mongo, app.root_path, dropout_from, dropout_to, batch_from, batch_to, max_iterations_entities)
+                        thread_training_entities = sio.start_background_task(tr.start_training_entities, mongo, app.root_path, dropout_from, dropout_to,
+                                                                             batch_from, batch_to, max_iterations_entities)
                 else:
                     return render_template('start_training_model.html', model_training = 'Entities Extraction')
             return render_template('start_training_model.html', model_success = form_data['submitButton'])
@@ -415,7 +422,9 @@ def status_model_intent():
                 return render_template("status_model_intent.html", loading = True)
             else:
                 global max_epoch_intent
-                return render_template("status_model_intent.html", num_epoch = tr.get_num_epoch_intent(), num_iteration = tr.get_num_iteration_intent(), length_epoch = tr.get_epoch_length_intent(), num_progress = tr.get_num_progress_intent(), max_epoch = max_epoch_intent)
+                return render_template("status_model_intent.html", num_epoch = tr.get_num_epoch_intent(), num_iteration = tr.get_num_iteration_intent(),
+                                       length_epoch = tr.get_epoch_length_intent(), num_progress = tr.get_num_progress_intent(),
+                                       max_epoch = max_epoch_intent)
     else:
         global needed
         needed = True
@@ -435,7 +444,8 @@ def status_model_entities():
                 return render_template("status_model_entities.html", loading = True)
             else:
                 global max_iterations_entities
-                return render_template("status_model_entities.html", iteration = tr.get_num_iteration_entities(), max_iteration = max_iterations_entities, num_progress = tr.get_num_progress_entities())
+                return render_template("status_model_entities.html", iteration = tr.get_num_iteration_entities(), max_iteration = max_iterations_entities,
+                                       num_progress = tr.get_num_progress_entities())
     else:
         global needed
         needed = True
@@ -455,7 +465,9 @@ def status_model_sentiment():
                 return render_template("status_model_sentiment.html", loading = True)
             else:
                 global max_epoch_sentiment
-                return render_template("status_model_sentiment.html", num_epoch = tr.get_num_epoch_sentiment(), num_iteration = tr.get_num_iteration_sentiment(), length_epoch = tr.get_epoch_length_sentiment(), num_progress = tr.get_num_progress_sentiment(), max_epoch = max_epoch_sentiment)
+                return render_template("status_model_sentiment.html", num_epoch = tr.get_num_epoch_sentiment(),
+                                       num_iteration = tr.get_num_iteration_sentiment(), length_epoch = tr.get_epoch_length_sentiment(),
+                                       num_progress = tr.get_num_progress_sentiment(), max_epoch = max_epoch_sentiment)
     else:
         global needed
         needed = True
