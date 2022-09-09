@@ -20,14 +20,14 @@ def post_intents_table(mongo, form_data):
                 
         for phrase in mongo.db.training_phrases.find({'intent': oldIntent}):
             mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': '', 'entities': phrase['entities'],
-                                                           'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
+                                                           'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
     elif form_data['submitButton'] == 'Svuotamento':
         if len(list(mongo.db.intents.find())) != 0:
             mongo.db.intents.delete_many({})
                     
             for phrase in mongo.db.training_phrases.find():
                 mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': '', 'entities': phrase['entities'],
-                                                               'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
+                                                               'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
     elif form_data['submitButton'] == 'Modifica':
         oldIntent = form_data['oldIntent']
         newIntent = form_data['newIntent']
@@ -40,7 +40,7 @@ def post_intents_table(mongo, form_data):
                         
                 for phrase in mongo.db.training_phrases.find({'intent': oldIntent}):
                     mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': '', 'entities': phrase['entities'],
-                                                                   'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
+                                                                   'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
     elif form_data['submitButton'] == 'Aggiungi':
         newIntent = form_data['newIntent']
         if newIntent.isspace() == False:
@@ -83,14 +83,14 @@ def post_entities_table(mongo, form_data):
             entities += ']'
             
             mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': phrase['intent'], 'entities': entities,
-                                                           'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
+                                                           'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
     elif form_data['submitButton'] == 'Svuotamento':
         if len(list(mongo.db.entities.find())) != 0:
             mongo.db.entities.delete_many({})
                     
             for phrase in mongo.db.training_phrases.find():
                 mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': phrase['intent'], 'entities': '[]',
-                                                               'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
+                                                               'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
     elif form_data['submitButton'] == 'Modifica':
         oldEntity = form_data['oldEntity']
         newEntity = form_data['newEntity']
@@ -121,7 +121,7 @@ def post_entities_table(mongo, form_data):
                     entities += ']'
                     
                     mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': phrase['intent'], 'entities': entities,
-                                                                   'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
+                                                                   'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
     elif form_data['submitButton'] == 'Aggiungi':
         newEntity = form_data['newEntity']
                 
@@ -140,23 +140,23 @@ def get_entities_table(mongo):
         namedEntities.append(entity)
     return namedEntities
 
-def post_training_phrases_table(mongo, request):
+def post_training_phrases_table(mongo, request, user):
     form_data = request.form
     if form_data['submitButton'] == 'Elimina':
         oldPhrase = form_data['oldPhrase']
-        mongo.db.training_phrases.delete_one({'phrase': oldPhrase})
+        mongo.db.training_phrases.delete_one({'phrase': oldPhrase, 'user': user})
     elif form_data['submitButton'] == 'Svuotamento':
-        if len(list(mongo.db.training_phrases.find())) != 0:
-            mongo.db.training_phrases.delete_many({})
+        if len(list(mongo.db.training_phrases.find({'user': user}))) != 0:
+            mongo.db.training_phrases.delete_many({'user': user})
     elif form_data['submitButton'] == 'Modifica':
         oldPhrase = form_data['oldPhrase']
         newPhrase = form_data['newPhrase']
         if newPhrase.isspace() == False:
             newPhrase = ' '.join(newPhrase.split())
                     
-            phrase = mongo.db.training_phrases.find_one({'phrase': newPhrase})
+            phrase = mongo.db.training_phrases.find_one({'phrase': newPhrase, 'user': user})
             if phrase == None:
-                mongo.db.training_phrases.replace_one({'phrase': oldPhrase}, {'phrase': newPhrase})
+                mongo.db.training_phrases.replace_one({'phrase': oldPhrase}, {'phrase': newPhrase, 'user': user})
     elif form_data['submitButton'] == 'Aggiungi':
         newPhrase = form_data['newPhrase']
         intentAssociated = form_data['selectIntent']
@@ -166,7 +166,7 @@ def post_training_phrases_table(mongo, request):
         if newPhrase.isspace() == False:
             newPhrase = ' '.join(newPhrase.split())
                     
-            phrase = mongo.db.training_phrases.find_one({'phrase': newPhrase})
+            phrase = mongo.db.training_phrases.find_one({'phrase': newPhrase, 'user': user})
                     
             i = 1
             while True:
@@ -187,7 +187,7 @@ def post_training_phrases_table(mongo, request):
             
             if phrase == None:
                 mongo.db.training_phrases.insert_one({'phrase': newPhrase, 'intent': intentAssociated, 'entities': entitiesAssociated,
-                                                      'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
+                                                      'sentiment': sentimentAssociated, 'emotion': emotionAssociated, 'user': user})
     elif form_data['submitButton'] == 'Annota':
         phraseSelected = form_data['notePhraseSelected']
         intentAssociated = form_data['selectNoteIntent']
@@ -195,7 +195,7 @@ def post_training_phrases_table(mongo, request):
         sentimentAssociated = form_data['selectNoteSentiment']
         emotionAssociated = form_data['selectNoteEmotion']
                 
-        phrase = mongo.db.training_phrases.find_one({'phrase': phraseSelected})
+        phrase = mongo.db.training_phrases.find_one({'phrase': phraseSelected, 'user': user})
                 
         i = 1
         while True:
@@ -215,7 +215,7 @@ def post_training_phrases_table(mongo, request):
             i = i + 1
         
         mongo.db.training_phrases.replace_one(phrase, {'phrase': phraseSelected, 'intent': intentAssociated, 'entities': entitiesAssociated,
-                                                       'sentiment': sentimentAssociated, 'emotion': emotionAssociated})
+                                                       'sentiment': sentimentAssociated, 'emotion': emotionAssociated, 'user': user})
     elif form_data['submitButton'] == 'Invia':
         file = request.files['file']
         text = file.read().decode('utf-8').splitlines()
@@ -230,7 +230,7 @@ def post_training_phrases_table(mongo, request):
             sentiment = phrases[i + 3]
             emotion = phrases[i + 4]
                     
-            if mongo.db.training_phrases.find_one({'phrase': phrase}) == None:
+            if mongo.db.training_phrases.find_one({'phrase': phrase, 'user': user}) == None:
                 if intent != '':
                     temp_intent = mongo.db.intents.find_one({'typology': intent})
                     if temp_intent == None:
@@ -267,14 +267,14 @@ def post_training_phrases_table(mongo, request):
                     if temp_emotion == None:
                         mongo.db.emotions.insert_one({'type': emotion})
                         
-                mongo.db.training_phrases.insert_one({'phrase': phrase, 'intent': intent, 'entities': entities, 'sentiment': sentiment, 'emotion': emotion})
+                mongo.db.training_phrases.insert_one({'phrase': phrase, 'intent': intent, 'entities': entities, 'sentiment': sentiment, 'emotion': emotion, 'user': user})
                     
             i += 5
 
-def get_training_phrases_table(mongo):
+def get_training_phrases_table(mongo, user):
     phrases = []
     #iteration among the documents in the collection 'training_phrases'
-    for phrase in mongo.db.training_phrases.find():
+    for phrase in mongo.db.training_phrases.find({'user': user}):
         if phrase.get('entities') != None:
             if phrase['entities'] == '[]':
                 phrase['entities'] = ''
