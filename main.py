@@ -277,12 +277,12 @@ def training_phrases():
             return redirect(url_for('training_phrases', page = 1))
 
         if request.method == 'POST':
-            ct.post_training_phrases_table(mongo, request)
+            ct.post_training_phrases_table(mongo, request, login_user['name'])
             
             #offers a html template on the page
             return redirect(url_for('training_phrases', page = page))
         elif request.method == 'GET':
-            phrases, intents, namedEntities, sentiments, emotions = ct.get_training_phrases_table(mongo)
+            phrases, intents, namedEntities, sentiments, emotions = ct.get_training_phrases_table(mongo, login_user['name'])
             
             #offers a html template on the page
             return render_template('training_phrases.html', page = page, phrases = phrases, intents = intents,
