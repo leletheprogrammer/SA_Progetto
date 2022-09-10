@@ -97,7 +97,8 @@ def sign_up():
         return redirect(url_for('home'))
     else:
         validation = False
-        valid = True
+        email_valid = True
+        name_valid = True
         found = False
         email = None
         if request.method == 'POST':
@@ -107,52 +108,57 @@ def sign_up():
             name = form_data['name']
             password = form_data['password']
             
-            user = mongo.db.users.find_one({'email': email})
-            if user != None:
-                valid = not valid
-                return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
-            else:
-                user_to_validate = mongo.db.users_to_validate.find_one({'email': email})
-                if user_to_validate != None:
-                    found = not found
-                    return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
-                else:
-                    code = generate_password_hash(str(randint(0, 10000)), method = 'sha256')
-                    
-                    mongo.db.users_to_validate.insert_one({'email': email, 'name': name,
-                                                           'password': generate_password_hash(password, method = 'sha256'), 'code': code})
-                    
-                    sender = 'nlpwebplatformserver@gmail.com'
-                    receiver = email
-                    
-                    message = MIMEMultipart('alternative')
-                    message['Subject'] = 'Email di conferma validazione registrazione'
-                    message['From'] = sender
-                    message['To'] = receiver
-                    
-                    #create the plain-text and HTML version of the message
-                    text = '''Ciao, le è stata inviata questa email per confermare la registrazione al sito.\nClicchi su questo link:\nhttp://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code
-                    html = '''<html><body><p>Ciao, le è stata inviata questa email per confermare la registrazione al sito.<br>Clicchi su questo link:<br><a href="http://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code + '''">http://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code + '''</a></p></body></html>'''
-                    
-                    #turn these into plain/html MIMEText objects
-                    part1 = MIMEText(text, 'plain')
-                    part2 = MIMEText(html, 'html')
-                    
-                    #add HTML/plain-text parts to MIMEMultipart message
-                    #the email client will try to render the last part first
-                    message.attach(part1)
-                    message.attach(part2)
-                    
-                    #create secure connection with server and send email
-                    context = ssl.create_default_context()
-                    with smtplib.SMTP_SSL('smtp.gmail.com', port = 465, context = context) as server:
-                        server.login(sender, 'jcnkadjivnhhebnh')
-                        server.sendmail(sender, receiver, message.as_string())
-                    
-                    validation = not validation
-                    return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
+            email_user = mongo.db.users.find_one({'email': email})
+            if email_user != None:
+                email_valid = not email_valid
+            name_user = mongo.db.users.find_one({'name': name})
+            if name_user != None:
+                name_valid = not name_valid
+            if (email_user != None) or (name_user != None):
+                return render_template('sign_up.html', validation = validation, email_valid = email_valid, name_valid = name_valid, found = found, email = email)
+            
+            email_to_validate = mongo.db.users_to_validate.find_one({'email': email})
+            name_to_validate = mongo.db.users_to_validate.find_one({'name': name})
+            if (email_to_validate != None) or (name_to_validate != None):
+                found = not found
+                return render_template('sign_up.html', validation = validation, email_valid = email_valid, name_valid = name_valid, found = found, email = email)
+            
+            code = generate_password_hash(str(randint(0, 10000)), method = 'sha256')
+            
+            mongo.db.users_to_validate.insert_one({'email': email, 'name': name,
+                                                   'password': generate_password_hash(password, method = 'sha256'), 'code': code})
+            
+            sender = 'nlpwebplatformserver@gmail.com'
+            receiver = email
+            
+            message = MIMEMultipart('alternative')
+            message['Subject'] = 'Email di conferma validazione registrazione'
+            message['From'] = sender
+            message['To'] = receiver
+            
+            #create the plain-text and HTML version of the message
+            text = '''Ciao, le è stata inviata questa email per confermare la registrazione al sito.\nClicchi su questo link:\nhttp://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code
+            html = '''<html><body><p>Ciao, le è stata inviata questa email per confermare la registrazione al sito.<br>Clicchi su questo link:<br><a href="http://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code + '''">http://127.0.0.1:5000/services_area/sign_up/validation?email=''' + email + '''&code=''' + code + '''</a></p></body></html>'''
+            
+            #turn these into plain/html MIMEText objects
+            part1 = MIMEText(text, 'plain')
+            part2 = MIMEText(html, 'html')
+            
+            #add HTML/plain-text parts to MIMEMultipart message
+            #the email client will try to render the last part first
+            message.attach(part1)
+            message.attach(part2)
+            
+            #create secure connection with server and send email
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL('smtp.gmail.com', port = 465, context = context) as server:
+                server.login(sender, 'jcnkadjivnhhebnh')
+                server.sendmail(sender, receiver, message.as_string())
+            
+            validation = not validation
+            return render_template('sign_up.html', validation = validation, email_valid = email_valid, name_valid = name_valid, found = found, email = email)
         elif request.method == 'GET':
-            return render_template('sign_up.html', validation = validation, valid = valid, found = found, email = email)
+            return render_template('sign_up.html', validation = validation, email_valid = email_valid, name_valid = name_valid, found = found, email = email)
 
 '''decorator that defines the url path
 where will be the validation'''

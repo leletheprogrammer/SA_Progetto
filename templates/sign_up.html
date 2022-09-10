@@ -14,14 +14,26 @@
 				{% if not validation %}
 					<div class="column is-4 is-offset-4">
 						<h3 class="title has-text-link">Registrati a questo sito</h3>
-						{% if not valid %}
-							<div class="box has-background-danger">
-								<p class="is-size-4">Email già registrata su questo sito!</p>
-							</div>
+						{% if not email_valid %}
+							{% if not name_valid %}
+								<div class="box has-background-danger">
+									<p class="is-size-4">Email e Nominativo già registrati su questo sito!</p>
+								</div>
+							{% else %}
+								<div class="box has-background-danger">
+									<p class="is-size-4">Email già registrata su questo sito!</p>
+								</div>
+							{% endif %}
+						{% else %}
+							{% if not name_valid %}
+								<div class="box has-background-danger">
+									<p class="is-size-4">Nominativo già registrato su questo sito!</p>
+								</div>
+							{% endif %}
 						{% endif %}
 						{% if found %}
 							<div class="box has-background-danger">
-								<p class="is-size-4">Richiesta di registrazione già inviata!</p>
+								<p class="is-size-4">Email o Nominativo già richiedenti di registrazione!</p>
 							</div>
 						{% endif %}
 						<div class="box">
@@ -33,7 +45,7 @@
 								</div>
 								<div class="field">
 									<div class="control">
-										<input class="input is-large" type="text" name="name" placeholder="Il tuo nome" autofocus="" required>
+										<input class="input is-large" type="text" name="name" placeholder="Il tuo Nominativo" autofocus="" required>
 									</div>
 								</div>
 								<div class="field">
