@@ -270,6 +270,39 @@ def entities():
         return redirect(url_for('login'))
 
 '''decorator that defines the url path
+where will be the buttons of the dataset'''
+@app.route('/home/datasets', methods = ['POST', 'GET'])
+def datasets():
+    global login_user
+    if login_user:
+        collection_list = mongo.db.list_collection_names()
+        name = login_user['name']
+        if request.method == 'POST':
+            form_data = request.form
+            if form_data['submitButton'] == 'createDataset':
+                i = 1
+                while True:
+                    dataset_name = name + 'dataset' + str(i)
+                    if dataset_name in collection_list:
+                        i = i + 1
+                    else:
+                        break
+            else:
+                i = int(form_data['submitButton'][13 : ])
+            return redirect(url_for('training_phrases', dataset = i, page = 1))
+        elif request.method == 'GET':
+            dataset_list = []
+            partial_name = name + 'dataset'
+            for element in collection_list:
+                if partial_name in element:
+                    dataset_list.append(element)
+            return render_template('datasets.html', dataset_list = dataset_list)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
+
+'''decorator that defines the url path
 where will be the training phrases'''
 @app.route('/home/training_phrases', methods = ['POST', 'GET'])
 #standard name for functions that works on the home page
@@ -277,16 +310,20 @@ def training_phrases():
     global login_user
     if login_user:
         page = int(request.args.get('page'))
-        numberPhrases = mongo.db.training_phrases.estimated_document_count()
+        dataset = int(request.args.get('dataset'))
+        name = login_user['name']
+        table = mongo.db[name + 'dataset' + str(dataset)]
+        numberPhrases = table.estimated_document_count()
+        print(numberPhrases)
         if (numberPhrases > 0 and (page < 1 or (page > 1 and ((int(numberPhrases / 20) + 1) < page) or
                                                 (numberPhrases % 20 == 0 and  numberPhrases / 20 < page)))):
-            return redirect(url_for('training_phrases', page = 1))
+            return redirect(url_for('training_phrases', dataset = dataset, page = 1))
 
         if request.method == 'POST':
-            ct.post_training_phrases_table(mongo, request, login_user['name'])
+            ct.post_training_phrases_table(mongo, table, request)
             
             #offers a html template on the page
-            return redirect(url_for('training_phrases', page = page))
+            return redirect(url_for('training_phrases', dataset = dataset,page = page))
         elif request.method == 'GET':
             phrases, intents, namedEntities, sentiments, emotions = ct.get_training_phrases_table(mongo, login_user['name'])
             
