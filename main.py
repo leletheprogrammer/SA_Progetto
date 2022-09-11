@@ -357,7 +357,7 @@ def training_phrases():
             #offers a html template on the page
             return redirect(url_for('training_phrases', dataset = dataset,page = page))
         elif request.method == 'GET':
-            phrases, intents, namedEntities, sentiments, emotions = ct.get_training_phrases_table(mongo, login_user['name'])
+            phrases, intents, namedEntities, sentiments, emotions = ct.get_training_phrases_table(mongo, table)
             
             #offers a html template on the page
             return render_template('training_phrases.html', page = page, phrases = phrases, intents = intents,

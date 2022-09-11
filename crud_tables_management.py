@@ -271,11 +271,10 @@ def post_training_phrases_table(mongo, table, request):
                     
             i += 5
 
-#fare questo
-def get_training_phrases_table(mongo, user):
+def get_training_phrases_table(mongo, table):
     phrases = []
-    #iteration among the documents in the collection 'training_phrases'
-    for phrase in mongo.db.training_phrases.find({'user': user}):
+    #iteration among the documents in the collection
+    for phrase in table.find():
         if phrase.get('entities') != None:
             if phrase['entities'] == '[]':
                 phrase['entities'] = ''
