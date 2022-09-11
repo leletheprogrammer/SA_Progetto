@@ -287,8 +287,31 @@ def datasets():
                         i = i + 1
                     else:
                         break
-            else:
+            elif 'accessDataset' in form_data['submitButton']:
                 i = int(form_data['submitButton'][13 : ])
+            elif 'Cancella Dataset' in form_data['submitButton']:
+                index = int(form_data['submitButton'][17 : ])
+                mongo.db[name + 'dataset' + str(index)].drop()
+                dataset_list = []
+                partial_name = name + 'dataset'
+                for element in mongo.db.list_collection_names():
+                    if partial_name in element:
+                        dataset_list.append(element)
+                partial_len = len(partial_name)
+                i = 0
+                while i < len(dataset_list) - 1:
+                    j = i + 1
+                    while j < len(dataset_list):
+                        if int(dataset_list[i][partial_len : ]) > int(dataset_list[j][partial_len : ]):
+                            dataset_list[i], dataset_list[j] = dataset_list[j], dataset_list[i]
+                        j = j + 1
+                    i = i + 1
+                i = 0
+                while i < len(dataset_list):
+                    if int(dataset_list[i][partial_len : ]) > index:
+                        mongo.db[name + 'dataset' + dataset_list[i][partial_len : ]].rename(name + 'dataset' + str(int(dataset_list[i][partial_len : ]) - 1))
+                    i = i + 1
+                return render_template('datasets.html', dataset_list = dataset_list)
             return redirect(url_for('training_phrases', dataset = i, page = 1))
         elif request.method == 'GET':
             dataset_list = []
@@ -296,6 +319,15 @@ def datasets():
             for element in collection_list:
                 if partial_name in element:
                     dataset_list.append(element)
+            partial_len = len(partial_name)
+            i = 0
+            while i < len(dataset_list) - 1:
+                j = i + 1
+                while j < len(dataset_list):
+                    if int(dataset_list[i][partial_len : ]) > int(dataset_list[j][partial_len : ]):
+                        dataset_list[i], dataset_list[j] = dataset_list[j], dataset_list[i]
+                    j = j + 1
+                i = i + 1
             return render_template('datasets.html', dataset_list = dataset_list)
     else:
         global needed

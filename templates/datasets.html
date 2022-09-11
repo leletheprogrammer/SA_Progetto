@@ -11,6 +11,13 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script>
+function deleteDatasetClicked(numDataset) {
+	$('#deleteDataset').modal('show');
+	document.getElementById('numberDatasetDelete').innerHTML = 'Il dataset selezionato da cancellare è il numero ' + numDataset;
+	document.getElementById('buttonDelete').value = 'Cancella Dataset ' + numDataset;
+}
+</script>
 </head>
 <body>
 	<nav class="navbar navbar-default" role="navigation">
@@ -33,8 +40,9 @@
 		</div>
 	</nav>
 	<h2><p>
-		Selezionare una tra le seguenti operazioni (Si ricorda che
-		una tabella lasciata vuota viene cancellata):
+		Selezionare una tra le seguenti operazioni (Una tabella appena creata
+		in cui non venga inserito alcun elemento viene cancellata e la cancellazione
+		di un dataset comporta la rinomina di tutti quelli successivi):
 	</p></h2>
 	<br>
 	<form method="POST">
@@ -46,8 +54,35 @@
 			<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="accessDataset{{ loop.index }}">
 				Accedi al Dataset {{ loop.index }}
 			</button>
+			<button type="button" name="submitButton" class="btn btn-danger btn-lg" onclick="deleteDatasetClicked({{ loop.index }})">
+				Cancella il Dataset {{ loop.index }}
+			</button>
 			<br><br>
 		{% endfor %}
 	</form>
+	<!-- Delete Modal HTML -->
+	<div id="deleteDataset" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form method="POST">
+					<div class="modal-header">
+						<h4 class="modal-title">Cancella Dataset</h4>
+						<button type="button" data-dismiss="modal" class="close" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label id="numberDatasetDelete"></label>
+						</div>
+						<p>Sei sicuro di voler cancellare questo dataset?</p>
+						<p class="text-warning"><small>Questa azione non e' reversibile.</small></p>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Indietro">
+						<input type="submit" id="buttonDelete" name="submitButton" class="btn btn-danger">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
 </body>
 </html>
