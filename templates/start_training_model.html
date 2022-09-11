@@ -82,11 +82,14 @@ function startTrainingClicked(model) {
 		document.getElementById('addTraining').innerHTML += "Entities Extraction";
 	}
 	document.getElementById('addTraining').innerHTML += " inserendo i seguenti iperparametri (opzionale)";
-	document.getElementById('startTrainingButton').value = model;
+	document.getElementById('modalDatasetsNumber').innerHTML = '<button type="button" class="btn btn-default" onclick="clean()">Indietro</button>';
+	{% for i in range(0, num_datasets) %}
+		document.getElementById('modalDatasetsNumber').innerHTML += '<button type="submit" id="startTrainingButton{{ loop.index }}" name="submitButton" class="btn btn-success" value=model + {{ loop.index }}>Dataset {{ loop.index }}</button>';
+	{% endfor %}
 }
 
 function clean() {
-	if (document.getElementById('startTrainingButton').value == "intentRecognition" || document.getElementById('startTrainingButton').value == "sentimentAnalysis") {
+	if (document.getElementById('startTrainingButton1').value[0] == "i" || document.getElementById('startTrainingButton1').value[0] == "s") {
 		document.getElementById("insertLearningRate").value = "";
 		document.getElementById("insertEps").value = "";
 		document.getElementById("selectBatchSize").selectedIndex = 0;
@@ -94,7 +97,7 @@ function clean() {
 		document.getElementById("insertPatience").value = "";
 		document.getElementById("insertHiddenDropout").value = "";
 	}
-	else if (document.getElementById('startTrainingButton').value == "entitiesExtraction") {
+	else if (document.getElementById('startTrainingButton1').value[0] == "e") {
 		document.getElementById("insertNumIterations").value = "";
 		document.getElementById("insertDropoutFrom").value = "";
 		document.getElementById("insertDropoutTo").value = "";
@@ -164,9 +167,7 @@ $(document).ready(function() {
 					</div>
 					<div class="modal-body" id="addModalBody">
 					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" onclick="clean()">Indietro</button>
-						<button type="submit" id="startTrainingButton" name="submitButton" class="btn btn-success" value="">Addestra</button>
+					<div class="modal-footer" id="modalDatasetsNumber">
 					</div>
 				</form>
 			</div>

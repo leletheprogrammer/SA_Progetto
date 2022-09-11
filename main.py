@@ -32,9 +32,9 @@ thread_training_intent = None
 thread_training_sentiment = None
 thread_training_entities = None
 thread_lock = Lock()
-max_epoch_intent = 0
-max_epoch_sentiment = 0
-max_iterations_entities = 0
+max_epoch_intent = {}
+max_epoch_sentiment = {}
+max_iterations_entities = {}
 
 '''decorator that defines the url path
 where will be the index page of the site'''
@@ -205,6 +205,16 @@ def home():
     if login_user:
         ct.initialization_database(mongo)
         name = login_user['name']
+        partial_name = name + 'dataset'
+        global max_epoch_intent
+        global max_epoch_sentiment
+        global max_iterations_entities
+        for element in mongo.db.list_collection_names():
+            if partial_name in element:
+                if element not in max_epoch_intent.keys():
+                    max_epoch_intent[element] = 0
+                    max_epoch_sentiment[element] = 0
+                    max_iterations_entities[element] = 0
         return render_template('home.html', name = name)
     else:
         global needed
@@ -344,9 +354,18 @@ def training_phrases():
         page = int(request.args.get('page'))
         dataset = int(request.args.get('dataset'))
         name = login_user['name']
-        table = mongo.db[name + 'dataset' + str(dataset)]
+        partial_name = name + 'dataset'
+        table = mongo.db[partial_name + str(dataset)]
+        global max_epoch_intent
+        global max_epoch_sentiment
+        global max_iterations_entities
+        for element in mongo.db.list_collection_names():
+            if partial_name in element:
+                if element not in max_epoch_intent.keys():
+                    max_epoch_intent[element] = 0
+                    max_epoch_sentiment[element] = 0
+                    max_iterations_entities[element] = 0
         numberPhrases = table.estimated_document_count()
-        print(numberPhrases)
         if (numberPhrases > 0 and (page < 1 or (page > 1 and ((int(numberPhrases / 20) + 1) < page) or
                                                 (numberPhrases % 20 == 0 and  numberPhrases / 20 < page)))):
             return redirect(url_for('training_phrases', dataset = dataset, page = 1))
@@ -355,7 +374,7 @@ def training_phrases():
             ct.post_training_phrases_table(mongo, table, request)
             
             #offers a html template on the page
-            return redirect(url_for('training_phrases', dataset = dataset,page = page))
+            return redirect(url_for('training_phrases', dataset = dataset, page = page))
         elif request.method == 'GET':
             phrases, intents, namedEntities, sentiments, emotions = ct.get_training_phrases_table(mongo, table)
             
@@ -477,7 +496,14 @@ def start_training_model():
                     return render_template('start_training_model.html', model_training = 'Entities Extraction')
             return render_template('start_training_model.html', model_success = form_data['submitButton'])
         elif request.method == 'GET':
-            return render_template('start_training_model.html')
+            num_datasets = 0
+            name = login_user['name']
+            collection_list = mongo.db.list_collection_names()
+            partial_name = name + 'dataset'
+            for element in collection_list:
+                if partial_name in element:
+                    num_datasets = num_datasets + 1
+            return render_template('start_training_model.html', num_datasets = num_datasets)
     else:
         global needed
         needed = True
