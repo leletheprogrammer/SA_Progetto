@@ -28,9 +28,9 @@ mongo = PyMongo(app, 'mongodb://localhost:27017/NLPDatabase', connect = True)
 login_user = None
 needed = None
 
-thread_training_intent = None
-thread_training_sentiment = None
-thread_training_entities = None
+thread_training_intent = {}
+thread_training_sentiment = {}
+thread_training_entities = {}
 thread_lock = Lock()
 max_epoch_intent = {}
 max_epoch_sentiment = {}
@@ -209,12 +209,23 @@ def home():
         global max_epoch_intent
         global max_epoch_sentiment
         global max_iterations_entities
+        global thread_training_intent
+        global thread_training_sentiment
+        global thread_training_entities
         for element in mongo.db.list_collection_names():
             if partial_name in element:
                 if element not in max_epoch_intent.keys():
                     max_epoch_intent[element] = 0
+                if element not in max_epoch_sentiment.keys():
                     max_epoch_sentiment[element] = 0
+                if element not in max_iterations_entities.keys():
                     max_iterations_entities[element] = 0
+                if element not in thread_training_intent.keys():
+                    thread_training_intent[element] = None
+                if element not in thread_training_sentiment.keys():
+                    thread_training_sentiment[element] = None
+                if element not in thread_training_entities.keys():
+                    thread_training_entities[element] = None
         return render_template('home.html', name = name)
     else:
         global needed
@@ -359,12 +370,23 @@ def training_phrases():
         global max_epoch_intent
         global max_epoch_sentiment
         global max_iterations_entities
+        global thread_training_intent
+        global thread_training_sentiment
+        global thread_training_entities
         for element in mongo.db.list_collection_names():
             if partial_name in element:
                 if element not in max_epoch_intent.keys():
                     max_epoch_intent[element] = 0
+                if element not in max_epoch_sentiment.keys():
                     max_epoch_sentiment[element] = 0
+                if element not in max_iterations_entities.keys():
                     max_iterations_entities[element] = 0
+                if element not in thread_training_intent.keys():
+                    thread_training_intent[element] = None
+                if element not in thread_training_sentiment.keys():
+                    thread_training_sentiment[element] = None
+                if element not in thread_training_entities.keys():
+                    thread_training_entities[element] = None
         numberPhrases = table.estimated_document_count()
         if (numberPhrases > 0 and (page < 1 or (page > 1 and ((int(numberPhrases / 20) + 1) < page) or
                                                 (numberPhrases % 20 == 0 and  numberPhrases / 20 < page)))):
@@ -394,7 +416,7 @@ def start_training_model():
     if login_user:
         if request.method == 'POST':
             form_data = request.form
-            if (form_data['submitButton'] == 'intentRecognition' or form_data['submitButton'] == 'sentimentAnalysis'):
+            if ('intentRecognition' in form_data['submitButton'] or 'sentimentAnalysis' in form_data['submitButton']):
                 learning_rate = 0.1
                 eps = 0.5
                 batch_size = 16
@@ -425,7 +447,11 @@ def start_training_model():
                         hidden_dropout_prob = float(form_data['insertHiddenDropout'])
                     except ValueError:
                         hidden_dropout_prob = 0.3
-                if (form_data['submitButton'] == 'intentRecognition'):
+                if ('intentRecognition' in form_data['submitButton']):
+                    data = login_user['name'] + 'dataset' + form_data['submitButton'][17 :]
+                    tr.initialization(mongo, login_user['name'])
+                    print(tr.get_ended_intent(data))
+                    '''
                     if tr.get_ended_intent():
                         global max_epoch_intent
                         max_epoch_intent = 2
@@ -440,7 +466,12 @@ def start_training_model():
                                                                                max_epoch_intent, patience, hidden_dropout_prob)
                     else:
                         return render_template('start_training_model.html', model_training = 'Intent Recognition')
-                elif (form_data['submitButton'] == 'sentimentAnalysis'):
+                    '''
+                elif ('sentimentAnalysis' in form_data['submitButton']):
+                    data = login_user['name'] + 'dataset' + form_data['submitButton'][17 :]
+                    tr.initialization(mongo, login_user['name'])
+                    print(tr.get_ended_sentiment(data))
+                    '''
                     if tr.get_ended_sentiment():
                         global max_epoch_sentiment
                         max_epoch_intent = 2
@@ -455,7 +486,8 @@ def start_training_model():
                                                                                   max_epoch_sentiment, patience, hidden_dropout_prob)
                     else:
                         return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
-            elif (form_data['submitButton'] == 'entitiesExtraction'):
+                    '''
+            elif ('entitiesExtraction' in form_data['submitButton']):
                 dropout_from = 0.1
                 dropout_to = 0.5
                 batch_from = 100.0
@@ -494,6 +526,7 @@ def start_training_model():
                                                                              batch_from, batch_to, max_iterations_entities)
                 else:
                     return render_template('start_training_model.html', model_training = 'Entities Extraction')
+            return render_template('start_training_model.html', num_datasets = 3)
             return render_template('start_training_model.html', model_success = form_data['submitButton'])
         elif request.method == 'GET':
             num_datasets = 0

@@ -84,7 +84,8 @@ function startTrainingClicked(model) {
 	document.getElementById('addTraining').innerHTML += " inserendo i seguenti iperparametri (opzionale)";
 	document.getElementById('modalDatasetsNumber').innerHTML = '<button type="button" class="btn btn-default" onclick="clean()">Indietro</button>';
 	{% for i in range(0, num_datasets) %}
-		document.getElementById('modalDatasetsNumber').innerHTML += '<button type="submit" id="startTrainingButton{{ loop.index }}" name="submitButton" class="btn btn-success" value=model + {{ loop.index }}>Dataset {{ loop.index }}</button>';
+		document.getElementById('modalDatasetsNumber').innerHTML += '<button type="submit" id="startTrainingButton{{ loop.index }}" name="submitButton" class="btn btn-success" value="">Dataset {{ loop.index }}</button>';
+		document.getElementById('startTrainingButton{{ loop.index }}').value = model + "{{ loop.index }}";
 	{% endfor %}
 }
 

@@ -7,9 +7,24 @@ import preprocessing as pc
 import splitting as sp
 import training_ee as t
 
-ended_intent = True
-ended_entities = True
-ended_sentiment = True
+ended_intent = {}
+ended_entities = {}
+ended_sentiment = {}
+
+def initialization(mongo, name):
+    global ended_intent
+    global ended_entities
+    global ended_sentiment
+    partial_name = name + 'dataset'
+    for element in mongo.db.list_collection_names():
+        if partial_name in element:
+            if element not in ended_intent.keys():
+                ended_intent[element] = True
+            if element not in ended_entities.keys():
+                ended_entities[element] = True
+            if element not in ended_sentiment.keys():
+                ended_sentiment[element] = True
+    print(ended_intent, ended_sentiment, ended_entities)
 
 def start_training_intent(mongo, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob):
     global ended_intent
@@ -92,13 +107,13 @@ def get_num_iteration_entities():
 def get_num_progress_entities():
     return t.get_num_progress()
 
-def get_ended_intent():
+def get_ended_intent(data):
     global ended_intent
-    return ended_intent
+    return ended_intent[data]
 
-def get_ended_sentiment():
+def get_ended_sentiment(data):
     global ended_sentiment
-    return ended_sentiment
+    return ended_sentiment[data]
 
 def get_ended_entities():
     global ended_entities
