@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Datasets</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script>
+function deleteDatasetClicked(numDataset) {
+	$('#deleteDataset').modal('show');
+	document.getElementById('numberDatasetDelete').innerHTML = 'Il dataset selezionato da cancellare è il numero ' + numDataset;
+	document.getElementById('buttonDelete').value = 'Cancella Dataset ' + numDataset;
+}
+</script>
+</head>
+<body>
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="{{ url_for('logout') }}">Logout</a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="{{ url_for('home') }}">Home</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<h2><p>
+		Selezionare una tra le seguenti operazioni (Una tabella appena creata
+		in cui non venga inserito alcun elemento viene cancellata e la cancellazione
+		di un dataset comporta la rinomina di tutti quelli successivi):
+	</p></h2>
+	<br>
+	<form method="POST">
+		<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="createDataset">
+			Crea nuovo Dataset
+		</button>
+		<br><br>
+		{% for string in dataset_list%}
+			<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="accessDataset{{ loop.index }}">
+				Accedi al Dataset {{ loop.index }}
+			</button>
+			<button type="button" name="submitButton" class="btn btn-danger btn-lg" onclick="deleteDatasetClicked({{ loop.index }})">
+				Cancella il Dataset {{ loop.index }}
+			</button>
+			<br><br>
+		{% endfor %}
+	</form>
+	<!-- Delete Modal HTML -->
+	<div id="deleteDataset" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form method="POST">
+					<div class="modal-header">
+						<h4 class="modal-title">Cancella Dataset</h4>
+						<button type="button" data-dismiss="modal" class="close" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label id="numberDatasetDelete"></label>
+						</div>
+						<p>Sei sicuro di voler cancellare questo dataset?</p>
+						<p class="text-warning"><small>Questa azione non e' reversibile.</small></p>
+					</div>
+					<div class="modal-footer">
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Indietro">
+						<input type="submit" id="buttonDelete" name="submitButton" class="btn btn-danger">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
