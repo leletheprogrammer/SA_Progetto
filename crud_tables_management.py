@@ -17,35 +17,47 @@ def post_intents_table(mongo, form_data):
     if form_data['submitButton'] == 'Elimina':
         oldIntent = form_data['oldIntent']
         mongo.db.intents.delete_one({'typology': oldIntent})
-                
-        for phrase in mongo.db.training_phrases.find({'intent': oldIntent}):
-            mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': '', 'entities': phrase['entities'],
-                                                           'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
+        
+        collection_list = mongo.db.list_collection_names()
+        for element in collection_list:
+            if (element != 'users' and element != 'users_to_validate' and element != 'intents' and element != 'entities' and
+                element != 'sentiments' and element != 'emotions'):
+                for phrase in mongo.db[element].find({'intent': oldIntent}):
+                    mongo.db[element].replace_one(phrase, {'phrase': phrase['phrase'], 'intent': '', 'entities': phrase['entities'],
+                                                           'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
     elif form_data['submitButton'] == 'Svuotamento':
         if len(list(mongo.db.intents.find())) != 0:
             mongo.db.intents.delete_many({})
-                    
-            for phrase in mongo.db.training_phrases.find():
-                mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': '', 'entities': phrase['entities'],
-                                                               'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
+            
+            collection_list = mongo.db.list_collection_names()
+            for element in collection_list:
+                if (element != 'users' and element != 'users_to_validate' and element != 'intents' and element != 'entities' and
+                    element != 'sentiments' and element != 'emotions'):
+                    for phrase in mongo.db[element].find():
+                        mongo.db[element].replace_one(phrase, {'phrase': phrase['phrase'], 'intent': '', 'entities': phrase['entities'],
+                                                               'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
     elif form_data['submitButton'] == 'Modifica':
         oldIntent = form_data['oldIntent']
         newIntent = form_data['newIntent']
         if newIntent.isspace() == False:
             newIntent = ' '.join(newIntent.split())
-                    
+            
             intent = mongo.db.intents.find_one({'typology': newIntent})
             if intent == None:
                 mongo.db.intents.replace_one({'typology': oldIntent}, {'typology': newIntent})
-                        
-                for phrase in mongo.db.training_phrases.find({'intent': oldIntent}):
-                    mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': '', 'entities': phrase['entities'],
-                                                                   'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
+                
+                collection_list = mongo.db.list_collection_names()
+                for element in collection_list:
+                    if (element != 'users' and element != 'users_to_validate' and element != 'intents' and element != 'entities' and
+                        element != 'sentiments' and element != 'emotions'):
+                        for phrase in mongo.db[element].find({'intent': oldIntent}):
+                            mongo.db[element].replace_one(phrase, {'phrase': phrase['phrase'], 'intent': '', 'entities': phrase['entities'],
+                                                                   'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
     elif form_data['submitButton'] == 'Aggiungi':
         newIntent = form_data['newIntent']
         if newIntent.isspace() == False:
             newIntent = ' '.join(newIntent.split())
-                    
+            
             intent = mongo.db.intents.find_one({'typology': newIntent})
             if intent == None:
                 mongo.db.intents.insert_one({'typology': newIntent})
@@ -62,49 +74,15 @@ def post_entities_table(mongo, form_data):
     if form_data['submitButton'] == 'Elimina':
         oldEntity = form_data['oldEntity']
         mongo.db.entities.delete_one({'namedEntity': oldEntity})
-                
-        for phrase in mongo.db.training_phrases.find():
-            entities_list = phrase['entities'].replace('(', '').replace(')', '').replace('[', '').replace(']', '').split(',')
-            entities = '['
-                    
-            if len(entities_list) != 1:
-                i = 0
-                while i < (len(entities_list) - 1):
-                    if entities_list[i + 2] == oldEntity:
-                        entities_list.pop(i)
-                        entities_list.pop(i)
-                        entities_list.pop(i)
-                        i -= 3
-                    else:
-                        if i > 0:
-                            entities += ','
-                        entities += '(' + entities_list[i] + ',' + entities_list[i + 1] + ',' + entities_list[i + 2] + ')'
-                    i += 3
-            entities += ']'
-            
-            mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': phrase['intent'], 'entities': entities,
-                                                           'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
-    elif form_data['submitButton'] == 'Svuotamento':
-        if len(list(mongo.db.entities.find())) != 0:
-            mongo.db.entities.delete_many({})
-                    
-            for phrase in mongo.db.training_phrases.find():
-                mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': phrase['intent'], 'entities': '[]',
-                                                               'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
-    elif form_data['submitButton'] == 'Modifica':
-        oldEntity = form_data['oldEntity']
-        newEntity = form_data['newEntity']
-        if newEntity.isspace() == False:
-            newEntity = ' '.join(newEntity.split())
-                    
-            entity = mongo.db.entities.find_one({'namedEntity': newEntity})
-            if entity == None:
-                mongo.db.entities.replace_one({'namedEntity': oldEntity}, {'namedEntity': newEntity})
-                        
-                for phrase in mongo.db.training_phrases.find():
+        
+        collection_list = mongo.db.list_collection_names()
+        for element in collection_list:
+            if (element != 'users' and element != 'users_to_validate' and element != 'intents' and element != 'entities' and
+                element != 'sentiments' and element != 'emotions'):
+                for phrase in mongo.db[element].find():
                     entities_list = phrase['entities'].replace('(', '').replace(')', '').replace('[', '').replace(']', '').split(',')
                     entities = '['
-                            
+                    
                     if len(entities_list) != 1:
                         i = 0
                         while i < (len(entities_list) - 1):
@@ -120,14 +98,60 @@ def post_entities_table(mongo, form_data):
                             i += 3
                     entities += ']'
                     
-                    mongo.db.training_phrases.replace_one(phrase, {'phrase': phrase['phrase'], 'intent': phrase['intent'], 'entities': entities,
-                                                                   'sentiment': phrase['sentiment'], 'emotion': phrase['emotion'], 'user': phrase['user']})
-    elif form_data['submitButton'] == 'Aggiungi':
+                    mongo.db[element].replace_one(phrase, {'phrase': phrase['phrase'], 'intent': phrase['intent'], 'entities': entities,
+                                                           'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
+    elif form_data['submitButton'] == 'Svuotamento':
+        if len(list(mongo.db.entities.find())) != 0:
+            mongo.db.entities.delete_many({})
+            
+            collection_list = mongo.db.list_collection_names()
+            for element in collection_list:
+                if (element != 'users' and element != 'users_to_validate' and element != 'intents' and element != 'entities' and
+                    element != 'sentiments' and element != 'emotions'):
+                    for phrase in mongo.db[element].find():
+                        mongo.db[element].replace_one(phrase, {'phrase': phrase['phrase'], 'intent': phrase['intent'], 'entities': '[]',
+                                                               'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
+    elif form_data['submitButton'] == 'Modifica':
+        oldEntity = form_data['oldEntity']
         newEntity = form_data['newEntity']
-                
         if newEntity.isspace() == False:
             newEntity = ' '.join(newEntity.split())
                     
+            entity = mongo.db.entities.find_one({'namedEntity': newEntity})
+            if entity == None:
+                mongo.db.entities.replace_one({'namedEntity': oldEntity}, {'namedEntity': newEntity})
+                
+                collection_list = mongo.db.list_collection_names()
+                for element in collection_list:
+                    if (element != 'users' and element != 'users_to_validate' and element != 'intents' and element != 'entities' and
+                        element != 'sentiments' and element != 'emotions'):
+                        for phrase in mongo.db[element].find():
+                            entities_list = phrase['entities'].replace('(', '').replace(')', '').replace('[', '').replace(']', '').split(',')
+                            entities = '['
+                            
+                            if len(entities_list) != 1:
+                                i = 0
+                                while i < (len(entities_list) - 1):
+                                    if entities_list[i + 2] == oldEntity:
+                                        entities_list.pop(i)
+                                        entities_list.pop(i)
+                                        entities_list.pop(i)
+                                        i -= 3
+                                    else:
+                                        if i > 0:
+                                            entities += ','
+                                        entities += '(' + entities_list[i] + ',' + entities_list[i + 1] + ',' + entities_list[i + 2] + ')'
+                                    i += 3
+                            entities += ']'
+                            
+                            mongo.db[element].replace_one(phrase, {'phrase': phrase['phrase'], 'intent': phrase['intent'], 'entities': entities,
+                                                                   'sentiment': phrase['sentiment'], 'emotion': phrase['emotion']})
+    elif form_data['submitButton'] == 'Aggiungi':
+        newEntity = form_data['newEntity']
+        
+        if newEntity.isspace() == False:
+            newEntity = ' '.join(newEntity.split())
+            
             entity = mongo.db.entities.find_one({'namedEntity': newEntity})
             if entity == None:
                 mongo.db.entities.insert_one({'namedEntity': newEntity})

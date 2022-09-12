@@ -346,7 +346,6 @@ def training_phrases():
         name = login_user['name']
         table = mongo.db[name + 'dataset' + str(dataset)]
         numberPhrases = table.estimated_document_count()
-        print(numberPhrases)
         if (numberPhrases > 0 and (page < 1 or (page > 1 and ((int(numberPhrases / 20) + 1) < page) or
                                                 (numberPhrases % 20 == 0 and  numberPhrases / 20 < page)))):
             return redirect(url_for('training_phrases', dataset = dataset, page = 1))
@@ -355,7 +354,7 @@ def training_phrases():
             ct.post_training_phrases_table(mongo, table, request)
             
             #offers a html template on the page
-            return redirect(url_for('training_phrases', dataset = dataset,page = page))
+            return redirect(url_for('training_phrases', dataset = dataset, page = page))
         elif request.method == 'GET':
             phrases, intents, namedEntities, sentiments, emotions = ct.get_training_phrases_table(mongo, table)
             
