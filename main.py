@@ -401,7 +401,7 @@ def training_phrases():
             phrases, intents, namedEntities, sentiments, emotions = ct.get_training_phrases_table(mongo, table)
             
             #offers a html template on the page
-            return render_template('training_phrases.html', page = page, phrases = phrases, intents = intents,
+            return render_template('training_phrases.html', dataset = dataset, page = page, phrases = phrases, intents = intents,
                                    namedEntities = namedEntities, sentiments = sentiments, emotions = emotions)
     else:
         global needed
@@ -414,6 +414,13 @@ of the page where to train the models'''
 def start_training_model():
     global login_user
     if login_user:
+        num_datasets = 0
+        name = login_user['name']
+        collection_list = mongo.db.list_collection_names()
+        partial_name = name + 'dataset'
+        for element in collection_list:
+            if partial_name in element:
+                num_datasets = num_datasets + 1
         if request.method == 'POST':
             form_data = request.form
             if ('intentRecognition' in form_data['submitButton'] or 'sentimentAnalysis' in form_data['submitButton']):
@@ -448,45 +455,41 @@ def start_training_model():
                     except ValueError:
                         hidden_dropout_prob = 0.3
                 if ('intentRecognition' in form_data['submitButton']):
+                    model_success = 'Intent Recognition del dataset ' + form_data['submitButton'][17 :]
                     data = login_user['name'] + 'dataset' + form_data['submitButton'][17 :]
                     tr.initialization(mongo, login_user['name'])
-                    print(tr.get_ended_intent(data))
-                    '''
-                    if tr.get_ended_intent():
+                    if tr.get_ended_intent(data):
                         global max_epoch_intent
-                        max_epoch_intent = 2
+                        max_epoch_intent[data] = 2
                         if 'insertMaxEpoch' in form_data:
                             try:
-                                max_epoch_intent = int(form_data['insertMaxEpoch'])
+                                max_epoch_intent[data] = int(form_data['insertMaxEpoch'])
                             except ValueError:
-                                max_epoch_intent = 2
+                                max_epoch_intent[data] = 2
                         global thread_training_intent
                         with thread_lock:
-                            thread_training_intent = sio.start_background_task(tr.start_training_intent, mongo, learning_rate, eps, batch_size,
-                                                                               max_epoch_intent, patience, hidden_dropout_prob)
+                            thread_training_intent[data] = sio.start_background_task(tr.start_training_intent, mongo, data, login_user['name'], learning_rate, eps, batch_size,
+                                                                               max_epoch_intent[data], patience, hidden_dropout_prob)
                     else:
-                        return render_template('start_training_model.html', model_training = 'Intent Recognition')
-                    '''
+                        return render_template('start_training_model.html', model_training = 'Intent Recognition del dataset ' + form_data['submitButton'][17 :], num_datasets = num_datasets)
                 elif ('sentimentAnalysis' in form_data['submitButton']):
+                    model_success = 'Sentiment Analysis del dataset ' + form_data['submitButton'][17 :]
                     data = login_user['name'] + 'dataset' + form_data['submitButton'][17 :]
                     tr.initialization(mongo, login_user['name'])
-                    print(tr.get_ended_sentiment(data))
-                    '''
-                    if tr.get_ended_sentiment():
+                    if tr.get_ended_sentiment(data):
                         global max_epoch_sentiment
-                        max_epoch_intent = 2
+                        max_epoch_sentiment[data] = 2
                         if 'insertMaxEpoch' in form_data:
                             try:
-                                max_epoch_sentiment = int(form_data['insertMaxEpoch'])
+                                max_epoch_sentiment[data] = int(form_data['insertMaxEpoch'])
                             except ValueError:
-                                max_epoch_sentiment = 2
+                                max_epoch_sentiment[data] = 2
                         global thread_training_sentiment
                         with thread_lock:
-                            thread_training_sentiment = sio.start_background_task(tr.start_training_sentiment, mongo, learning_rate, eps, batch_size,
-                                                                                  max_epoch_sentiment, patience, hidden_dropout_prob)
+                            thread_training_sentiment[data] = sio.start_background_task(tr.start_training_sentiment, mongo, data, login_user['name'], learning_rate, eps, batch_size,
+                                                                                  max_epoch_sentiment[data], patience, hidden_dropout_prob)
                     else:
-                        return render_template('start_training_model.html', model_training = 'Sentiment Analysis')
-                    '''
+                        return render_template('start_training_model.html', model_training = 'Sentiment Analysis del dataset ' + form_data['submitButton'][17 :], num_datasets = num_datasets)
             elif ('entitiesExtraction' in form_data['submitButton']):
                 dropout_from = 0.1
                 dropout_to = 0.5
@@ -526,17 +529,48 @@ def start_training_model():
                                                                              batch_from, batch_to, max_iterations_entities)
                 else:
                     return render_template('start_training_model.html', model_training = 'Entities Extraction')
-            return render_template('start_training_model.html', num_datasets = 3)
-            return render_template('start_training_model.html', model_success = form_data['submitButton'])
+            return render_template('start_training_model.html', model_success = model_success, num_datasets = num_datasets)
         elif request.method == 'GET':
-            num_datasets = 0
-            name = login_user['name']
-            collection_list = mongo.db.list_collection_names()
+            return render_template('start_training_model.html', num_datasets = num_datasets)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
+
+'''decorator that defines the url path
+of the page where there is the page status'''
+@app.route('/home/status', methods = ['POST', 'GET'])
+def status():
+    global login_user
+    if login_user:
+        collection_list = mongo.db.list_collection_names()
+        name = login_user['name']
+        if request.method == 'POST':
+            form_data = request.form
+            if 'statusIntent' in form_data['submitButton']:
+                dataset = form_data['submitButton'][12 : ]
+                return redirect(url_for('status_model_intent', dataset = dataset))
+            elif 'statusEntities' in form_data['submitButton']:
+                pass
+            elif 'statusSentiment' in form_data['submitButton']:
+                dataset = form_data['submitButton'][15 : ]
+                return redirect(url_for('status_model_sentiment', dataset = dataset))
+        elif request.method == 'GET':
+            dataset_list = []
             partial_name = name + 'dataset'
             for element in collection_list:
                 if partial_name in element:
-                    num_datasets = num_datasets + 1
-            return render_template('start_training_model.html', num_datasets = num_datasets)
+                    dataset_list.append(element)
+            partial_len = len(partial_name)
+            i = 0
+            while i < len(dataset_list) - 1:
+                j = i + 1
+                while j < len(dataset_list):
+                    if int(dataset_list[i][partial_len : ]) > int(dataset_list[j][partial_len : ]):
+                        dataset_list[i], dataset_list[j] = dataset_list[j], dataset_list[i]
+                    j = j + 1
+                i = i + 1
+            return render_template('status.html', dataset_list = dataset_list)
     else:
         global needed
         needed = True
@@ -549,16 +583,17 @@ training of the intent recognition model'''
 def status_model_intent():
     global login_user
     if login_user:
-        if thread_training_intent is None:
+        data = login_user['name'] + 'dataset' + request.args['dataset']
+        if thread_training_intent[data] is None:
             return render_template("status_model_intent.html", not_training = True)
         else:
-            if(tr.get_num_epoch_intent() == -1):
+            if(tr.get_num_epoch_intent(data) == -1):
                 return render_template("status_model_intent.html", loading = True)
             else:
                 global max_epoch_intent
-                return render_template("status_model_intent.html", num_epoch = tr.get_num_epoch_intent(), num_iteration = tr.get_num_iteration_intent(),
-                                       length_epoch = tr.get_epoch_length_intent(), num_progress = tr.get_num_progress_intent(),
-                                       max_epoch = max_epoch_intent)
+                return render_template("status_model_intent.html", num_epoch = tr.get_num_epoch_intent(data), num_iteration = tr.get_num_iteration_intent(data),
+                                       length_epoch = tr.get_epoch_length_intent(data), num_progress = tr.get_num_progress_intent(data),
+                                       max_epoch = max_epoch_intent[data])
     else:
         global needed
         needed = True
@@ -592,16 +627,17 @@ training of the sentiment analysis model'''
 def status_model_sentiment():
     global login_user
     if login_user:
-        if thread_training_sentiment is None:
+        data = login_user['name'] + 'dataset' + request.args['dataset']
+        if thread_training_sentiment[data] is None:
             return render_template("status_model_sentiment.html", not_training = True)
         else:
-            if(tr.get_num_epoch_sentiment() == -1):
+            if(tr.get_num_epoch_sentiment(data) == -1):
                 return render_template("status_model_sentiment.html", loading = True)
             else:
                 global max_epoch_sentiment
-                return render_template("status_model_sentiment.html", num_epoch = tr.get_num_epoch_sentiment(),
-                                       num_iteration = tr.get_num_iteration_sentiment(), length_epoch = tr.get_epoch_length_sentiment(),
-                                       num_progress = tr.get_num_progress_sentiment(), max_epoch = max_epoch_sentiment)
+                return render_template("status_model_sentiment.html", num_epoch = tr.get_num_epoch_sentiment(data),
+                                       num_iteration = tr.get_num_iteration_sentiment(data), length_epoch = tr.get_epoch_length_sentiment(data),
+                                       num_progress = tr.get_num_progress_sentiment(data), max_epoch = max_epoch_sentiment[data])
     else:
         global needed
         needed = True

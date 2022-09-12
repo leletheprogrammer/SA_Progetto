@@ -115,7 +115,7 @@ $(document).ready(function() {
 	{% endif %}
 	{% if model_success %}
 		$('#successModelTraining').modal('show');
-		document.getElementById('successModalBody').innerHTML = "<p>L'addestramento del modello di {% if model_success == 'intentRecognition' %}Intent Recognition{% else %}{% if model_success == 'sentimentAnalysis' %}Sentiment Analysis{% else %}{% if model_success == 'entitiesExtraction' %}Entities Extraction{% endif %}{% endif %}{% endif %} è incominciato con successo</p>";
+		document.getElementById('successModalBody').innerHTML = "<p>L'addestramento del modello di {{ model_success }} è incominciato con successo</p>";
 		document.getElementById('successModalBody').innerHTML += "<p>Andare alla pagina di status associata per vedere il progresso dell'addestramento</p>";
 	{% endif %}
 });

@@ -24,16 +24,16 @@ def initialization(mongo, name):
                 ended_entities[element] = True
             if element not in ended_sentiment.keys():
                 ended_sentiment[element] = True
-    print(ended_intent, ended_sentiment, ended_entities)
 
-def start_training_intent(mongo, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob):
+def start_training_intent(mongo, data, name, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob):
     global ended_intent
-    ended_intent = False
+    ended_intent[data] = False
     phrases = []
-    for phrase in mongo.db.training_phrases.find({'intent': {'$exists': 1,'$ne': ''}},{'_id': 0,'entities': 0, 'sentiment': 0, 'emotion': 0}):
+    for phrase in mongo.db[data].find({'intent': {'$exists': 1,'$ne': ''}},{'_id': 0,'entities': 0, 'sentiment': 0, 'emotion': 0}):
         phrases.append(phrase)
-    training_models(mongo, 'intent', phrases, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob)
-    ended_intent = True
+    bt.initialization(mongo, name)
+    training_models(mongo, data, name + '_' + data[len(name) + 7 : ], 'intent', phrases, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob)
+    ended_intent[data] = True
 
 def start_training_entities(mongo, path, dropout_from, dropout_to, batch_from, batch_to, max_iterations_entities):
     global ended_entities
@@ -52,54 +52,55 @@ def start_training_entities(mongo, path, dropout_from, dropout_to, batch_from, b
     p.copy_entities(path)
     ended_entities = True
 
-def start_training_sentiment(mongo, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob):
+def start_training_sentiment(mongo, data, name, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob):
     global ended_sentiment
-    ended_sentiment = False
+    ended_sentiment[data] = False
     phrases = []
-    for phrase in mongo.db.training_phrases.find({'sentiment': {'$exists': 1,'$ne': ''}},{'_id': 0,'intent': 0,'entities': 0, 'emotion': 0}):
+    for phrase in mongo.db[data].find({'sentiment': {'$exists': 1,'$ne': ''}},{'_id': 0,'intent': 0,'entities': 0, 'emotion': 0}):
         phrases.append(phrase)
-    training_models(mongo, 'sentiment', phrases, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob)
-    ended_sentiment = True
+    bt.initialization(mongo, name)
+    training_models(mongo, data, name + '_' + data[len(name) + 7 : ], 'sentiment', phrases, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob)
+    ended_sentiment[data] = True
 
-def training_models(mongo, col_name, phrases, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob):
+def training_models(mongo, data, name, col_name, phrases, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob):
     df = pd.DataFrame.from_records(phrases).drop_duplicates()
     df_train, df_val, df_test = sp.split_strat_train_val_test(df, stratify_colname=col_name)
-    df_test.to_csv('test_' + col_name + '.csv', index=False)
+    df_test.to_csv('test_' + col_name + '_' +  name + '_' +  '.csv', index=False)
     df_train_grouped = df_train.groupby(col_name).apply(lambda x: x.sample(n=300, replace=True))
-    pc.preprocess(df_train_grouped, df_val, col_name=col_name)
-    bt.train(df_train, col_name=col_name, learning_rate=learning_rate, eps=eps,
+    pc.preprocess(df_train_grouped, df_val, col_name=col_name, dataset_name=name)
+    bt.train(df_train, data=data, name=name, col_name=col_name, learning_rate=learning_rate, eps=eps,
              batch_size=batch_size, hidden_dropout_prob=hidden_dropout_prob, patience=patience, max_epoch=max_epoch)
-    os.remove('train_' + col_name + '_preprocessed.json')
-    os.remove('val_' + col_name + '_preprocessed.json')
+    os.remove('train_' + col_name + '_' + name + '_preprocessed.json')
+    os.remove('val_' + col_name + '_' + name + '_preprocessed.json')
     for file_name in os.listdir('models'):
-        if ('checkpoint_' + col_name) in file_name:
+        if ('checkpoint_' + col_name + '_' + name) in file_name:
             file = os.path.join('models', file_name)
             if os.path.isfile(file):
                 os.remove(file)
 
-def get_num_epoch_intent():
-    return bt.get_num_epoch_intent()
+def get_num_epoch_intent(data):
+    return bt.get_num_epoch_intent(data)
 
-def get_num_iteration_intent():
-    return bt.get_num_iteration_intent()
+def get_num_iteration_intent(data):
+    return bt.get_num_iteration_intent(data)
 
-def get_epoch_length_intent():
-    return bt.get_epoch_length_intent()
+def get_epoch_length_intent(data):
+    return bt.get_epoch_length_intent(data)
 
-def get_num_progress_intent():
-    return bt.get_num_progress_intent()
+def get_num_progress_intent(data):
+    return bt.get_num_progress_intent(data)
 
-def get_num_epoch_sentiment():
-    return bt.get_num_epoch_sentiment()
+def get_num_epoch_sentiment(data):
+    return bt.get_num_epoch_sentiment(data)
 
-def get_num_iteration_sentiment():
-    return bt.get_num_iteration_sentiment()
+def get_num_iteration_sentiment(data):
+    return bt.get_num_iteration_sentiment(data)
 
-def get_epoch_length_sentiment():
-    return bt.get_epoch_length_sentiment()
+def get_epoch_length_sentiment(data):
+    return bt.get_epoch_length_sentiment(data)
 
-def get_num_progress_sentiment():
-    return bt.get_num_progress_sentiment()
+def get_num_progress_sentiment(data):
+    return bt.get_num_progress_sentiment(data)
 
 def get_num_iteration_entities():
     return t.get_num_iteration()

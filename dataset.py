@@ -20,20 +20,21 @@ EMOJI_PATTERN = re.compile(
 _RE_COMBINE_WHITESPACE = re.compile(r"\s+")
 
 class DatasetProcessor:
-    def __init__(self, df, tokenizer, nlp, label_col, text_col='phrase', max_len=80):
+    def __init__(self, df, tokenizer, nlp, label_col, dataset_name,text_col='phrase', max_len=80):
         self.df = df.sample(frac=1, random_state=123)
         self.nlp = nlp
         self.label_col = label_col
         self.text_col = text_col
         self.max_len = max_len
         self.tokenizer = tokenizer
+        self.dataset_name = dataset_name
         self.mapping = self.get_mapping()
 
     def get_mapping(self):
         le = LabelEncoder()
         le.fit(self.df[self.label_col])
         le_name_mapping = dict(zip(le.classes_, le.transform(le.classes_)))
-        dump(le, 'mapping_' + self.label_col + '.joblib')
+        dump(le, 'mapping_' + self.label_col + '_' + self.dataset_name + '.joblib')
         return le_name_mapping
 
     def clean(self, doc):
