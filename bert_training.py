@@ -14,14 +14,37 @@ from transformers.optimization import AdamW
 
 import dataset as d
 
-num_epoch_intent = -1
-num_iteration_intent = -1
-length_epoch_intent = -1
-num_epoch_sentiment = -1
-num_iteration_sentiment = -1
-length_epoch_sentiment = -1
+num_epoch_intent = {}
+num_iteration_intent = {}
+length_epoch_intent = {}
+num_epoch_sentiment = {}
+num_iteration_sentiment = {}
+length_epoch_sentiment = {}
 
-def train(df_train, col_name, learning_rate, eps, batch_size, hidden_dropout_prob, patience, max_epoch):
+def initialization(mongo, name):
+    global num_epoch_intent
+    global num_iteration_intent
+    global length_epoch_intent
+    global num_epoch_sentiment
+    global num_iteration_sentiment
+    global length_epoch_sentiment
+    partial_name = name + 'dataset'
+    for element in mongo.db.list_collection_names():
+        if partial_name in element:
+            if element not in num_epoch_intent.keys():
+                num_epoch_intent[element] = -1
+            if element not in num_iteration_intent.keys():
+                num_iteration_intent[element] = -1
+            if element not in length_epoch_intent.keys():
+                length_epoch_intent[element] = -1
+            if element not in num_epoch_sentiment.keys():
+                num_epoch_sentiment[element] = -1
+            if element not in num_iteration_sentiment.keys():
+                num_iteration_sentiment[element] = -1
+            if element not in length_epoch_sentiment.keys():
+                length_epoch_sentiment[element] = -1
+
+def train(df_train, data, name, col_name, learning_rate, eps, batch_size, hidden_dropout_prob, patience, max_epoch):
     global num_epoch_intent
     global num_iteration_intent
     global length_epoch_intent
@@ -29,11 +52,11 @@ def train(df_train, col_name, learning_rate, eps, batch_size, hidden_dropout_pro
     global num_iteration_sentiment
     global length_epoch_sentiment
     if(col_name == 'intent'):
-        num_epoch_intent = 0
-        num_iteration_intent = 1
+        num_epoch_intent[data] = 0
+        num_iteration_intent[data] = 1
     elif(col_name == 'sentiment'):
-        num_epoch_sentiment = 0
-        num_iteration_sentiment = 1
+        num_epoch_sentiment[data] = 0
+        num_iteration_sentiment[data] = 1
 
     # Set Seed
     SEED = 123
@@ -49,8 +72,8 @@ def train(df_train, col_name, learning_rate, eps, batch_size, hidden_dropout_pro
         num_labels = len(df.intent.unique())
     elif(col_name == 'sentiment'):
         num_labels = len(df.sentiment.unique())
-    train_ds = d.TextualDataset('train_' + col_name + '_preprocessed.json', device)
-    val_ds = d.TextualDataset('val_' + col_name + '_preprocessed.json', device)
+    train_ds = d.TextualDataset('train_' + col_name + '_' + name + '_preprocessed.json', device)
+    val_ds = d.TextualDataset('val_' + col_name + '_' + name + '_preprocessed.json', device)
 
     bert_model = BertForSequenceClassification.from_pretrained(
         pretrained_model_name_or_path=model_name,
@@ -128,18 +151,18 @@ def train(df_train, col_name, learning_rate, eps, batch_size, hidden_dropout_pro
         global length_epoch_sentiment
         global length_epoch_intent
         if(col_name == 'intent'):
-            length_epoch_intent = engine.state.epoch_length
+            length_epoch_intent[data] = engine.state.epoch_length
         elif(col_name == 'sentiment'):
-            length_epoch_sentiment = engine.state.epoch_length
+            length_epoch_sentiment[data] = engine.state.epoch_length
 
     @trainer.on(Events.ITERATION_COMPLETED(every = 1))
     def increase_num_iteration(engine):
         global num_iteration_intent
         global num_iteration_sentiment
         if(col_name == 'intent'):
-            num_iteration_intent = engine.state.iteration
+            num_iteration_intent[data] = engine.state.iteration
         elif(col_name == 'sentiment'):
-            num_iteration_sentiment = engine.state.iteration
+            num_iteration_sentiment[data] = engine.state.iteration
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def increase_num_epoch(engine):
@@ -148,11 +171,11 @@ def train(df_train, col_name, learning_rate, eps, batch_size, hidden_dropout_pro
         global num_iteration_sentiment
         global num_epoch_sentiment
         if(col_name == 'intent'):
-            num_iteration_intent = 0
-            num_epoch_intent = engine.state.epoch
+            num_iteration_intent[data] = 0
+            num_epoch_intent[data] = engine.state.epoch
         elif(col_name == 'sentiment'):
-            num_iteration_sentiment = 0
-            num_epoch_sentiment = engine.state.epoch
+            num_iteration_sentiment[data] = 0
+            num_epoch_sentiment[data] = engine.state.epoch
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):
@@ -171,7 +194,7 @@ def train(df_train, col_name, learning_rate, eps, batch_size, hidden_dropout_pro
         val_logs[engine.state.epoch] = [f1, ce]
 
     checkpoint_handler = ModelCheckpoint(
-        models_dir, 'checkpoint_' + col_name, n_saved=1, save_as_state_dict=True, require_empty=False)
+        models_dir, 'checkpoint_' + col_name + '_' + name, n_saved=1, save_as_state_dict=True, require_empty=False)
     trainer.add_event_handler(Events.EPOCH_COMPLETED, checkpoint_handler, {'model': bert_model})
 
     @trainer.on(Events.COMPLETED)
@@ -181,57 +204,57 @@ def train(df_train, col_name, learning_rate, eps, batch_size, hidden_dropout_pro
         df_val_logs = pd.DataFrame.from_dict(val_logs, orient='index')
         df_val_logs.columns = ['F1-Score Validation', 'Loss Validation']
         df_logs_merged = df_train_logs.merge(df_val_logs, left_index=True, right_index=True)
-        df_logs_merged.to_csv('results_' + col_name + '.csv', index=False)
+        df_logs_merged.to_csv('results_' + col_name + '_' + name + '.csv', index=False)
 
     @trainer.on(Events.COMPLETED)
     def model_save_handler():
-        if os.path.isdir(os.path.join(models_dir, col_name)):
-            for file_name in os.listdir(os.path.join(models_dir, col_name)):
-                file = os.path.join(models_dir, col_name, file_name)
+        if os.path.isdir(os.path.join(models_dir, col_name + '_' + name)):
+            for file_name in os.listdir(os.path.join(models_dir, col_name + '_' + name)):
+                file = os.path.join(models_dir, col_name + '_' + name, file_name)
                 if os.path.isfile(file):
                     os.remove(file)
-            os.rmdir(os.path.join(models_dir, col_name))
-        os.mkdir(os.path.join(models_dir, col_name))
-        bert_model.save_pretrained(save_directory=os.path.join(models_dir, col_name))
-        AutoTokenizer.from_pretrained(model_name).save_pretrained(os.path.join(models_dir, col_name))
+            os.rmdir(os.path.join(models_dir, col_name + '_' + name))
+        os.mkdir(os.path.join(models_dir, col_name + '_' + name))
+        bert_model.save_pretrained(save_directory=os.path.join(models_dir, col_name + '_' + name))
+        AutoTokenizer.from_pretrained(model_name).save_pretrained(os.path.join(models_dir, col_name + '_' + name))
 
     trainer.run(train_dl, max_epochs=max_epoch)
     validation_evaluator.run(val_dl)
 
-def get_num_epoch_intent():
+def get_num_epoch_intent(data):
     global num_epoch_intent
-    return num_epoch_intent
+    return num_epoch_intent[data]
 
-def get_num_epoch_sentiment():
+def get_num_epoch_sentiment(data):
     global num_epoch_sentiment
-    return num_epoch_sentiment
+    return num_epoch_sentiment[data]
 
-def get_num_iteration_intent():
+def get_num_iteration_intent(data):
     global num_iteration_intent
     global length_epoch_intent
-    while (num_iteration_intent > length_epoch_intent):
-        num_iteration_intent -= length_epoch_intent
-    return num_iteration_intent
+    while (num_iteration_intent[data] > length_epoch_intent[data]):
+        num_iteration_intent[data] -= length_epoch_intent[data]
+    return num_iteration_intent[data]
 
-def get_num_iteration_sentiment():
+def get_num_iteration_sentiment(data):
     global num_iteration_sentiment
     global length_epoch_sentiment
-    while (num_iteration_sentiment > length_epoch_sentiment):
-        num_iteration_sentiment -= length_epoch_sentiment
-    return num_iteration_sentiment
+    while (num_iteration_sentiment[data] > length_epoch_sentiment[data]):
+        num_iteration_sentiment[data] -= length_epoch_sentiment[data]
+    return num_iteration_sentiment[data]
 
-def get_epoch_length_intent():
+def get_epoch_length_intent(data):
     global length_epoch_intent
-    return length_epoch_intent
+    return length_epoch_intent[data]
 
-def get_epoch_length_sentiment():
+def get_epoch_length_sentiment(data):
     global length_epoch_sentiment
-    return length_epoch_sentiment
+    return length_epoch_sentiment[data]
 
-def get_num_progress_intent():
+def get_num_progress_intent(data):
     global num_iteration_intent
     global length_epoch_intent
-    fraction_progress = (num_iteration_intent / length_epoch_intent) * 100
+    fraction_progress = (num_iteration_intent[data] / length_epoch_intent[data]) * 100
     num_progress = 0
     if ((fraction_progress - int(fraction_progress)) > 0.5):
         num_progress = int(fraction_progress) + 1
@@ -239,10 +262,10 @@ def get_num_progress_intent():
         num_progress = int(fraction_progress)
     return num_progress
 
-def get_num_progress_sentiment():
+def get_num_progress_sentiment(data):
     global num_iteration_sentiment
     global length_epoch_sentiment
-    fraction_progress = (num_iteration_sentiment / length_epoch_sentiment) * 100
+    fraction_progress = (num_iteration_sentiment[data] / length_epoch_sentiment[data]) * 100
     num_progress = 0
     if ((fraction_progress - int(fraction_progress)) > 0.5):
         num_progress = int(fraction_progress) + 1

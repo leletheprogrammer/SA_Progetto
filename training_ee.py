@@ -19,8 +19,19 @@ from thinc.neural._classes.model import Model
 import tqdm
 from wasabi import msg
 
-num_iteration = -1
-max_iterations = -1
+num_iteration = {}
+max_iterations = {}
+
+def initialization(mongo, name):
+    global num_iteration
+    global max_iterations
+    partial_name = name + 'dataset'
+    for element in mongo.db.list_collection_names():
+        if partial_name in element:
+            if element not in num_iteration.keys():
+                num_iteration[element] = -1
+            if element not in max_iterations.keys():
+                max_iterations[element] = -1
 
 #     lang=("Model language", "positional", None, str),
 #     output_path=("Output directory to store model in", "positional", None, Path),
@@ -58,16 +69,16 @@ max_iterations = -1
 #     tag_map_path=("Location of JSON-formatted tag map", "option", "tm", Path),
 #     omit_extra_lookups=("Don't include extra lookups in model", "flag", "OEL", bool),
 #     verbose=("Display more information for debug", "flag", "VV", bool),
-def train(lang, output_path, train_path, dev_path, raw_text=None, base_model=None, pipeline="tagger,parser,ner", replace_components=False,
+def train(data, dataset_name, lang, output_path, train_path, dev_path, raw_text=None, base_model=None, pipeline="tagger,parser,ner", replace_components=False,
           vectors=None, width=96, conv_depth=4, cnn_window=1, cnn_pieces=3, use_chars=False, bilstm_depth=0, embed_rows=2000,
           n_iter=30, n_early_stopping=None, n_examples=0, use_gpu=-1, version="0.0.0", meta_path=None, init_tok2vec=None,
           parser_multitasks="", entity_multitasks="", noise_level=0.0, orth_variant_level=0.0, eval_beam_widths="", gold_preproc=False,
           learn_tokens=False, textcat_multilabel=False, textcat_arch="bow", textcat_positive_label=None, tag_map_path=None,
           omit_extra_lookups=False, verbose=False, dropout_from=0.1, dropout_to=0.5, batch_from=100.0, batch_to=1000.0):
     global num_iteration
-    num_iteration = 0
+    num_iteration[data] = 0
     global max_iterations
-    max_iterations = n_iter
+    max_iterations[data] = n_iter
 
     util.fix_random_seed()
     util.set_env_log(verbose)
@@ -340,7 +351,7 @@ def train(lang, output_path, train_path, dev_path, raw_text=None, base_model=Non
         iter_since_best = 0
         best_score = 0.0
         for i in range(n_iter):
-            num_iteration = i + 1
+            num_iteration[data] = i + 1
             train_docs = corpus.train_docs(
                 nlp,
                 noise_level=noise_level,
@@ -469,6 +480,7 @@ def train(lang, output_path, train_path, dev_path, raw_text=None, base_model=Non
                     util.set_env_log(verbose)
 
                     _get_progress(
+                        dataset_name,
                         i,
                         losses,
                         scorer.scores,
@@ -495,7 +507,7 @@ def train(lang, output_path, train_path, dev_path, raw_text=None, base_model=Non
                         best_score = current_score
                     if iter_since_best >= n_early_stopping:
                         iter_current = i + 1
-                        num_iteration = max_iterations
+                        num_iteration[data] = max_iterations[data]
                         break
     except Exception as e:
         msg.warn(
@@ -653,7 +665,7 @@ def _configure_training_output(pipeline, use_gpu, has_beam_widths):
     return row_head, output_stats
 
 def _get_progress(
-        itn, losses, dev_scores, output_stats, beam_width=None, cpu_wps=0.0, gpu_wps=0.0
+        dataset_name, itn, losses, dev_scores, output_stats, beam_width=None, cpu_wps=0.0, gpu_wps=0.0
 ):
     scores = {}
     for stat in output_stats:
@@ -665,7 +677,7 @@ def _get_progress(
     scores["cpu_wps"] = cpu_wps
     scores["gpu_wps"] = gpu_wps or 0.0
     scores.update(dev_scores)
-    update_results(scores)
+    update_results(dataset_name, scores)
     formatted_scores = []
     for stat in output_stats:
         format_spec = "{:.3f}"
@@ -685,26 +697,26 @@ def _get_total_speed(speeds):
         seconds_per_word += 1.0 / words_per_second
     return 1.0 / seconds_per_word
 
-def create_results():
-    with open('results_entities.csv', 'w', newline = '') as res:
+def create_results(dataset_name):
+    with open('results_entities_' + dataset_name + '.csv', 'w', newline = '') as res:
         writer_object = csv.DictWriter(res, fieldnames=['loss','precision','recall','f1'])
         writer_object.writeheader()
         res.close()
 
-def update_results(scores):
-    with open('results_entities.csv', 'a', newline = '') as res:
+def update_results(dataset_name, scores):
+    with open('results_entities_' + dataset_name + '.csv', 'a', newline = '') as res:
         writer_object = csv.DictWriter(res, fieldnames=['loss','precision','recall','f1'])
         writer_object.writerow({'loss': scores['ner_loss'], 'precision': scores['ents_p'], 'recall': scores['ents_r'], 'f1': scores['ents_f']})
         res.close()
 
-def get_num_iteration():
+def get_num_iteration(data):
     global num_iteration
-    return num_iteration
+    return num_iteration[data]
 
-def get_num_progress():
+def get_num_progress(data):
     global max_iterations
     global num_iteration
-    fraction_progress = (num_iteration / max_iterations) * 100
+    fraction_progress = (num_iteration[data] / max_iterations[data]) * 100
     num_progress = 0
     if ((fraction_progress - int(fraction_progress)) > 0.5):
         num_progress = int(fraction_progress) + 1

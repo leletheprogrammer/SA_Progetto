@@ -82,11 +82,15 @@ function startTrainingClicked(model) {
 		document.getElementById('addTraining').innerHTML += "Entities Extraction";
 	}
 	document.getElementById('addTraining').innerHTML += " inserendo i seguenti iperparametri (opzionale)";
-	document.getElementById('startTrainingButton').value = model;
+	document.getElementById('modalDatasetsNumber').innerHTML = '<button type="button" class="btn btn-default" onclick="clean()">Indietro</button>';
+	{% for i in range(0, num_datasets) %}
+		document.getElementById('modalDatasetsNumber').innerHTML += '<button type="submit" id="startTrainingButton{{ loop.index }}" name="submitButton" class="btn btn-success" value="">Dataset {{ loop.index }}</button>';
+		document.getElementById('startTrainingButton{{ loop.index }}').value = model + "{{ loop.index }}";
+	{% endfor %}
 }
 
 function clean() {
-	if (document.getElementById('startTrainingButton').value == "intentRecognition" || document.getElementById('startTrainingButton').value == "sentimentAnalysis") {
+	if (document.getElementById('startTrainingButton1').value[0] == "i" || document.getElementById('startTrainingButton1').value[0] == "s") {
 		document.getElementById("insertLearningRate").value = "";
 		document.getElementById("insertEps").value = "";
 		document.getElementById("selectBatchSize").selectedIndex = 0;
@@ -94,7 +98,7 @@ function clean() {
 		document.getElementById("insertPatience").value = "";
 		document.getElementById("insertHiddenDropout").value = "";
 	}
-	else if (document.getElementById('startTrainingButton').value == "entitiesExtraction") {
+	else if (document.getElementById('startTrainingButton1').value[0] == "e") {
 		document.getElementById("insertNumIterations").value = "";
 		document.getElementById("insertDropoutFrom").value = "";
 		document.getElementById("insertDropoutTo").value = "";
@@ -111,7 +115,7 @@ $(document).ready(function() {
 	{% endif %}
 	{% if model_success %}
 		$('#successModelTraining').modal('show');
-		document.getElementById('successModalBody').innerHTML = "<p>L'addestramento del modello di {% if model_success == 'intentRecognition' %}Intent Recognition{% else %}{% if model_success == 'sentimentAnalysis' %}Sentiment Analysis{% else %}{% if model_success == 'entitiesExtraction' %}Entities Extraction{% endif %}{% endif %}{% endif %} è incominciato con successo</p>";
+		document.getElementById('successModalBody').innerHTML = "<p>L'addestramento del modello di {{ model_success }} è incominciato con successo</p>";
 		document.getElementById('successModalBody').innerHTML += "<p>Andare alla pagina di status associata per vedere il progresso dell'addestramento</p>";
 	{% endif %}
 });
@@ -164,9 +168,7 @@ $(document).ready(function() {
 					</div>
 					<div class="modal-body" id="addModalBody">
 					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" onclick="clean()">Indietro</button>
-						<button type="submit" id="startTrainingButton" name="submitButton" class="btn btn-success" value="">Addestra</button>
+					<div class="modal-footer" id="modalDatasetsNumber">
 					</div>
 				</form>
 			</div>
