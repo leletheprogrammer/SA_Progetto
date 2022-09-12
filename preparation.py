@@ -7,11 +7,11 @@ from sklearn.model_selection import train_test_split
 import spacy
 from spacy.gold import biluo_tags_from_offsets
 
-def creation_files(mongo, path):
+def creation_files(mongo, data, dataset_name, path):
     nlp = spacy.load('it_core_news_sm')
     nlp_entities = []
     phrases_entities = []
-    for phrase_entities in mongo.db.training_phrases.find({'entities': {'$exists': 1,'$ne': '[]'}},
+    for phrase_entities in mongo.db[data].find({'entities': {'$exists': 1,'$ne': '[]'}},
                                                           {'_id': 0,'intent': 0, 'sentiment': 0, 'emotion': 0}):
         ext_dict = {'id': 0}
         ext_list = []
@@ -88,7 +88,7 @@ def creation_files(mongo, path):
         training[id]['id'] = id
         id += 1
     blank_spaces = '  '
-    with open('train_entities.json', 'w', encoding='utf8') as train:
+    with open('train_entities_' + dataset_name + '.json', 'w', encoding='utf8') as train:
         train.write('[\n')
         j = 1
         for line in training:
@@ -121,7 +121,7 @@ def creation_files(mongo, path):
     while id < len(validation):
         validation[id]['id'] = id
         id += 1
-    with open('validation_entities.json', 'w', encoding='utf8') as val:
+    with open('validation_entities_' + dataset_name + '.json', 'w', encoding='utf8') as val:
         val.write('[\n')
         j = 1
         for line in validation:
@@ -153,7 +153,7 @@ def creation_files(mongo, path):
     test_json = []
     for phrase_dict in test:
         text = phrase_dict['paragraphs'][0]['raw']
-        for phrase_entities in mongo.db.training_phrases.find({'entities': {'$exists': 1,'$ne': '[]'}},
+        for phrase_entities in mongo.db[data].find({'entities': {'$exists': 1,'$ne': '[]'}},
                                                               {'_id': 0,'intent': 0, 'sentiment': 0, 'emotion': 0}):
             if text == phrase_entities['phrase']:
                 entities = []
@@ -178,20 +178,20 @@ def creation_files(mongo, path):
                         i += 2
                         entities.append((int(first_index), int(last_index) + 1, label))
                 test_json.append({'phrase': text, 'entities': entities})
-    with open('test_entities.json', 'w', encoding='utf8') as testing:
+    with open('test_entities_' + dataset_name + '.json', 'w', encoding='utf8') as testing:
         for line in test_json:
             testing.write(json.dumps(line) + '\n')
     ner = nlp.get_pipe('ner')
     for entity in nlp_entities:
         ner.add_label(entity)
-    if not os.path.isdir(path + '/models/base-train-entities'):
-        os.mkdir(os.path.join(path, 'models', 'base-train-entities'))  
-    nlp.to_disk(os.path.join(path, 'models', 'base-train-entities', 'base-model'))
+    if not os.path.isdir(path + '/models/base_entities_' + dataset_name):
+        os.mkdir(os.path.join(path, 'models', 'base_entities_' + dataset_name))  
+    nlp.to_disk(os.path.join(path, 'models', 'base_entities_' + dataset_name, 'base-model'))
 
-def delete_entities(path):
-    if os.path.isdir(os.path.join(path, 'models', 'base-train-entities', 'base-model')):
-        for element_name in os.listdir(os.path.join(path, 'models', 'base-train-entities', 'base-model')):
-            element = os.path.join(path, 'models', 'base-train-entities', 'base-model', element_name)
+def delete_entities(dataset_name, path):
+    if os.path.isdir(os.path.join(path, 'models', 'base_entities_' + dataset_name, 'base-model')):
+        for element_name in os.listdir(os.path.join(path, 'models', 'base_entities_' + dataset_name, 'base-model')):
+            element = os.path.join(path, 'models', 'base_entities_' + dataset_name, 'base-model', element_name)
             if os.path.isfile(element):
                 os.remove(element)
             else:
@@ -200,13 +200,13 @@ def delete_entities(path):
                     if os.path.isfile(sub_element):
                         os.remove(sub_element)
                 os.rmdir(element)
-        os.rmdir(os.path.join(path, 'models', 'base-train-entities', 'base-model'))
-    if os.path.isdir(os.path.join(path, 'models', 'base-train-entities', 'trained-models')):
-        for model in os.listdir(os.path.join(path, 'models', 'base-train-entities', 'trained-models')):
+        os.rmdir(os.path.join(path, 'models', 'base_entities_' + dataset_name, 'base-model'))
+    if os.path.isdir(os.path.join(path, 'models', 'base_entities_' + dataset_name, 'trained-models')):
+        for model in os.listdir(os.path.join(path, 'models', 'base_entities_' + dataset_name, 'trained-models')):
             if model == 'entities':
                 continue
-            for element_name in os.listdir(os.path.join(path, 'models', 'base-train-entities', 'trained-models', model)):
-                element = os.path.join(path, 'models', 'base-train-entities', 'trained-models', model, element_name)
+            for element_name in os.listdir(os.path.join(path, 'models', 'base_entities_' + dataset_name, 'trained-models', model)):
+                element = os.path.join(path, 'models', 'base_entities_' + dataset_name, 'trained-models', model, element_name)
                 if os.path.isfile(element):
                     os.remove(element)
                 else:
@@ -215,13 +215,13 @@ def delete_entities(path):
                         if os.path.isfile(sub_element):
                             os.remove(sub_element)
                     os.rmdir(element)
-            os.rmdir(os.path.join(path, 'models', 'base-train-entities', 'trained-models', model))
+            os.rmdir(os.path.join(path, 'models', 'base_entities_' + dataset_name, 'trained-models', model))
 
-def copy_entities(path):
-    if os.path.isdir(os.path.join(path, 'models', 'base-train-entities', 'trained-models', 'entities')):
-        os.mkdir(os.path.join(path, 'models', 'entities'))
-        source_folder = os.path.join(path, 'models', 'base-train-entities', 'trained-models', 'entities')
-        destination_folder = os.path.join(path, 'models', 'entities')
+def copy_entities(dataset_name, path):
+    if os.path.isdir(os.path.join(path, 'models', 'base_entities_' + dataset_name, 'trained-models', 'entities')):
+        os.mkdir(os.path.join(path, 'models', 'entities_' + dataset_name))
+        source_folder = os.path.join(path, 'models', 'base_entities_' + dataset_name, 'trained-models', 'entities')
+        destination_folder = os.path.join(path, 'models', 'entities_' + dataset_name)
         for file_name in os.listdir(source_folder):
             source = os.path.join(source_folder, file_name)
             destination = os.path.join(destination_folder, file_name)
@@ -238,13 +238,13 @@ def copy_entities(path):
                         os.remove(sub_element)
                 os.rmdir(source)
         os.rmdir(source_folder)
-        os.rmdir(os.path.join(path, 'models', 'base-train-entities', 'trained-models'))
-        os.rmdir(os.path.join(path, 'models', 'base-train-entities'))
+        os.rmdir(os.path.join(path, 'models', 'base_entities_' + dataset_name, 'trained-models'))
+        os.rmdir(os.path.join(path, 'models', 'base_entities_' + dataset_name))
 
-def delete_already_trained(path):
-    if os.path.isdir(os.path.join(path, 'models', 'entities')):
-        for element_name in os.listdir(os.path.join(path, 'models', 'entities')):
-            element = os.path.join(path, 'models', 'entities', element_name)
+def delete_already_trained(dataset_name, path):
+    if os.path.isdir(os.path.join(path, 'models', 'entities_' + dataset_name)):
+        for element_name in os.listdir(os.path.join(path, 'models', 'entities_' + dataset_name)):
+            element = os.path.join(path, 'models', 'entities_' + dataset_name, element_name)
             if os.path.isfile(element):
                 os.remove(element)
             else:
@@ -253,4 +253,4 @@ def delete_already_trained(path):
                     if os.path.isfile(sub_element):
                         os.remove(sub_element)
                 os.rmdir(element)
-        os.rmdir(os.path.join(path, 'models', 'entities'))
+        os.rmdir(os.path.join(path, 'models', 'entities_' + dataset_name))

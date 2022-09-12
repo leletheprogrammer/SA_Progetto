@@ -515,20 +515,23 @@ def start_training_model():
                         batch_to = float(form_data['insertBatchTo'])
                     except ValueError:
                         batch_to = 1000.0
-                if tr.get_ended_entities():
+                model_success = 'Entities Extraction del dataset ' + form_data['submitButton'][18 :]
+                data = login_user['name'] + 'dataset' + form_data['submitButton'][18 :]
+                tr.initialization(mongo, login_user['name'])
+                if tr.get_ended_entities(data):
                     global max_iterations_entities
-                    max_iterations_entities = 30
+                    max_iterations_entities[data] = 30
                     if 'insertNumIterations' in form_data:
                         try:
-                            max_iterations_entities = int(form_data['insertNumIterations'])
+                            max_iterations_entities[data] = int(form_data['insertNumIterations'])
                         except ValueError:
-                            max_iterations_entities = 30
+                            max_iterations_entities[data] = 30
                     global thread_training_entities
                     with thread_lock:
-                        thread_training_entities = sio.start_background_task(tr.start_training_entities, mongo, app.root_path, dropout_from, dropout_to,
-                                                                             batch_from, batch_to, max_iterations_entities)
+                        thread_training_entities[data] = sio.start_background_task(tr.start_training_entities, mongo, data, login_user['name'], app.root_path, dropout_from, dropout_to,
+                                                                             batch_from, batch_to, max_iterations_entities[data])
                 else:
-                    return render_template('start_training_model.html', model_training = 'Entities Extraction')
+                    return render_template('start_training_model.html', model_training = 'Entities Extraction del dataset ' + form_data['submitButton'][18 :], num_datasets = num_datasets)
             return render_template('start_training_model.html', model_success = model_success, num_datasets = num_datasets)
         elif request.method == 'GET':
             return render_template('start_training_model.html', num_datasets = num_datasets)
@@ -551,7 +554,8 @@ def status():
                 dataset = form_data['submitButton'][12 : ]
                 return redirect(url_for('status_model_intent', dataset = dataset))
             elif 'statusEntities' in form_data['submitButton']:
-                pass
+                dataset = form_data['submitButton'][14 : ]
+                return redirect(url_for('status_model_entities', dataset = dataset))
             elif 'statusSentiment' in form_data['submitButton']:
                 dataset = form_data['submitButton'][15 : ]
                 return redirect(url_for('status_model_sentiment', dataset = dataset))
@@ -606,15 +610,16 @@ training of the sentiment analysis model'''
 def status_model_entities():
     global login_user
     if login_user:
-        if thread_training_entities is None:
+        data = login_user['name'] + 'dataset' + request.args['dataset']
+        if thread_training_entities[data] is None:
             return render_template("status_model_entities.html", not_training = True)
         else:
-            if(tr.get_num_iteration_entities() == -1):
+            if(tr.get_num_iteration_entities(data) == -1):
                 return render_template("status_model_entities.html", loading = True)
             else:
                 global max_iterations_entities
-                return render_template("status_model_entities.html", iteration = tr.get_num_iteration_entities(), max_iteration = max_iterations_entities,
-                                       num_progress = tr.get_num_progress_entities())
+                return render_template("status_model_entities.html", iteration = tr.get_num_iteration_entities(data), max_iteration = max_iterations_entities[data],
+                                       num_progress = tr.get_num_progress_entities(data))
     else:
         global needed
         needed = True

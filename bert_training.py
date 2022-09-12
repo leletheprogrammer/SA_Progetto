@@ -43,7 +43,6 @@ def initialization(mongo, name):
                 num_iteration_sentiment[element] = -1
             if element not in length_epoch_sentiment.keys():
                 length_epoch_sentiment[element] = -1
-    print(num_epoch_intent, num_epoch_sentiment, num_iteration_intent, num_iteration_sentiment, length_epoch_intent, length_epoch_sentiment)
 
 def train(df_train, data, name, col_name, learning_rate, eps, batch_size, hidden_dropout_prob, patience, max_epoch):
     global num_epoch_intent

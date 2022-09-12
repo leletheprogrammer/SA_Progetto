@@ -35,22 +35,24 @@ def start_training_intent(mongo, data, name, learning_rate, eps, batch_size, max
     training_models(mongo, data, name + '_' + data[len(name) + 7 : ], 'intent', phrases, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob)
     ended_intent[data] = True
 
-def start_training_entities(mongo, path, dropout_from, dropout_to, batch_from, batch_to, max_iterations_entities):
+def start_training_entities(mongo, data, name, path, dropout_from, dropout_to, batch_from, batch_to, max_iterations_entities):
     global ended_entities
-    ended_entities = False
-    p.delete_already_trained(path)
-    p.creation_files(mongo, path)
-    t.create_results()
-    t.train(lang='it', output_path=path + '/models/base-train-entities/trained-models',
-            base_model=path + '/models/base-train-entities/base-model',
-            pipeline='ner', n_early_stopping=1, train_path=path + '/train_entities.json',
-            dev_path=path + '/validation_entities.json', dropout_from = dropout_from, dropout_to = dropout_to,
+    ended_entities[data] = False
+    dataset_name = name + '_' + data[len(name) + 7 : ]
+    p.delete_already_trained(dataset_name, path)
+    p.creation_files(mongo, data, dataset_name, path)
+    t.initialization(mongo, name)
+    t.create_results(name + '_' + data[len(name) + 7 : ])
+    t.train(data=data, dataset_name=dataset_name, lang='it', output_path=path + '/models/base_entities_' + dataset_name + '/trained-models',
+            base_model=path + '/models/base_entities_' + dataset_name + '/base-model',
+            pipeline='ner', n_early_stopping=1, train_path=path + '/train_entities_' + dataset_name + '.json',
+            dev_path=path + '/validation_entities_' + dataset_name + '.json', dropout_from = dropout_from, dropout_to = dropout_to,
             batch_from = batch_from, batch_to = batch_to, n_iter = max_iterations_entities)
-    os.remove(os.path.join(path, 'train_entities.json'))
-    os.remove(os.path.join(path, 'validation_entities.json'))
-    p.delete_entities(path)
-    p.copy_entities(path)
-    ended_entities = True
+    os.remove(os.path.join(path, 'train_entities_' + dataset_name + '.json'))
+    os.remove(os.path.join(path, 'validation_entities_' + dataset_name + '.json'))
+    p.delete_entities(dataset_name, path)
+    p.copy_entities(dataset_name, path)
+    ended_entities[data] = True
 
 def start_training_sentiment(mongo, data, name, learning_rate, eps, batch_size, max_epoch, patience, hidden_dropout_prob):
     global ended_sentiment
@@ -102,11 +104,11 @@ def get_epoch_length_sentiment(data):
 def get_num_progress_sentiment(data):
     return bt.get_num_progress_sentiment(data)
 
-def get_num_iteration_entities():
-    return t.get_num_iteration()
+def get_num_iteration_entities(data):
+    return t.get_num_iteration(data)
 
-def get_num_progress_entities():
-    return t.get_num_progress()
+def get_num_progress_entities(data):
+    return t.get_num_progress(data)
 
 def get_ended_intent(data):
     global ended_intent
@@ -116,6 +118,6 @@ def get_ended_sentiment(data):
     global ended_sentiment
     return ended_sentiment[data]
 
-def get_ended_entities():
+def get_ended_entities(data):
     global ended_entities
-    return ended_entities
+    return ended_entities[data]
