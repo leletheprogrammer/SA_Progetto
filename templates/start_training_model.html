@@ -62,6 +62,7 @@ function startTrainingClicked(model) {
 		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertPatience' name='insertPatience' placeholder='Patience'>";
 		document.getElementById('addModalBody').innerHTML += "<label for='insertHiddenDropout'>Inserire l' hidden dropout probability di seguito maggiore di 0.0 (default = 0.3)</label>";
 		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertHiddenDropout' name='insertHiddenDropout' placeholder='Hidden Dropout Probability'>";
+		document.getElementById('modalDatasetsNumber').innerHTML = '<button type="button" class="btn btn-default" value="irsa" onclick="clean()">Indietro</button>';
 		if (model == "intentRecognition") {
 			document.getElementById('addTraining').innerHTML += "Intent Recognition";
 		} else if (model == "sentimentAnalysis") {
@@ -80,9 +81,9 @@ function startTrainingClicked(model) {
 		document.getElementById('addModalBody').innerHTML += "<label for='insertBatchTo'>Inserire la batch size to di seguito maggiore di 0.0 (default = 1000.0)</label>";
 		document.getElementById('addModalBody').innerHTML += "<input type='text' class='form-control' id='insertBatchTo' name='insertBatchTo' placeholder='Batch size to'>";
 		document.getElementById('addTraining').innerHTML += "Entities Extraction";
+		document.getElementById('modalDatasetsNumber').innerHTML = '<button type="button" class="btn btn-default" value="ee" onclick="clean()">Indietro</button>';
 	}
 	document.getElementById('addTraining').innerHTML += " inserendo i seguenti iperparametri (opzionale)";
-	document.getElementById('modalDatasetsNumber').innerHTML = '<button type="button" class="btn btn-default" onclick="clean()">Indietro</button>';
 	{% for i in range(0, num_datasets) %}
 		document.getElementById('modalDatasetsNumber').innerHTML += '<button type="submit" id="startTrainingButton{{ loop.index }}" name="submitButton" class="btn btn-success" value="">Dataset {{ loop.index }}</button>';
 		document.getElementById('startTrainingButton{{ loop.index }}').value = model + "{{ loop.index }}";
@@ -90,7 +91,7 @@ function startTrainingClicked(model) {
 }
 
 function clean() {
-	if (document.getElementById('startTrainingButton1').value[0] == "i" || document.getElementById('startTrainingButton1').value[0] == "s") {
+	if (document.getElementById('modalDatasetsNumber').value == "irsa") {
 		document.getElementById("insertLearningRate").value = "";
 		document.getElementById("insertEps").value = "";
 		document.getElementById("selectBatchSize").selectedIndex = 0;
@@ -98,7 +99,7 @@ function clean() {
 		document.getElementById("insertPatience").value = "";
 		document.getElementById("insertHiddenDropout").value = "";
 	}
-	else if (document.getElementById('startTrainingButton1').value[0] == "e") {
+	else if (document.getElementById('modalDatasetsNumber').value == "ee") {
 		document.getElementById("insertNumIterations").value = "";
 		document.getElementById("insertDropoutFrom").value = "";
 		document.getElementById("insertDropoutTo").value = "";

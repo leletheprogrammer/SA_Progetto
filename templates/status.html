@@ -32,23 +32,30 @@
 			</div>
 		</div>
 	</nav>
-	<h2><p>
-		Selezionare una tra le seguenti operazioni:
-	</p></h2>
-	<br>
 	<form method="POST">
-		{% for string in dataset_list%}
-			<button type="submit" name="submitButton" class="btn btn-warning btn-lg" value="statusIntent{{ loop.index }}">
-				Visualizza status Intent dataset {{ loop.index }}
-			</button>
-			<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="statusEntities{{ loop.index }}">
-				Visualizza status Entities dataset {{ loop.index }}
-			</button>
-			<button type="submit" name="submitButton" class="btn btn-danger btn-lg" value="statusSentiment{{ loop.index }}">
-				Visualizza status Sentiment dataset {{ loop.index }}
-			</button>
-			<br><br>
-		{% endfor %}
+		{% if dataset_list| length > 0 %}
+			<h2><p>
+				Selezionare una tra le seguenti operazioni:
+			</p></h2>
+			<br>
+			{% for string in dataset_list%}
+				<button type="submit" name="submitButton" class="btn btn-warning btn-lg" value="statusIntent{{ loop.index }}">
+					Visualizza status Intent dataset {{ loop.index }}
+				</button>
+				<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="statusEntities{{ loop.index }}">
+					Visualizza status Entities dataset {{ loop.index }}
+				</button>
+				<button type="submit" name="submitButton" class="btn btn-danger btn-lg" value="statusSentiment{{ loop.index }}">
+					Visualizza status Sentiment dataset {{ loop.index }}
+				</button>
+				<br><br>
+			{% endfor %}
+		{% else %}
+			<br><br><br><br><br><br>
+			<h2><p class="text-center">
+				Non vi è alcun dataset memorizzato in archivio
+			</p></h2>
+		{%endif%}
 	</form>
 </body>
 </html>
