@@ -728,21 +728,21 @@ def show_results_testing():
                     else:
                         return render_template('show_results_testing.html', not_present = 'Sentiment Analysis del dataset ' + dataset)
             if('graphicLoss' in form_data):
-                pr.graphic_loss_creation(form_data)
+                pr.graphic_loss_creation(form_data, name, dataset)
                 if(form_data['graphicLoss'] == 'graphicLossIntent'):
-                    return render_template('show_results_testing.html', loss_intent = 'loss_graphic_intent.png')
+                    return render_template('show_results_testing.html', loss_intent = 'loss_intent_' + name + '_' + dataset + '.png')
                 elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
-                    return render_template('show_results_testing.html', loss_sentiment = 'loss_graphic_sentiment.png')
+                    return render_template('show_results_testing.html', loss_sentiment = 'loss_sentiment_' + name + '_' + dataset + '.png')
                 elif(form_data['graphicLoss'] == 'graphicLossEntities'):
-                    return render_template('show_results_testing.html', loss_entities = 'loss_graphic_entities.png')
+                    return render_template('show_results_testing.html', loss_entities = 'loss_entities_' + name + '_' + dataset + '.png')
             if('graphicScore' in form_data):
-                pr.graphic_score_creation(form_data)
+                pr.graphic_score_creation(form_data, name, dataset)
                 if(form_data['graphicScore'] == 'graphicScoreIntent'):
-                    return render_template('show_results_testing.html', score_intent = 'score_graphic_intent.png')
+                    return render_template('show_results_testing.html', score_intent = 'score_intent_' + name + '_' + dataset + '.png')
                 elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
-                    return render_template('show_results_testing.html', score_sentiment = 'score_graphic_sentiment.png')
+                    return render_template('show_results_testing.html', score_sentiment = 'score_sentiment_' + name + '_' + dataset + '.png')
                 elif(form_data['graphicScore'] == 'graphicScoreEntities'):
-                    return render_template('show_results_testing.html', score_entities = 'score_graphic_entities.png')
+                    return render_template('show_results_testing.html', score_entities = 'score_entities_' + name + '_' + dataset + '.png')
         elif request.method == 'GET':
             return render_template('show_results_testing.html')
     else:
