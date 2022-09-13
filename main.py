@@ -691,40 +691,42 @@ def show_results_testing():
     if login_user:
         if request.method == 'POST':
             form_data = request.form
+            name = login_user['name']
+            dataset = request.args['dataset']
             if('submitButton' in form_data):
                 if(form_data['submitButton'] == 'visualizeIntent'):
-                    if(os.path.isfile('results_intent.csv')):
-                        return render_template('show_results_testing.html', results_intent = pd.read_csv('results_intent.csv').values.tolist())
+                    if(os.path.isfile('results_intent_' + name + '_' + dataset + '.csv')):
+                        return render_template('show_results_testing.html', results_intent = pd.read_csv('results_intent_' + name + '_' + dataset + '.csv').values.tolist())
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Intent Recognition')
+                        return render_template('show_results_testing.html', not_present = 'Intent Recognition del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'visualizeEntities'):
-                    if(os.path.isfile('results_entities.csv')):
-                        return render_template('show_results_testing.html', results_entities = pd.read_csv('results_entities.csv').values.tolist())
+                    if(os.path.isfile('results_entities_' + name + '_' + dataset + '.csv')):
+                        return render_template('show_results_testing.html', results_entities = pd.read_csv('results_entities_' + name + '_' + dataset + '.csv').values.tolist())
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Entities Extraction')
+                        return render_template('show_results_testing.html', not_present = 'Entities Extraction del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'visualizeSentiment'):
-                    if(os.path.isfile('results_sentiment.csv')):
-                        return render_template('show_results_testing.html', results_sentiment = pd.read_csv('results_sentiment.csv').values.tolist())
+                    if(os.path.isfile('results_sentiment_' + name + '_' + dataset + '.csv')):
+                        return render_template('show_results_testing.html', results_sentiment = pd.read_csv('results_sentiment_' + name + '_' + dataset + '.csv').values.tolist())
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
+                        return render_template('show_results_testing.html', not_present = 'Sentiment Analysis del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'buttonTestingIntent'):
-                    if(os.path.isfile('mapping_intent.joblib') and os.path.isfile('test_intent.csv')):
+                    if(os.path.isfile('mapping_intent_' + name + '_' + dataset + '.joblib') and os.path.isfile('test_intent_' + name + '_' + dataset + '.csv')):
                         score = te.testing_intent()
                         return render_template('show_results_testing.html', testing_intent = str(score))
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Intent Recognition')
+                        return render_template('show_results_testing.html', not_present = 'Intent Recognition del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'buttonTestingEntities'):
-                    if(os.path.isfile('test_entities.json')):
+                    if(os.path.isfile('test_entities_' + name + '_' + dataset + '.json')):
                         score = te.testing_entities()
                         return render_template('show_results_testing.html', testing_entities = str(score))
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Entities Extraction')
+                        return render_template('show_results_testing.html', not_present = 'Entities Extraction del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'buttonTestingSentiment'):
-                    if(os.path.isfile('mapping_sentiment.joblib') and os.path.isfile('test_sentiment.csv')):
+                    if(os.path.isfile('mapping_sentiment_' + name + '_' + dataset + '.joblib') and os.path.isfile('test_sentiment_' + name + '_' + dataset + '.csv')):
                         score = te.testing_sentiment()
                         return render_template('show_results_testing.html', testing_sentiment = str(score))
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
+                        return render_template('show_results_testing.html', not_present = 'Sentiment Analysis del dataset ' + dataset)
             if('graphicLoss' in form_data):
                 pr.graphic_loss_creation(form_data)
                 if(form_data['graphicLoss'] == 'graphicLossIntent'):
