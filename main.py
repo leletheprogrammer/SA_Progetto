@@ -728,12 +728,6 @@ def download_erasure_model():
                 num_datasets = num_datasets + 1
         if request.method == 'POST':
             form_data = request.form
-            '''
-            elif(form_data['submitButton'] == 'deleteSentiment'):
-                
-                else:
-                    return render_template('download_erasure_model.html', model_erasure_present = 'deleteSentimentAnalysis')
-            '''
             if('downloadIntentRecognition' in form_data['submitButton']):
                 if(not os.path.isdir(os.path.join('models', 'intent_' + name + '_' + form_data['submitButton'][25 : ]))):
                     return render_template('download_erasure_model.html', num_datasets = num_datasets, model_download = 'Intent Recognition del dataset ' + form_data['submitButton'][25 : ])
