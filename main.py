@@ -719,24 +719,16 @@ the page where to download or erase the models'''
 def download_erasure_model():
     global login_user
     if login_user:
+        num_datasets = 0
+        name = login_user['name']
+        collection_list = mongo.db.list_collection_names()
+        partial_name = name + 'dataset'
+        for element in collection_list:
+            if partial_name in element:
+                num_datasets = num_datasets + 1
         if request.method == 'POST':
             form_data = request.form
-            if(form_data['submitButton'] == 'downloadIntent'):
-                if(not os.path.isdir(os.path.join('models', 'intent'))):
-                    return render_template('download_erasure_model.html', model_download = 'Intent Recognition')
-                else:
-                    return render_template('download_erasure_model.html', model_download_present = 'downloadIntentRecognition')
-            elif(form_data['submitButton'] == 'downloadEntities'):
-                if(not os.path.isdir(os.path.join('models', 'entities'))):
-                    return render_template('download_erasure_model.html', model_download = 'Entities Extraction')
-                else:
-                    return render_template('download_erasure_model.html', model_download_present = 'downloadEntitiesExtraction')
-            elif(form_data['submitButton'] == 'downloadSentiment'):
-                if(not os.path.isdir(os.path.join('models', 'sentiment'))):
-                    return render_template('download_erasure_model.html', model_download = 'Sentiment Analysis')
-                else:
-                    return render_template('download_erasure_model.html', model_download_present = 'downloadSentimentAnalysis')
-            elif(form_data['submitButton'] == 'deleteIntent'):
+            '''if(form_data['submitButton'] == 'deleteIntent'):
                 if(not os.path.isdir(os.path.join('models', 'intent'))):
                     return render_template('download_erasure_model.html', model_erasure = 'Intent Recognition')
                 else:
@@ -751,24 +743,34 @@ def download_erasure_model():
                     return render_template('download_erasure_model.html', model_erasure = 'Sentiment Analysis')
                 else:
                     return render_template('download_erasure_model.html', model_erasure_present = 'deleteSentimentAnalysis')
-            elif(form_data['submitButton'] == 'downloadIntentRecognition'):
-                memory_file = de.download_intent()
-                return send_file(memory_file, attachment_filename = 'intent.zip', as_attachment = True)
-            elif(form_data['submitButton'] == 'downloadEntitiesExtraction'):
-                memory_file = de.download_entities()
-                return send_file(memory_file, attachment_filename = 'entities.zip', as_attachment = True)
-            elif(form_data['submitButton'] == 'downloadSentimentAnalysis'):
-                memory_file = de.download_sentiment()
-                return send_file(memory_file, attachment_filename = 'sentiment.zip', as_attachment = True)
-            elif(form_data['submitButton'] == 'deleteIntentRecognition'):
+            '''
+            if('downloadIntentRecognition' in form_data['submitButton']):
+                if(not os.path.isdir(os.path.join('models', 'intent_' + name + '_' + form_data['submitButton'][25 : ]))):
+                    return render_template('download_erasure_model.html', num_datasets = num_datasets, model_download = 'Intent Recognition del dataset ' + form_data['submitButton'][25 : ])
+                else:
+                    memory_file = de.download_intent(name, form_data['submitButton'][25 : ])
+                    return send_file(memory_file, attachment_filename = 'intent_recognition_' + form_data['submitButton'][25 : ] + '.zip', as_attachment = True)
+            elif('downloadEntitiesExtraction' in form_data['submitButton']):
+                if(not os.path.isdir(os.path.join('models', 'entities_' + name + '_' + form_data['submitButton'][26 : ]))):
+                    return render_template('download_erasure_model.html', num_datasets = num_datasets, model_download = 'Entities Extraction del dataset ' + form_data['submitButton'][26 : ])
+                else:
+                    memory_file = de.download_entities(name, form_data['submitButton'][26 : ])
+                    return send_file(memory_file, attachment_filename = 'entities_extraction_' + form_data['submitButton'][26 : ] + '.zip', as_attachment = True)
+            elif('downloadSentimentAnalysis' in form_data['submitButton']):
+                if(not os.path.isdir(os.path.join('models', 'sentiment_' + name + '_' + form_data['submitButton'][25 : ]))):
+                    return render_template('download_erasure_model.html', num_datasets = num_datasets, model_download = 'Sentiment Analysis del dataset ' + form_data['submitButton'][25: ])
+                else:
+                    memory_file = de.download_sentiment(name, form_data['submitButton'][25 : ])
+                    return send_file(memory_file, attachment_filename = 'sentiment_analysis_' + form_data['submitButton'][25 : ] + '.zip', as_attachment = True)
+            elif('deleteIntentRecognition' in form_data['submitButton']):
                 de.delete_intent()
-            elif(form_data['submitButton'] == 'deleteEntitiesExtraction'):
+            elif('deleteEntitiesExtraction' in form_data['submitButton']):
                 de.delete_entities()
-            elif(form_data['submitButton'] == 'deleteSentimentAnalysis'):
+            elif('deleteSentimentAnalysis' in form_data['submitButton']):
                 de.delete_sentiment()
-            return render_template('download_erasure_model.html')
+            return render_template('download_erasure_model.html', num_datasets = num_datasets)
         elif request.method == 'GET':
-            return render_template('download_erasure_model.html')
+            return render_template('download_erasure_model.html', num_datasets = num_datasets)
     else:
         global needed
         needed = True

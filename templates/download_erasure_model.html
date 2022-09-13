@@ -55,8 +55,12 @@ function downloadModelClicked(model) {
 	} else if (model == "downloadEntitiesExtraction") {
 		document.getElementById('downloadModalBody').innerHTML += "Entities Extraction";
 	}
-	document.getElementById('downloadModalBody').innerHTML += ". Premere sul bottone scarica per completare l'operazione</p>";
-	document.getElementById('downloadButton').value = model;
+	document.getElementById('downloadModalBody').innerHTML += ". Cliccare su uno dei seguenti dataset per completare l'operazione</p>";
+	document.getElementById('downloadFooter').innerHTML = '<button type="button" class="btn btn-default" data-dismiss="modal">Indietro</button>';
+	{% for i in range(0, num_datasets) %}
+		document.getElementById('downloadFooter').innerHTML += '<button type="submit" id="downloadButton{{ loop.index }}" name="submitButton" class="btn btn-success" onclick="closeDownload()" value="">Dataset {{ loop.index }}</button>';
+		document.getElementById('downloadButton{{ loop.index }}').value = model + "{{ loop.index }}";
+	{% endfor %}
 }
 
 function deleteModelClicked(model) {
@@ -69,21 +73,24 @@ function deleteModelClicked(model) {
 	} else if (model == "deleteEntitiesExtraction") {
 		document.getElementById('deleteModalBody').innerHTML += "Entities Extraction";
 	}
-	document.getElementById('deleteModalBody').innerHTML += ". Premere sul bottone cancella per completare l'operazione.</p><p class='text-warning'><small>Attenzione, questa azione non è reversibile</p>";
-	document.getElementById('deleteButton').value = model;
+	document.getElementById('deleteModalBody').innerHTML += ". Cliccare su uno dei seguenti dataset per completare l'operazione.</p><p class='text-warning'><small>Attenzione, questa azione non è reversibile</p>";
+	document.getElementById('deleteFooter').innerHTML = '<button type="button" class="btn btn-default" data-dismiss="modal">Indietro</button>';
+	{% for i in range(0, num_datasets) %}
+		document.getElementById('deleteFooter').innerHTML += '<button type="submit" id="deleteButton{{ loop.index }}" name="submitButton" class="btn btn-danger" onclick="closeErasure()" value="">Dataset {{ loop.index }}</button>';
+		document.getElementById('deleteButton{{ loop.index }}').value = model + "{{ loop.index }}";
+	{% endfor %}
+	
 }
 
-function closeModal(modal) {
-	$(modal).modal('hide');
+function closeDownload() {
+	$('#downloadModel').modal('hide');
+}
+
+function closeErasure() {
+	$('#deleteModel').modal('hide');
 }
 
 $(document).ready(function() {
-	{% if model_download_present %}
-		downloadModelClicked('{{ model_download_present }}');
-	{% endif %}
-	{% if model_erasure_present %}
-		deleteModelClicked('{{ model_erasure_present }}');
-	{% endif %}
 	{% if model_download %}
 		$('#warningModel').modal('show');
 		document.getElementById('warningModalBody').innerHTML = "<p>Il modello di {{ model_download }} da scaricare non è presente</p>";
@@ -121,27 +128,27 @@ $(document).ready(function() {
 	</p></h2>
 	<br>
 	<form method="POST">
-		<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="downloadIntent">
+		<button type="button" class="btn btn-primary btn-lg" onclick="downloadModelClicked('downloadIntentRecognition')">
 			Scarica il modello addestrato di Intent Recognition
 		</button>
 		<br><br>
-		<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="downloadEntities">
+		<button type="button" class="btn btn-primary btn-lg" onclick="downloadModelClicked('downloadEntitiesExtraction')">
 			Scarica il modello addestrato di Entities Extraction
 		</button>
 		<br><br>
-		<button type="submit" name="submitButton" class="btn btn-primary btn-lg" value="downloadSentiment">
+		<button type="button" class="btn btn-primary btn-lg" onclick="downloadModelClicked('downloadSentimentAnalysis')">
 			Scarica il modello addestrato di Sentiment Analysis
 		</button>
 		<br><br><br><br><br><br>
-		<button type="submit" name="submitButton" class="btn btn-danger btn-lg" value="deleteIntent">
+		<button type="button" class="btn btn-danger btn-lg" onclick="deleteModelClicked('deleteIntentRecognition')">
 			Cancella il modello addestrato di Intent Recognition
 		</button>
 		<br><br>
-		<button type="submit" name="submitButton" class="btn btn-danger btn-lg" value="deleteEntities">
+		<button type="button" class="btn btn-danger btn-lg" onclick="deleteModelClicked('deleteEntitiesExtraction')">
 			Cancella il modello addestrato di Entities Extraction
 		</button>
 		<br><br>
-		<button type="submit" name="submitButton" class="btn btn-danger btn-lg" value="deleteSentiment">
+		<button type="button" class="btn btn-danger btn-lg" onclick="deleteModelClicked('deleteSentimentAnalysis')">
 			Cancella il modello addestrato di Sentiment Analysis
 		</button>
 	</form>
@@ -154,10 +161,9 @@ $(document).ready(function() {
 						<h4 class="modal-title">Scarica modello addestrato</h4>
 						<button type="button" class="close" aria-hidden="true" data-dismiss="modal">&times;</button>
 					</div>
-					<div id="downloadModalBody" class="modal-body"></div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Indietro</button>
-						<button type="submit" id="downloadButton" name="submitButton" class="btn btn-success" onclick="closeModal('#downloadModel')" value="">Scarica</button>
+					<div id="downloadModalBody" class="modal-body">
+					</div>
+					<div id="downloadFooter" class="modal-footer">
 					</div>
 				</form>
 			</div>
@@ -172,10 +178,9 @@ $(document).ready(function() {
 						<h4 class="modal-title">Cancella modello addestrato</h4>
 						<button type="button" class="close" aria-hidden="true" data-dismiss="modal">&times;</button>
 					</div>
-					<div id="deleteModalBody" class="modal-body"></div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Indietro</button>
-						<button type="submit" id="deleteButton" name="submitButton" class="btn btn-danger" onclick="closeModal('#deleteModel')" value="">Cancella</button>
+					<div id="deleteModalBody" class="modal-body">
+					</div>
+					<div id="deleteFooter" class="modal-footer">
 					</div>
 				</form>
 			</div>

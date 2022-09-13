@@ -3,20 +3,20 @@ import os
 from os.path import basename
 import zipfile
 
-def download_intent():
+def download_intent(name, dataset):
     memory_file = BytesIO()
     with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for file_name in os.listdir(os.path.join('models', 'intent')):
-            file = os.path.join('models', 'intent', file_name)
+        for file_name in os.listdir(os.path.join('models', 'intent_' + name + '_' + dataset)):
+            file = os.path.join('models', 'intent_' + name + '_' + dataset, file_name)
             zipf.write(file, basename(file))
     memory_file.seek(0)
     return memory_file
 
-def download_entities():
+def download_entities(name, dataset):
     memory_file = BytesIO()
     with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for element_name in os.listdir(os.path.join('models', 'entities')):
-            element = os.path.join('models', 'entities', element_name)
+        for element_name in os.listdir(os.path.join('models', 'entities_' + name + '_' + dataset)):
+            element = os.path.join('models', 'entities_' + name + '_' + dataset, element_name)
             if os.path.isfile(element):
                 zipf.write(element, basename(element))
             else:
@@ -26,11 +26,11 @@ def download_entities():
     memory_file.seek(0)
     return memory_file
 
-def download_sentiment():
+def download_sentiment(name, dataset):
     memory_file = BytesIO()
     with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for file_name in os.listdir(os.path.join('models', 'sentiment')):
-            file = os.path.join('models', 'sentiment', file_name)
+        for file_name in os.listdir(os.path.join('models', 'sentiment_' + name + '_' + dataset)):
+            file = os.path.join('models', 'sentiment_' + name + '_' + dataset, file_name)
             zipf.write(file, basename(file))
     memory_file.seek(0)
     return memory_file
