@@ -649,6 +649,41 @@ def status_model_sentiment():
         return redirect(url_for('login'))
 
 '''decorator that defines the url path of the
+page where to choose the dataset to test and
+to show results of the models'''
+@app.route('/home/dataset_results_testing', methods = ['POST', 'GET'])
+def dataset_results_testing():
+    global login_user
+    if login_user:
+        collection_list = mongo.db.list_collection_names()
+        name = login_user['name']
+        if request.method == 'POST':
+            form_data = request.form
+            if 'resultsDataset' in form_data['submitButton']:
+                dataset = form_data['submitButton'][14 : ]
+                return redirect(url_for('show_results_testing', dataset = dataset))
+        elif request.method == 'GET':
+            dataset_list = []
+            partial_name = name + 'dataset'
+            for element in collection_list:
+                if partial_name in element:
+                    dataset_list.append(element)
+            partial_len = len(partial_name)
+            i = 0
+            while i < len(dataset_list) - 1:
+                j = i + 1
+                while j < len(dataset_list):
+                    if int(dataset_list[i][partial_len : ]) > int(dataset_list[j][partial_len : ]):
+                        dataset_list[i], dataset_list[j] = dataset_list[j], dataset_list[i]
+                    j = j + 1
+                i = i + 1
+            return render_template('dataset_results_testing.html', dataset_list = dataset_list)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
+
+'''decorator that defines the url path of the
 page where to test and show results of the models'''
 @app.route('/home/show_results_testing', methods = ['POST', 'GET'])
 def show_results_testing():
