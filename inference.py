@@ -10,11 +10,11 @@ from torch import nn
 from transformers import BertForSequenceClassification, AutoTokenizer
 
 class Recognition:
-    def __init__(self, name):
-        path = 'models/' + name
+    def __init__(self, type, name):
+        path = 'models/' + type + '_' + name
         self.model = BertForSequenceClassification.from_pretrained(path)
         self.tokenizer = AutoTokenizer.from_pretrained(path)
-        self.le = load('mapping_' + name + '.joblib')
+        self.le = load('mapping_' + type + '_' + name + '.joblib')
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model.to(self.device)
         self.model.eval()
@@ -42,13 +42,15 @@ class Recognition:
                     return sentiment
 
 class SpacyTesting:
-    def __init__(self):
-        self.test = self.convert_json_to_spacy()
+    def __init__(self, name, num_dataset):
+        self.test = self.convert_json_to_spacy(name, num_dataset)
+        self.name = name
+        self.num_dataset = num_dataset
 
     @staticmethod
-    def convert_json_to_spacy():
+    def convert_json_to_spacy(name, num_dataset):
         dataset = []
-        with open('test_entities.json', 'r') as test:
+        with open('test_entities_' + name + '_' + num_dataset + '.json', 'r') as test:
             lines = test.readlines()
             for line in lines:
                 data = json.loads(line)
@@ -75,6 +77,6 @@ class SpacyTesting:
         return scorer.scores['ents_f']
 
     def run(self):
-        nlp = spacy.load('models/entities')
+        nlp = spacy.load('models/entities_' + self.name + '_'  + self.num_dataset)
         f1_score = self.evaluate(nlp, self.test)
         return f1_score

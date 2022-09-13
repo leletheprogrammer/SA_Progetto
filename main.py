@@ -649,6 +649,41 @@ def status_model_sentiment():
         return redirect(url_for('login'))
 
 '''decorator that defines the url path of the
+page where to choose the dataset to test and
+to show results of the models'''
+@app.route('/home/dataset_results_testing', methods = ['POST', 'GET'])
+def dataset_results_testing():
+    global login_user
+    if login_user:
+        collection_list = mongo.db.list_collection_names()
+        name = login_user['name']
+        if request.method == 'POST':
+            form_data = request.form
+            if 'resultsDataset' in form_data['submitButton']:
+                dataset = form_data['submitButton'][14 : ]
+                return redirect(url_for('show_results_testing', dataset = dataset))
+        elif request.method == 'GET':
+            dataset_list = []
+            partial_name = name + 'dataset'
+            for element in collection_list:
+                if partial_name in element:
+                    dataset_list.append(element)
+            partial_len = len(partial_name)
+            i = 0
+            while i < len(dataset_list) - 1:
+                j = i + 1
+                while j < len(dataset_list):
+                    if int(dataset_list[i][partial_len : ]) > int(dataset_list[j][partial_len : ]):
+                        dataset_list[i], dataset_list[j] = dataset_list[j], dataset_list[i]
+                    j = j + 1
+                i = i + 1
+            return render_template('dataset_results_testing.html', dataset_list = dataset_list)
+    else:
+        global needed
+        needed = True
+        return redirect(url_for('login'))
+
+'''decorator that defines the url path of the
 page where to test and show results of the models'''
 @app.route('/home/show_results_testing', methods = ['POST', 'GET'])
 def show_results_testing():
@@ -656,56 +691,58 @@ def show_results_testing():
     if login_user:
         if request.method == 'POST':
             form_data = request.form
+            name = login_user['name']
+            dataset = request.args['dataset']
             if('submitButton' in form_data):
                 if(form_data['submitButton'] == 'visualizeIntent'):
-                    if(os.path.isfile('results_intent.csv')):
-                        return render_template('show_results_testing.html', results_intent = pd.read_csv('results_intent.csv').values.tolist())
+                    if(os.path.isfile('results_intent_' + name + '_' + dataset + '.csv')):
+                        return render_template('show_results_testing.html', results_intent = pd.read_csv('results_intent_' + name + '_' + dataset + '.csv').values.tolist())
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Intent Recognition')
+                        return render_template('show_results_testing.html', not_present = 'Intent Recognition del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'visualizeEntities'):
-                    if(os.path.isfile('results_entities.csv')):
-                        return render_template('show_results_testing.html', results_entities = pd.read_csv('results_entities.csv').values.tolist())
+                    if(os.path.isfile('results_entities_' + name + '_' + dataset + '.csv')):
+                        return render_template('show_results_testing.html', results_entities = pd.read_csv('results_entities_' + name + '_' + dataset + '.csv').values.tolist())
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Entities Extraction')
+                        return render_template('show_results_testing.html', not_present = 'Entities Extraction del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'visualizeSentiment'):
-                    if(os.path.isfile('results_sentiment.csv')):
-                        return render_template('show_results_testing.html', results_sentiment = pd.read_csv('results_sentiment.csv').values.tolist())
+                    if(os.path.isfile('results_sentiment_' + name + '_' + dataset + '.csv')):
+                        return render_template('show_results_testing.html', results_sentiment = pd.read_csv('results_sentiment_' + name + '_' + dataset + '.csv').values.tolist())
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
+                        return render_template('show_results_testing.html', not_present = 'Sentiment Analysis del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'buttonTestingIntent'):
-                    if(os.path.isfile('mapping_intent.joblib') and os.path.isfile('test_intent.csv')):
-                        score = te.testing_intent()
+                    if(os.path.isfile('mapping_intent_' + name + '_' + dataset + '.joblib') and os.path.isfile('test_intent_' + name + '_' + dataset + '.csv')):
+                        score = te.testing_intent(name, dataset)
                         return render_template('show_results_testing.html', testing_intent = str(score))
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Intent Recognition')
+                        return render_template('show_results_testing.html', not_present = 'Intent Recognition del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'buttonTestingEntities'):
-                    if(os.path.isfile('test_entities.json')):
-                        score = te.testing_entities()
+                    if(os.path.isfile('test_entities_' + name + '_' + dataset + '.json')):
+                        score = te.testing_entities(name, dataset)
                         return render_template('show_results_testing.html', testing_entities = str(score))
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Entities Extraction')
+                        return render_template('show_results_testing.html', not_present = 'Entities Extraction del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'buttonTestingSentiment'):
-                    if(os.path.isfile('mapping_sentiment.joblib') and os.path.isfile('test_sentiment.csv')):
-                        score = te.testing_sentiment()
+                    if(os.path.isfile('mapping_sentiment_' + name + '_' + dataset + '.joblib') and os.path.isfile('test_sentiment_' + name + '_' + dataset + '.csv')):
+                        score = te.testing_sentiment(name, dataset)
                         return render_template('show_results_testing.html', testing_sentiment = str(score))
                     else:
-                        return render_template('show_results_testing.html', not_present = 'Sentiment Analysis')
+                        return render_template('show_results_testing.html', not_present = 'Sentiment Analysis del dataset ' + dataset)
             if('graphicLoss' in form_data):
-                pr.graphic_loss_creation(form_data)
+                pr.graphic_loss_creation(form_data, name, dataset)
                 if(form_data['graphicLoss'] == 'graphicLossIntent'):
-                    return render_template('show_results_testing.html', loss_intent = 'loss_graphic_intent.png')
+                    return render_template('show_results_testing.html', loss_intent = 'loss_intent_' + name + '_' + dataset + '.png')
                 elif(form_data['graphicLoss'] == 'graphicLossSentiment'):
-                    return render_template('show_results_testing.html', loss_sentiment = 'loss_graphic_sentiment.png')
+                    return render_template('show_results_testing.html', loss_sentiment = 'loss_sentiment_' + name + '_' + dataset + '.png')
                 elif(form_data['graphicLoss'] == 'graphicLossEntities'):
-                    return render_template('show_results_testing.html', loss_entities = 'loss_graphic_entities.png')
+                    return render_template('show_results_testing.html', loss_entities = 'loss_entities_' + name + '_' + dataset + '.png')
             if('graphicScore' in form_data):
-                pr.graphic_score_creation(form_data)
+                pr.graphic_score_creation(form_data, name, dataset)
                 if(form_data['graphicScore'] == 'graphicScoreIntent'):
-                    return render_template('show_results_testing.html', score_intent = 'score_graphic_intent.png')
+                    return render_template('show_results_testing.html', score_intent = 'score_intent_' + name + '_' + dataset + '.png')
                 elif(form_data['graphicScore'] == 'graphicScoreSentiment'):
-                    return render_template('show_results_testing.html', score_sentiment = 'score_graphic_sentiment.png')
+                    return render_template('show_results_testing.html', score_sentiment = 'score_sentiment_' + name + '_' + dataset + '.png')
                 elif(form_data['graphicScore'] == 'graphicScoreEntities'):
-                    return render_template('show_results_testing.html', score_entities = 'score_graphic_entities.png')
+                    return render_template('show_results_testing.html', score_entities = 'score_entities_' + name + '_' + dataset + '.png')
         elif request.method == 'GET':
             return render_template('show_results_testing.html')
     else:
@@ -728,12 +765,6 @@ def download_erasure_model():
                 num_datasets = num_datasets + 1
         if request.method == 'POST':
             form_data = request.form
-            '''
-            elif(form_data['submitButton'] == 'deleteSentiment'):
-                
-                else:
-                    return render_template('download_erasure_model.html', model_erasure_present = 'deleteSentimentAnalysis')
-            '''
             if('downloadIntentRecognition' in form_data['submitButton']):
                 if(not os.path.isdir(os.path.join('models', 'intent_' + name + '_' + form_data['submitButton'][25 : ]))):
                     return render_template('download_erasure_model.html', num_datasets = num_datasets, model_download = 'Intent Recognition del dataset ' + form_data['submitButton'][25 : ])
