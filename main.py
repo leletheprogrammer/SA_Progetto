@@ -711,19 +711,19 @@ def show_results_testing():
                         return render_template('show_results_testing.html', not_present = 'Sentiment Analysis del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'buttonTestingIntent'):
                     if(os.path.isfile('mapping_intent_' + name + '_' + dataset + '.joblib') and os.path.isfile('test_intent_' + name + '_' + dataset + '.csv')):
-                        score = te.testing_intent()
+                        score = te.testing_intent(name, dataset)
                         return render_template('show_results_testing.html', testing_intent = str(score))
                     else:
                         return render_template('show_results_testing.html', not_present = 'Intent Recognition del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'buttonTestingEntities'):
                     if(os.path.isfile('test_entities_' + name + '_' + dataset + '.json')):
-                        score = te.testing_entities()
+                        score = te.testing_entities(name, dataset)
                         return render_template('show_results_testing.html', testing_entities = str(score))
                     else:
                         return render_template('show_results_testing.html', not_present = 'Entities Extraction del dataset ' + dataset)
                 elif(form_data['submitButton'] == 'buttonTestingSentiment'):
                     if(os.path.isfile('mapping_sentiment_' + name + '_' + dataset + '.joblib') and os.path.isfile('test_sentiment_' + name + '_' + dataset + '.csv')):
-                        score = te.testing_sentiment()
+                        score = te.testing_sentiment(name, dataset)
                         return render_template('show_results_testing.html', testing_sentiment = str(score))
                     else:
                         return render_template('show_results_testing.html', not_present = 'Sentiment Analysis del dataset ' + dataset)
