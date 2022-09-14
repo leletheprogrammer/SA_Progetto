@@ -193,6 +193,18 @@ def logout():
         login_user = None
         global needed
         needed = None
+        global thread_training_intent
+        global thread_training_sentiment
+        global thread_training_entities
+        global max_epoch_intent
+        global max_epoch_sentiment
+        global max_iterations_entities
+        thread_training_intent.clear()
+        thread_training_sentiment.clear()
+        thread_training_entities.clear()
+        max_epoch_intent.clear()
+        max_epoch_sentiment.clear()
+        max_iterations_entities.clear()
         return render_template('logout.html')
     else:
         return redirect(url_for('index'))
